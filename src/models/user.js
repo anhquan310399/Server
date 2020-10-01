@@ -3,6 +3,11 @@ const validator = require("validator");
 const jwt = require('jsonwebtoken');
 
 const UserSchema = mongoose.Schema({
+    _id: {
+        type: String,
+        unique: true,
+        required: true
+    },
     emailAddress: {
         type: String,
         required: true,
@@ -49,4 +54,4 @@ UserSchema.methods.generateAuthToken = async function() {
     return token
 }
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("user", UserSchema);

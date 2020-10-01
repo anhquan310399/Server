@@ -1,74 +1,81 @@
-const dbUser = require("../models/user");
+const db = require("../models/subject");
 
 exports.create = (req, res) => {
-    try {
-        const user = new dbUser(req.body);
-        user.save()
-            .then((data) => {
-                user.generateAuthToken();
-                res.send(data);
-            })
-            .catch((err) => {
-                res.status(500).send({
-                    message: err.message || "Some error occurred while creating user.",
-                });
-            });
-    } catch (error) {
-        res.status(400).send({
-            message: error.message || "Some error occurred while creating user."
-        });
-    }
-};
+    // Validate request
+    const data = new db({
+        _id: req.body._id,
+        name: req.body.name,
+        lectureId: req.body.lectureId,
+        studentIds: req.body.studentIds
+    });
 
-exports.findAll = (req, res) => {
-    dbUser.find()
-        .then((user) => {
-            res.send(user);
+    // Save Ads in the database
+    data.save()
+        .then((data) => {
+            res.send(data);
         })
         .catch((err) => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving users.",
+                message: err.message || "Some error occurred while creating privilege.",
             });
         });
 };
 
-exports.findUser = (req, res) => {
-    dbUser.findOne({ _id: req.params.id })
-        .then((user) => {
-            if (!user) {
+exports.findAll = (req, res) => {
+    db.find()
+        .then((data) => {
+            res.send(data);
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving privilege.",
+            });
+        });
+};
+
+exports.findPrivilege = (req, res) => {
+    db.findById(req.params.id)
+        .then((data) => {
+            if (!data) {
                 return res.status(404).send({
                     message: "Not found",
                 });
             }
-            res.send(user);
+            res.send(data);
         })
         .catch((err) => {
             if (err.kind === "ObjectId") {
                 return res.status(404).send({
-                    message: "Cast to ObjectId failed",
+                    message: "Not found",
                 });
             }
             return res.status(500).send({
-                message: "Error retrieving user",
+                message: "Error retrieving privilege",
             });
         });
 };
 
 exports.update = (req, res) => {
+    // Validate Request
+    if (!req.body.name) {
+        return res.status(400).send({
+            message: "Lack of information",
+        });
+    }
+
     // Find ads and update it with the request body
-    dbUser.findByIdAndUpdate(
+    db.findByIdAndUpdate(
             req.params.id, {
-                firstName: req.body.firstName,
-                surName: req.body.surName,
+                name: req.body.name,
             }, { new: true }
         )
-        .then((user) => {
-            if (!user) {
+        .then((data) => {
+            if (!data) {
                 return res.status(404).send({
                     message: "Not found",
                 });
             }
-            res.send(user);
+            res.send(data);
         })
         .catch((err) => {
             if (err.kind === "ObjectId") {
@@ -77,15 +84,15 @@ exports.update = (req, res) => {
                 });
             }
             return res.status(500).send({
-                message: "Error updating user",
+                message: "Error updating privilege",
             });
         });
 };
 
 exports.delete = (req, res) => {
-    dbUser.findByIdAndRemove(req.params.id)
-        .then((user) => {
-            if (!user) {
+    db.findByIdAndRemove(req.params.id)
+        .then((data) => {
+            if (!data) {
                 return res.status(404).send({
                     message: "Not found",
                 });
@@ -99,7 +106,7 @@ exports.delete = (req, res) => {
                 });
             }
             return res.status(500).send({
-                message: "Could not delete user",
+                message: "Could not delete privilege",
             });
         });
 };

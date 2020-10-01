@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema({
+
+const Schema = mongoose.Schema({
     _id: {
         type: String,
         unique: true,
@@ -9,10 +10,10 @@ const schema = mongoose.Schema({
         type: String,
         unique: true,
         required: true
-    }
+    },
+    subjects: [String]
 }, {
     timestamps: true,
 }, { _id: false });
 
-
-module.exports = mongoose.model("privilege", schema);
+module.exports = mongoose.model("course", Schema);

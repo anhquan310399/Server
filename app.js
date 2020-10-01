@@ -9,7 +9,7 @@ var cors = require("cors");
 var indexRouter = require('./src/routes/index');
 var userRouter = require('./src/routes/userRouter');
 var privilegeRouter = require('./src/routes/privilegeRouter');
-
+var subjectRouter = require('./src/routes/subjectRouter');
 /** Config database */
 const dbConfig = process.env.MONGODB_URL;
 const mongoose = require("mongoose");
@@ -31,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/privilege', privilegeRouter);
+app.use('/subject', subjectRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

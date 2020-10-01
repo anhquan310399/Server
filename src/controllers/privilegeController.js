@@ -1,20 +1,13 @@
-const dbStudent = require("../models/privilege");
+const db = require("../models/privilege");
 
 exports.create = (req, res) => {
-    // Validate request
-    if (!req.body.name) {
-        return res.status(400).send({
-            message: "Lack of information",
-        });
-    }
-
-    const user = new dbStudent({
+    const data = new db({
         _id: req.body._id,
         name: req.body.name
     });
 
     // Save Ads in the database
-    user.save()
+    data.save()
         .then((data) => {
             res.send(data);
         })
@@ -26,7 +19,7 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-    dbStudent.find()
+    db.find()
         .then((data) => {
             res.send(data);
         })
@@ -38,7 +31,7 @@ exports.findAll = (req, res) => {
 };
 
 exports.findPrivilege = (req, res) => {
-    dbStudent.findById(req.params.id)
+    db.findById(req.params.id)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -60,15 +53,8 @@ exports.findPrivilege = (req, res) => {
 };
 
 exports.update = (req, res) => {
-    // Validate Request
-    if (!req.body.name) {
-        return res.status(400).send({
-            message: "Lack of information",
-        });
-    }
-
     // Find ads and update it with the request body
-    dbStudent.findByIdAndUpdate(
+    db.findByIdAndUpdate(
             req.params.id, {
                 name: req.body.name,
             }, { new: true }
@@ -94,7 +80,7 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-    dbStudent.findByIdAndRemove(req.params.id)
+    db.findByIdAndRemove(req.params.id)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
