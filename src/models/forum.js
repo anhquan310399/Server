@@ -10,7 +10,7 @@ const forum = new mongoose.Schema({
     },
     description: String,
     discussions: [discussionSchema]
-});
+}, { timestamps: true });
 
 
 exports.forumSchema = forum

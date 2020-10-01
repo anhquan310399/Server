@@ -12,7 +12,8 @@ const schema = mongoose.Schema({
     }
 }, {
     timestamps: true,
-}, { _id: false });
+    _id: false
+});
 
 
 module.exports = mongoose.model("privilege", schema);

@@ -6,7 +6,8 @@ exports.create = (req, res) => {
         _id: req.body._id,
         name: req.body.name,
         lectureId: req.body.lectureId,
-        studentIds: req.body.studentIds
+        studentIds: req.body.studentIds,
+        timelines: req.body.timelines
     });
 
     // Save Ads in the database
@@ -33,8 +34,8 @@ exports.findAll = (req, res) => {
         });
 };
 
-exports.findPrivilege = (req, res) => {
-    db.findById(req.params.id)
+exports.find = (req, res) => {
+    db.findById(req.params.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -44,30 +45,24 @@ exports.findPrivilege = (req, res) => {
             res.send(data);
         })
         .catch((err) => {
-            if (err.kind === "ObjectId") {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
             return res.status(500).send({
-                message: "Error retrieving privilege",
+                message: err.message,
             });
         });
 };
 
 exports.update = (req, res) => {
-    // Validate Request
-    if (!req.body.name) {
+    if (!req.body) {
         return res.status(400).send({
             message: "Lack of information",
         });
     }
-
     // Find ads and update it with the request body
     db.findByIdAndUpdate(
-            req.params.id, {
+            req.params.idSubject, {
                 name: req.body.name,
-            }, { new: true }
+                lectureId: req.body.lectureId
+            }
         )
         .then((data) => {
             if (!data) {
@@ -84,13 +79,13 @@ exports.update = (req, res) => {
                 });
             }
             return res.status(500).send({
-                message: "Error updating privilege",
+                message: err.message,
             });
         });
 };
 
 exports.delete = (req, res) => {
-    db.findByIdAndRemove(req.params.id)
+    db.findByIdAndRemove(req.params.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -106,7 +101,7 @@ exports.delete = (req, res) => {
                 });
             }
             return res.status(500).send({
-                message: "Could not delete privilege",
+                message: "Could not delete",
             });
         });
 };

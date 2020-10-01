@@ -21,6 +21,11 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
     db.find()
         .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    message: "Not found",
+                });
+            }
             res.send(data);
         })
         .catch((err) => {

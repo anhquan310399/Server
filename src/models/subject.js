@@ -11,7 +11,6 @@ const Schema = mongoose.Schema({
     },
     name: {
         type: String,
-        unique: true,
         required: true
     },
     lectureId: {
@@ -21,7 +20,7 @@ const Schema = mongoose.Schema({
     timelines: [timelineSchema],
     studentIds: [String]
 }, {
-    timestamps: true,
+    timestamps: true
 });
 
 const timeLineModel = timeline.timelineModel

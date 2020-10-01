@@ -9,7 +9,6 @@ const studentAnswerSheetSchema = studentAnswerSheet.studentAnswerSheetSchema
 const exam = new mongoose.Schema({
     name: {
         type: String,
-        unique: true,
         required: true
     },
     description: String,
@@ -31,7 +30,7 @@ const exam = new mongoose.Schema({
     },
     questions: [questionSchema],
     studentExams: [studentAnswerSheetSchema]
-});
+}, { timestamps: true });
 
 
 
