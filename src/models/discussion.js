@@ -19,7 +19,4 @@ const discussion = new mongoose.Schema({
     }
 })
 
-
 exports.discussionSchema = discussion
-
-exports.discussionModel = mongoose.model("discussion", discussion)

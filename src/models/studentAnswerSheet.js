@@ -13,5 +13,3 @@ const studentAnswerSheet = new mongoose.Schema({
 
 
 exports.studentAnswerSheetSchema = studentAnswerSheet
-
-exports.studentAnswerSheetModel = mongoose.model("studentAnswerSheet", studentAnswerSheet)

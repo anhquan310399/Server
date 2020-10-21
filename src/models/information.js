@@ -13,5 +13,3 @@ const information = new mongoose.Schema({
 }, { timestamps: true });
 
 exports.informationSchema = information
-
-exports.informationModel = mongoose.model("information", information)

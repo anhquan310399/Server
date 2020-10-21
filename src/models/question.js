@@ -21,5 +21,3 @@ const question = new mongoose.Schema({
 
 
 exports.questionSchema = question
-
-exports.questionModel = mongoose.model("question", question)

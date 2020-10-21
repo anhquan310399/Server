@@ -1,4 +1,5 @@
 const dbUser = require("../models/user");
+const { use } = require("../routes/userRouter");
 
 exports.create = (req, res) => {
     try {
@@ -40,7 +41,14 @@ exports.findUser = (req, res) => {
                     message: "Not found",
                 });
             }
-            res.send(user);
+            var re = {
+                id: user._id,
+                emailAddress: user.emailAddress,
+                firstName: user.firstName,
+                surName: user.surName,
+                urlAvatar: user.urlAvatar
+            }
+            res.send(re);
         })
         .catch((err) => {
             if (err.kind === "ObjectId") {

@@ -1,13 +1,11 @@
-const informationModel = require("../models/information");
-const dbInformation = informationModel.informationModel;
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    const model = new dbInformation({
+    const model = {
         name: req.body.name,
         description: req.body.description,
         content: req.body.content
-    });
+    };
     dbSubject.findById(req.params.idSubject)
         .then((data) => {
             if (!data) {
@@ -133,7 +131,7 @@ exports.delete = (req, res) => {
             const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
             const indexTimeline = data.timelines.indexOf(timeline);
 
-            const information = data.timelines[indexTimeline].information.find(value => value._id == idInformation);
+            const information = data.timelines[indexTimeline].information.find(value => value._id == req.params.idInformation);
             const indexInfo = data.timelines[indexTimeline].information.indexOf(information);
 
 

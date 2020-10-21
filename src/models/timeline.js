@@ -31,5 +31,3 @@ const timeline = new mongoose.Schema({
 
 
 exports.timelineSchema = timeline
-
-exports.timelineModel = mongoose.model("timeline", timeline)

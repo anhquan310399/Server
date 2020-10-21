@@ -9,13 +9,21 @@ exports.create = (req, res) => {
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
-                    message: "Not found",
+                    message: "Not found subject",
                 });
             }
-            data.timelines.push(model);
+            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const index = data.timelines.indexOf(timeline);
+            if (index === -1) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
+
+            data.timelines[index].forums.push(model);
             data.save()
                 .then((data) => {
-                    res.send(data);
+                    res.send(data.timelines[index]);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -30,15 +38,29 @@ exports.create = (req, res) => {
         });
 };
 
-exports.findAll = (req, res) => {
+exports.find = (req, res) => {
     dbSubject.findById(req.params.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
-                    message: "Not found",
+                    message: "Not found subject",
                 });
             }
-            res.send(data.timelines);
+            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const index = data.timelines.indexOf(timeline);
+            if (index === -1) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
+
+            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
+            if (!forum) {
+                return res.status(404).send({
+                    message: "Not found discussion",
+                });
+            }
+            res.send(forum);
         })
         .catch((err) => {
             res.status(500).send({
@@ -47,16 +69,22 @@ exports.findAll = (req, res) => {
         });
 };
 
-exports.find = (req, res) => {
+exports.findAll = (req, res) => {
     dbSubject.findById(req.params.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
-                    message: "Not found",
+                    message: "Not found subject",
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
-            res.send(timeline);
+            const index = data.timelines.indexOf(timeline);
+            if (index === -1) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
+            res.send(data.timelines[index].forums);
         })
         .catch((err) => {
             res.status(500).send({
@@ -68,13 +96,12 @@ exports.find = (req, res) => {
 exports.update = (req, res) => {
     dbSubject.findById(req.params.idSubject)
         .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            const timeline = data.timelines.find(function(value, index, arr) {
-                if (value._id == req.params.idTimeline) {
+            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+
+            const indexTimeline = data.timelines.indexOf(timeline);
+
+            data.timelines[indexTimeline].forums.find(function(value, index, arr) {
+                if (value._id == req.params.idForum) {
                     arr[index].name = req.body.name;
                     arr[index].description = req.body.description;
                     return true;
@@ -82,9 +109,10 @@ exports.update = (req, res) => {
                     return false;
                 }
             });
+
             data.save()
                 .then((data) => {
-                    res.send(timeline);
+                    res.send(data.timelines[indexTimeline].forums);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -102,17 +130,17 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     dbSubject.findById(req.params.idSubject)
         .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
             const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            data.timelines.splice(index, 1);
+            const indexTimeline = data.timelines.indexOf(timeline);
+
+            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
+            const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
+
+
+            data.timelines[indexTimeline].forums.splice(indexForum, 1);
             data.save()
                 .then((data) => {
-                    res.send(data);
+                    res.send(data.timelines[indexTimeline].forums);
                 })
                 .catch((err) => {
                     res.status(500).send({

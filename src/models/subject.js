@@ -23,17 +23,13 @@ const Schema = mongoose.Schema({
     timestamps: true
 });
 
-const timeLineModel = timeline.timelineModel
-
 Schema.methods.createTimeline = async function(name, description) {
     const subject = this
     try {
-        const timeLine = new timeLineModel({
+        const timeLine = {
             name: name,
             description: description
-        });
-        console.log(timeLine.name)
-        console.log(timeLine.description)
+        };
         subject.timelines.push(timeLine);
         await subject.save()
         return true

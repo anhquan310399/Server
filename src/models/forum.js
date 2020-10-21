@@ -14,5 +14,3 @@ const forum = new mongoose.Schema({
 
 
 exports.forumSchema = forum
-
-exports.forumModel = mongoose.model("forum", forum)
