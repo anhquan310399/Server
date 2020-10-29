@@ -31,7 +31,7 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-    dbSubject.findById(req.data.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
