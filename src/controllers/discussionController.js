@@ -2,19 +2,19 @@ const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
     const model = {
-        subject: req.body.subject,
-        content: req.body.content,
+        subject: req.body.data.subject,
+        content: req.body.data.content,
         createId: req.userId,
-        parentId: req.body.parentId
+        parentId: req.body.data.parentId
     };
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
                     message: "Not found subject",
                 });
             }
-            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const index = data.timelines.indexOf(timeline);
             console.log("index timeline " + index);
             if (index === -1) {
@@ -23,7 +23,7 @@ exports.create = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
+            const forum = data.timelines[index].forums.find(value => value._id == req.body.idForum);
             const indexForum = data.timelines[index].forums.indexOf(forum);
             console.log("index forum " + index);
 
@@ -52,14 +52,14 @@ exports.create = (req, res) => {
 };
 
 exports.find = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
                     message: "Not found subject",
                 });
             }
-            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const index = data.timelines.indexOf(timeline);
             if (index === -1) {
                 return res.status(404).send({
@@ -67,7 +67,7 @@ exports.find = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
+            const forum = data.timelines[index].forums.find(value => value._id == req.body.idForum);
             const indexForum = data.timelines[index].forums.indexOf(forum);
             if (indexForum === -1) {
                 return res.status(404).send({
@@ -91,14 +91,14 @@ exports.find = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
                     message: "Not found subject",
                 });
             }
-            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const index = data.timelines.indexOf(timeline);
             if (index === -1) {
                 return res.status(404).send({
@@ -106,7 +106,7 @@ exports.findAll = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
+            const forum = data.timelines[index].forums.find(value => value._id == req.body.idForum);
             const indexForum = data.timelines[index].forums.indexOf(forum);
             if (indexForum === -1) {
                 return res.status(404).send({
@@ -124,14 +124,14 @@ exports.findAll = (req, res) => {
 };
 
 exports.update = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
                     message: "Not found subject",
                 });
             }
-            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const indexTimeline = data.timelines.indexOf(timeline);
             if (indexTimeline === -1) {
                 return res.status(404).send({
@@ -139,7 +139,7 @@ exports.update = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
+            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.body.idForum);
             const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
             if (indexForum === -1) {
                 return res.status(404).send({
@@ -147,10 +147,10 @@ exports.update = (req, res) => {
                 });
             }
 
-            data.timelines[indexTimeline].forums[indexForum].discussions.find(function(value, index, arr) {
+            const discussion = data.timelines[indexTimeline].forums[indexForum].discussions.find(function(value, index, arr) {
                 if (value._id == req.params.idDiscussion) {
-                    arr[index].subject = req.body.subject;
-                    arr[index].content = req.body.content;
+                    arr[index].subject = req.body.data.subject;
+                    arr[index].content = req.body.data.content;
                     return true;
                 } else {
                     return false;
@@ -159,7 +159,7 @@ exports.update = (req, res) => {
 
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[indexTimeline].forums[indexForum].discussions);
+                    res.send(discussion);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -175,14 +175,14 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
                     message: "Not found subject",
                 });
             }
-            const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const indexTimeline = data.timelines.indexOf(timeline);
             if (indexTimeline === -1) {
                 return res.status(404).send({
@@ -190,7 +190,7 @@ exports.delete = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
+            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.body.idForum);
             const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
             if (indexForum === -1) {
                 return res.status(404).send({

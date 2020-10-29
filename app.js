@@ -10,6 +10,10 @@ var indexRouter = require('./src/routes/index');
 var userRouter = require('./src/routes/userRouter');
 var privilegeRouter = require('./src/routes/privilegeRouter');
 var subjectRouter = require('./src/routes/subjectRouter');
+var timelineRouter = require('./src/routes/timelineRouter');
+var informationRouter = require('./src/routes/informationRouter');
+var forumRouter = require('./src/routes/forumRouter');
+var discussionRouter = require('./src/routes/discussionRouter');
 /** Config database */
 const dbConfig = process.env.MONGODB_URL;
 const mongoose = require("mongoose");
@@ -32,6 +36,10 @@ app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/privilege', privilegeRouter);
 app.use('/subject', subjectRouter);
+app.use('/timeline', timelineRouter);
+app.use('/information', informationRouter);
+app.use('/forum', forumRouter);
+app.use('/discussion', discussionRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

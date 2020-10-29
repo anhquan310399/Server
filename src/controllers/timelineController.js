@@ -2,10 +2,10 @@ const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
     const model = {
-        name: req.body.name,
-        description: req.body.description
+        name: req.body.data.name,
+        description: req.body.data.description
     };
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -31,7 +31,7 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.data.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -48,7 +48,7 @@ exports.findAll = (req, res) => {
 };
 
 exports.find = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -66,7 +66,7 @@ exports.find = (req, res) => {
 };
 
 exports.update = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -75,8 +75,8 @@ exports.update = (req, res) => {
             }
             const timeline = data.timelines.find(function(value, index, arr) {
                 if (value._id == req.params.idTimeline) {
-                    arr[index].name = req.body.name;
-                    arr[index].description = req.body.description;
+                    arr[index].name = req.body.data.name;
+                    arr[index].description = req.body.data.description;
                     return true;
                 } else {
                     return false;
@@ -100,7 +100,7 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-    dbSubject.findById(req.params.idSubject)
+    dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -112,7 +112,7 @@ exports.delete = (req, res) => {
             data.timelines.splice(index, 1);
             data.save()
                 .then((data) => {
-                    res.send(data);
+                    res.send(data.timelines);
                 })
                 .catch((err) => {
                     res.status(500).send({
