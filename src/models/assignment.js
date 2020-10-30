@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const file = require("./file");
+
+const fileSchema = require("./file");
 
 const assignment = new mongoose.Schema({
     name: {
@@ -18,5 +21,6 @@ const assignment = new mongoose.Schema({
         type: Date,
         required: true
     },
+    submission: [file]
 });
 exports.assignmentSchema = assignment

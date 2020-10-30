@@ -3,7 +3,12 @@ const dbSubject = require("../models/subject");
 exports.create = (req, res) => {
     const model = {
         name: req.body.data.name,
-        description: req.body.data.description
+        description: req.body.data.description,
+        content: req.body.data.content,
+        startTime: new Date(req.body.data.startTime),
+        expireTime: new Date(req.body.data.expireTime),
+        attemptCount: req.body.data.attemptCount,
+        setting: req.body.data.setting
     };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
@@ -20,10 +25,10 @@ exports.create = (req, res) => {
                 });
             }
 
-            data.timelines[index].forums.push(model);
+            data.timelines[index].exams.push(model);
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[index].forums);
+                    res.send(data.timelines[index].exams);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -54,13 +59,13 @@ exports.find = (req, res) => {
                 });
             }
 
-            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
-            if (!forum) {
+            const exam = data.timelines[index].exams.find(value => value._id == req.params.idExam);
+            if (!exam) {
                 return res.status(404).send({
-                    message: "Not found discussion",
+                    message: "Not found exam",
                 });
             }
-            res.send(forum);
+            res.send(exam);
         })
         .catch((err) => {
             res.status(500).send({
@@ -84,7 +89,7 @@ exports.findAll = (req, res) => {
                     message: "Not found timeline",
                 });
             }
-            res.send(data.timelines[index].forums);
+            res.send(data.timelines[index].exams);
         })
         .catch((err) => {
             res.status(500).send({
@@ -100,10 +105,15 @@ exports.update = (req, res) => {
 
             const indexTimeline = data.timelines.indexOf(timeline);
 
-            const forum = data.timelines[indexTimeline].forums.find(function(value, index, arr) {
-                if (value._id == req.params.idForum) {
-                    arr[index].name = req.body.data.name;
-                    arr[index].description = req.body.data.description;
+            const exam = data.timelines[indexTimeline].exams.find(function(value, index, arr) {
+                if (value._id == req.params.idExam) {
+                    arr[index].name = req.body.data.name != null ? req.body.data.name : arr[index].name;
+                    arr[index].description = req.body.data.description != null ? req.body.data.description : arr[index].description;
+                    arr[index].content = req.body.data.content != null ? req.body.data.content : arr[index].content;
+                    arr[index].startTime = req.body.data.startTime != null ? new Date(req.body.data.startTime) : arr[index].startTime;
+                    arr[index].expireTime = req.body.data.expireTime != null ? new Date(req.body.data.expireTime) : arr[index].expireTime;
+                    arr[index].setting = req.body.data.setting != null ? req.body.data.setting : arr[index].setting;
+                    arr[index].attemptCount = req.body.data.attemptCount != null ? req.body.data.attemptCount : arr[index].attemptCount;
                     return true;
                 } else {
                     return false;
@@ -112,7 +122,7 @@ exports.update = (req, res) => {
 
             data.save()
                 .then((data) => {
-                    res.send(forum);
+                    res.send(exam);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -133,14 +143,14 @@ exports.delete = (req, res) => {
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
             const indexTimeline = data.timelines.indexOf(timeline);
 
-            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
-            const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
+            const exam = data.timelines[indexTimeline].exams.find(value => value._id == req.params.idExam);
+            const indexExam = data.timelines[indexTimeline].exams.indexOf(exam);
 
 
-            data.timelines[indexTimeline].forums.splice(indexForum, 1);
+            data.timelines[indexTimeline].exams.splice(indexExam, 1);
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[indexTimeline].forums);
+                    res.send(data.timelines[indexTimeline].exams);
                 })
                 .catch((err) => {
                     res.status(500).send({

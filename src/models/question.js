@@ -5,6 +5,10 @@ const questionOption = new mongoose.Schema({
         type: String,
         required: true
     },
+    isCorrect: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const question = new mongoose.Schema({
@@ -13,10 +17,10 @@ const question = new mongoose.Schema({
         required: true
     },
     answers: [questionOption],
-    correctAnswer: {
-        type: Date,
+    code: {
+        type: String,
         required: true
-    },
+    }
 })
 
 

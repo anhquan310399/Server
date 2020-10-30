@@ -1,10 +1,22 @@
 const mongoose = require("mongoose");
 
-const question = require("./question")
-const questionSchema = question.questionSchema
-
 const studentAnswerSheet = require("./studentAnswerSheet")
 const studentAnswerSheetSchema = studentAnswerSheet.studentAnswerSheetSchema
+
+const setting = new mongoose.Schema({
+    questionCount: {
+        type: Number,
+        require: true
+    },
+    timeToDo: {
+        type: Number,
+        require: true
+    },
+    code: {
+        type: String,
+        require: true
+    }
+}, { _id: false });
 
 const exam = new mongoose.Schema({
     name: {
@@ -26,10 +38,14 @@ const exam = new mongoose.Schema({
     },
     attemptCount: {
         type: Number,
-        required: true
+        required: true,
+        default: 1
     },
-    questions: [questionSchema],
-    studentExams: [studentAnswerSheetSchema]
+    submissions: [studentAnswerSheetSchema],
+    setting: {
+        type: setting,
+        required: true
+    }
 }, { timestamps: true });
 
 
