@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 
-const discussion = new mongoose.Schema({
-    subject: {
+const discussionSchema = require("./discussion");
+
+const topic = new mongoose.Schema({
+    name: {
         type: String,
         required: true
     },
@@ -9,14 +11,12 @@ const discussion = new mongoose.Schema({
         type: String,
         required: true
     },
-    createId: {
+    discussions: [discussionSchema],
+    idUser: {
         type: String,
         required: true
-    },
-    parentId: {
-        type: String,
-        default: null
     }
-})
+}, { timestamps: true });
 
-module.exports = discussion
+
+module.exports = topic

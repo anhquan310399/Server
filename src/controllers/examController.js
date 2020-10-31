@@ -1,15 +1,6 @@
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    const model = {
-        name: req.body.data.name,
-        description: req.body.data.description,
-        content: req.body.data.content,
-        startTime: new Date(req.body.data.startTime),
-        expireTime: new Date(req.body.data.expireTime),
-        attemptCount: req.body.data.attemptCount,
-        setting: req.body.data.setting
-    };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
@@ -18,17 +9,26 @@ exports.create = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
             }
 
-            data.timelines[index].exams.push(model);
+            const model = {
+                name: req.body.data.name,
+                description: req.body.data.description,
+                content: req.body.data.content,
+                startTime: new Date(req.body.data.startTime),
+                expireTime: new Date(req.body.data.expireTime),
+                attemptCount: req.body.data.attemptCount,
+                setting: req.body.data.setting
+            };
+
+            timeline.exams.push(model);
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[index].exams);
+                    res.send(timeline.exams);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -52,14 +52,13 @@ exports.find = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
             }
 
-            const exam = data.timelines[index].exams.find(value => value._id == req.params.idExam);
+            const exam = timeline.exams.find(value => value._id == req.params.idExam);
             if (!exam) {
                 return res.status(404).send({
                     message: "Not found exam",
@@ -83,13 +82,12 @@ exports.findAll = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
             }
-            res.send(data.timelines[index].exams);
+            res.send(timeline.exams);
         })
         .catch((err) => {
             res.status(500).send({
@@ -101,11 +99,18 @@ exports.findAll = (req, res) => {
 exports.update = (req, res) => {
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    message: "Not found subject",
+                });
+            }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-
-            const indexTimeline = data.timelines.indexOf(timeline);
-
-            const exam = data.timelines[indexTimeline].exams.find(function(value, index, arr) {
+            if (!timeline) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
+            const exam = timeline.exams.find(function(value, index, arr) {
                 if (value._id == req.params.idExam) {
                     arr[index].name = req.body.data.name != null ? req.body.data.name : arr[index].name;
                     arr[index].description = req.body.data.description != null ? req.body.data.description : arr[index].description;
@@ -140,17 +145,25 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    message: "Not found subject",
+                });
+            }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const indexTimeline = data.timelines.indexOf(timeline);
+            if (!timeline) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
+            const exam = timeline.exams.find(value => value._id == req.params.idExam);
+            const indexExam = timeline.exams.indexOf(exam);
 
-            const exam = data.timelines[indexTimeline].exams.find(value => value._id == req.params.idExam);
-            const indexExam = data.timelines[indexTimeline].exams.indexOf(exam);
 
-
-            data.timelines[indexTimeline].exams.splice(indexExam, 1);
+            timeline.exams.splice(indexExam, 1);
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[indexTimeline].exams);
+                    res.send(timeline.exams);
                 })
                 .catch((err) => {
                     res.status(500).send({

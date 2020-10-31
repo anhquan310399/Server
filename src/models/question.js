@@ -24,4 +24,4 @@ const question = new mongoose.Schema({
 })
 
 
-exports.questionSchema = question
+module.exports = question

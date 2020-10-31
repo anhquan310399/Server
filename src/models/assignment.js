@@ -23,4 +23,4 @@ const assignment = new mongoose.Schema({
     },
     submission: [file]
 });
-exports.assignmentSchema = assignment
+module.exports = assignment

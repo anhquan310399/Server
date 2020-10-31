@@ -12,4 +12,4 @@ const information = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-exports.informationSchema = information
+module.exports = information

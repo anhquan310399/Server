@@ -1,6 +1,11 @@
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
+    const model = {
+        name: req.body.data.name,
+        content: req.body.data.content,
+        idUser: req.userId
+    };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
@@ -22,26 +27,11 @@ exports.create = (req, res) => {
                 });
             }
 
-            const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
-            if (!topic) {
-                return res.status(404).send({
-                    message: "Not found topic",
-                });
-            }
-
-            const model = {
-                subject: req.body.data.subject,
-                content: req.body.data.content,
-                createId: req.userId,
-                parentId: req.body.data.parentId
-            };
-
-            topic.discussions.push(model);
+            forum.topics.push(model);
 
             data.save()
                 .then((data) => {
-                    res.send(topic.discussions);
+                    res.send(forum.topics);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -78,21 +68,13 @@ exports.find = (req, res) => {
                 });
             }
 
-            const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
+            const topic = forum.topics.find(value => value._id == req.params.idTopic)
             if (!topic) {
                 return res.status(404).send({
                     message: "Not found topic",
                 });
             }
-
-            const discussion = topic.discussions.find(value => value._id == req.params.idDiscussion)
-            if (!discussion) {
-                return res.status(404).send({
-                    message: "Not found discussion",
-                });
-            }
-            res.send(discussion);
+            res.send(topic);
         })
         .catch((err) => {
             res.status(500).send({
@@ -123,15 +105,7 @@ exports.findAll = (req, res) => {
                 });
             }
 
-            const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
-            if (!topic) {
-                return res.status(404).send({
-                    message: "Not found topic",
-                });
-            }
-
-            res.send(topic.discussions);
+            res.send(forum.topics);
         })
         .catch((err) => {
             res.status(500).send({
@@ -162,17 +136,9 @@ exports.update = (req, res) => {
                 });
             }
 
-            const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
-            if (!topic) {
-                return res.status(404).send({
-                    message: "Not found topic",
-                });
-            }
-
-            const discussion = topic.discussions.find(function(value, index, arr) {
-                if (value._id == req.params.idDiscussion) {
-                    arr[index].subject = req.body.data.subject;
+            const topic = forum.topics.find(function(value, index, arr) {
+                if (value._id == req.params.idTopic) {
+                    arr[index].name = req.body.data.name;
                     arr[index].content = req.body.data.content;
                     return true;
                 } else {
@@ -182,7 +148,7 @@ exports.update = (req, res) => {
 
             data.save()
                 .then((data) => {
-                    res.send(discussion);
+                    res.send(topic);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -219,28 +185,19 @@ exports.delete = (req, res) => {
                 });
             }
 
-            const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
-            if (!topic) {
+            const topic = forum.topics.find(value => value._id == req.params.idTopic);
+            const indexTopic = data.timelines[indexTimeline].forums[indexForum].topics.indexOf(topic);
+            if (indexTopic === -1) {
                 return res.status(404).send({
                     message: "Not found topic",
                 });
             }
 
-            const discussion = topic.discussions.find(value => value._id == req.params.idDiscussion);
-            const indexDiscussion = topic.discussions.indexOf(discussion);
-            if (indexDiscussion === -1) {
-                return res.status(404).send({
-                    message: "Not found discussion",
-                });
-            }
-
-
-            topic.discussions.splice(indexDiscussion, 1);
+            forum.topics.splice(indexTopic, 1);
 
             data.save()
                 .then((data) => {
-                    res.send(topic.discussions);
+                    res.send(forum.topics);
                 })
                 .catch((err) => {
                     res.status(500).send({

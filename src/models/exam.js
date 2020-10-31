@@ -50,4 +50,4 @@ const exam = new mongoose.Schema({
 
 
 
-exports.examSchema = exam
+module.exports = exam

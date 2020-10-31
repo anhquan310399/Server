@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-const discussion = require("./discussion")
-const discussionSchema = discussion.discussionSchema
+const topicSchema = require("./topic")
 
 const forum = new mongoose.Schema({
     name: {
@@ -9,8 +8,8 @@ const forum = new mongoose.Schema({
         required: true
     },
     description: String,
-    discussions: [discussionSchema]
+    topics: [topicSchema]
 }, { timestamps: true });
 
 
-exports.forumSchema = forum
+module.exports = forum

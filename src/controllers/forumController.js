@@ -1,10 +1,6 @@
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    const model = {
-        name: req.body.data.name,
-        description: req.body.data.description
-    };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
@@ -13,17 +9,22 @@ exports.create = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
             }
 
-            data.timelines[index].forums.push(model);
+            const model = {
+                name: req.body.data.name,
+                description: req.body.data.description
+            };
+
+            timeline.forums.push(model);
+
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[index].forums);
+                    res.send(timeline.forums);
                 })
                 .catch((err) => {
                     res.status(500).send({
@@ -47,14 +48,12 @@ exports.find = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
             }
-
-            const forum = data.timelines[index].forums.find(value => value._id == req.params.idForum);
+            const forum = timeline.forums.find(value => value._id == req.params.idForum);
             if (!forum) {
                 return res.status(404).send({
                     message: "Not found discussion",
@@ -78,8 +77,7 @@ exports.findAll = (req, res) => {
                 });
             }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const index = data.timelines.indexOf(timeline);
-            if (index === -1) {
+            if (!timeline) {
                 return res.status(404).send({
                     message: "Not found timeline",
                 });
@@ -96,11 +94,19 @@ exports.findAll = (req, res) => {
 exports.update = (req, res) => {
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    message: "Not found subject",
+                });
+            }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+            if (!timeline) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
 
-            const indexTimeline = data.timelines.indexOf(timeline);
-
-            const forum = data.timelines[indexTimeline].forums.find(function(value, index, arr) {
+            const forum = timeline.forums.find(function(value, index, arr) {
                 if (value._id == req.params.idForum) {
                     arr[index].name = req.body.data.name;
                     arr[index].description = req.body.data.description;
@@ -130,17 +136,29 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    message: "Not found subject",
+                });
+            }
             const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            const indexTimeline = data.timelines.indexOf(timeline);
-
+            if (!timeline) {
+                return res.status(404).send({
+                    message: "Not found timeline",
+                });
+            }
             const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
             const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
+            if (indexForum === -1) {
+                return res.status(404).send({
+                    message: "Not found forum",
+                });
+            }
 
-
-            data.timelines[indexTimeline].forums.splice(indexForum, 1);
+            timeline.forums.splice(indexForum, 1);
             data.save()
                 .then((data) => {
-                    res.send(data.timelines[indexTimeline].forums);
+                    res.send(timeline.forums);
                 })
                 .catch((err) => {
                     res.status(500).send({

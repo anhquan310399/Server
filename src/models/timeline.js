@@ -1,17 +1,12 @@
 const mongoose = require("mongoose");
 
-const information = require("./information")
-const informationSchema = information.informationSchema
+const informationSchema = require("./information");
 
-const forum = require("./forum")
-const forumSchema = forum.forumSchema
+const forumSchema = require("./forum");
 
-const assignment = require("./assignment")
-const assignmentSchema = assignment.assignmentSchema
+const assignmentSchema = require("./assignment");
 
-const exam = require("./exam")
-const examSchema = exam.examSchema
-
+const examSchema = require("./exam");
 
 const timeline = new mongoose.Schema({
     name: {
@@ -30,4 +25,4 @@ const timeline = new mongoose.Schema({
 
 
 
-exports.timelineSchema = timeline
+module.exports = timeline

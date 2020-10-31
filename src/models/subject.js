@@ -1,7 +1,15 @@
 const mongoose = require("mongoose");
 
-const timeline = require("./timeline")
-const timelineSchema = timeline.timelineSchema
+const timelineSchema = require("./timeline");
+
+const questionModel = require('./question');
+
+const chapter = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    }
+});
 
 const Schema = mongoose.Schema({
     _id: {
@@ -18,7 +26,11 @@ const Schema = mongoose.Schema({
         required: true
     },
     timelines: [timelineSchema],
-    studentIds: [String]
+    studentIds: [String],
+    quizBank: {
+        chapters: [chapter],
+        questions: [questionModel]
+    }
 }, {
     timestamps: true
 });
