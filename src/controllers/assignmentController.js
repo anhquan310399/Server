@@ -166,7 +166,7 @@ exports.submit = (req, res) => {
                 link: req.body.data.link,
                 uploadDay: Date.now(),
                 type: req.body.data.type,
-                idUser: req.idUser
+                idUser: req.idStudent
             }
 
             assignment.submission.push(submission);

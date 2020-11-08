@@ -16,11 +16,15 @@ const question = new mongoose.Schema({
         type: String,
         required: true
     },
-    answers: [questionOption],
-    code: {
+    answers: {
+        type: [questionOption],
+        required: true
+    },
+    typeQuestion: {
         type: String,
         required: true
-    }
+    },
+    explain: String
 })
 
 

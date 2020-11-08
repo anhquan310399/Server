@@ -29,7 +29,7 @@ const UserSchema = mongoose.Schema({
     },
     urlAvatar: {
         type: String,
-        required: true
+        default: "http://simpleicon.com/wp-content/uploads/user1.png"
     },
     idPrivilege: {
         type: String,

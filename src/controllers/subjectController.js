@@ -10,7 +10,6 @@ exports.create = (req, res) => {
         timelines: req.body.timelines
     });
 
-    // Save Ads in the database
     data.save()
         .then((data) => {
             res.send(data);
@@ -23,35 +22,52 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-    db.find()
-        .then((data) => {
-            var info = data.map(function(value) {
-                return { _id: value._id, name: value.name, lectureId: value.lectureId };
+    var idPrivilege = req.idPrivilege;
+    if (idPrivilege === 'teacher') {
+        db.find({ lectureId: req.idUser })
+            .then((data) => {
+                var info = data.map(function(value) {
+                    return { _id: value._id, name: value.name, lectureId: value.lectureId };
+                });
+                res.send(info);
+            })
+            .catch((err) => {
+                res.status(500).send({
+                    message: err.message || "Some error occurred while listing subject.",
+                });
             });
-            res.send(info);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while listing subject.",
+    } else if (idPrivilege === 'student') {
+        db.find({ 'studentIds': req.idUser })
+            .then((data) => {
+                var info = data.map(function(value) {
+                    return { _id: value._id, name: value.name, lectureId: value.lectureId };
+                });
+                res.send(info);
+            })
+            .catch((err) => {
+                res.status(500).send({
+                    message: err.message || "Some error occurred while listing subject.",
+                });
             });
-        });
+    }
+
 };
 
 exports.find = (req, res) => {
-    db.findById(req.params.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            res.send(data);
+    let data = req.subject;
+    let result = {
+        _id: data._id,
+        name: data.name,
+        lectureId: data.lectureId,
+        timelines: data.timelines.map((value) => {
+            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
+            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
+            let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
+            let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+            return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
         })
-        .catch((err) => {
-            return res.status(500).send({
-                message: err.message,
-            });
-        });
+    };
+    res.send(result);
 };
 
 exports.update = (req, res) => {

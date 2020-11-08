@@ -1,14 +1,14 @@
 var express = require('express');
 var router = express.Router();
-const auth = require("../middleware/auth")
+const { authInSubject, authLecture } = require("../middleware/auth")
 
 const forumController = require("../controllers/forumController")
 
 /** forum */
-router.get('/', forumController.findAll);
-router.post('/', forumController.create);
-router.get('/:idForum', forumController.find);
-router.put('/:idForum', forumController.update);
-router.delete('/:idForum', forumController.delete);
+router.get('/', authInSubject, forumController.findAll);
+router.post('/', authLecture, forumController.create);
+router.get('/:idForum', authInSubject, forumController.find);
+router.put('/:idForum', authLecture, forumController.update);
+router.delete('/:idForum', authLecture, forumController.delete);
 
 module.exports = router;

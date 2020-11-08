@@ -1,14 +1,14 @@
 var express = require('express');
 var router = express.Router();
-const auth = require("../middleware/auth")
+const { authInSubject } = require("../middleware/auth")
 
 const topicController = require("../controllers/topicController")
 
 /** discussion */
-router.get('/', topicController.findAll);
-router.post('/', auth, topicController.create);
-router.get('/:idDiscussion', topicController.find);
-router.put('/:idDiscussion', topicController.update);
-router.delete('/:idDiscussion', topicController.delete);
+router.get('/', authInSubject, topicController.findAll);
+router.post('/', authInSubject, topicController.create);
+router.get('/:idTopic', authInSubject, topicController.find);
+router.put('/:idTopic', authInSubject, topicController.update);
+router.delete('/:idTopic', authInSubject, topicController.delete);
 
 module.exports = router;

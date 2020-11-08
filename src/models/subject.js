@@ -8,7 +8,8 @@ const chapter = new mongoose.Schema({
     name: {
         type: String,
         required: true
-    }
+    },
+    questions: [questionModel]
 });
 
 const Schema = mongoose.Schema({
@@ -27,10 +28,7 @@ const Schema = mongoose.Schema({
     },
     timelines: [timelineSchema],
     studentIds: [String],
-    quizBank: {
-        chapters: [chapter],
-        questions: [questionModel]
-    }
+    quizBank: [chapter]
 }, {
     timestamps: true
 });

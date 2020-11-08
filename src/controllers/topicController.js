@@ -4,7 +4,7 @@ exports.create = (req, res) => {
     const model = {
         name: req.body.data.name,
         content: req.body.data.content,
-        idUser: req.userId
+        idUser: req.idUser
     };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {

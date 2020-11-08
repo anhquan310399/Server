@@ -1,10 +1,6 @@
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    const model = {
-        name: req.body.data.name,
-        description: req.body.data.description
-    };
     dbSubject.findById(req.body.idSubject)
         .then((data) => {
             if (!data) {
@@ -12,6 +8,11 @@ exports.create = (req, res) => {
                     message: "Not found",
                 });
             }
+            const model = {
+                name: req.body.data.name,
+                description: req.body.data.description
+            };
+
             data.timelines.push(model);
             data.save()
                 .then((data) => {
