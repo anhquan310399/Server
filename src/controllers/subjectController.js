@@ -24,7 +24,7 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
     var idPrivilege = req.idPrivilege;
     if (idPrivilege === 'teacher') {
-        db.find({ lectureId: req.idUser })
+        db.find({ lectureId: req.idUser, isDeleted: false })
             .then((data) => {
                 var info = data.map(function(value) {
                     return { _id: value._id, name: value.name, lectureId: value.lectureId };
@@ -37,7 +37,7 @@ exports.findAll = (req, res) => {
                 });
             });
     } else if (idPrivilege === 'student') {
-        db.find({ 'studentIds': req.idUser })
+        db.find({ 'studentIds': req.idUser, isDeleted: false })
             .then((data) => {
                 var info = data.map(function(value) {
                     return { _id: value._id, name: value.name, lectureId: value.lectureId };
@@ -55,16 +55,24 @@ exports.findAll = (req, res) => {
 
 exports.find = (req, res) => {
     let data = req.subject;
+    let timelines = req.subject.timelines;
+    if (req.idPrivilege === 'student') {
+        timelines.filter((value) => { if (value.isDeleted === false) return true });
+    }
     let result = {
         _id: data._id,
         name: data.name,
         lectureId: data.lectureId,
-        timelines: data.timelines.map((value) => {
+        timelines: timelines.map((value) => {
             let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
             let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
             let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
-            return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
+            if (req.idPrivilege === 'student') {
+                return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
+            } else {
+                return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, isDeleted: value.isDeleted };
+            }
         })
     };
     res.send(result);
@@ -75,52 +83,47 @@ exports.update = (req, res) => {
         return res.status(400).send({
             message: "Lack of information",
         });
-    }
-    // Find ads and update it with the request body
+    };
     db.findByIdAndUpdate(
             req.params.idSubject, {
-                name: req.body.name,
-                lectureId: req.body.lectureId
+                name: req.body.name == null ? data.name : req.body.name,
+                lectureId: req.body.name == null ? data.lectureId : req.body.lectureId
             }
         )
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
-                    message: "Not found",
+                    message: "Not found Subject",
                 });
             }
-            res.send(data);
+            res.send("Update Successfully");
         })
         .catch((err) => {
-            if (err.kind === "ObjectId") {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
+            console.log("Update subject: " + err.message);
             return res.status(500).send({
-                message: err.message,
+                message: "Update Failure"
             });
         });
 };
 
 exports.delete = (req, res) => {
-    db.findByIdAndRemove(req.params.idSubject)
+    db.findByIdAndUpdate(
+            req.params.idSubject, {
+                isDeleted: true
+            }
+        )
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
-                    message: "Not found",
+                    message: "Not found Subject",
                 });
             }
-            res.send({ message: "Delete successfully!" });
+            res.send("Delete Successfully");
         })
         .catch((err) => {
-            if (err.kind === "ObjectId" || err.name === "NotFound") {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
+            console.log("Delete subject" + err.message);
             return res.status(500).send({
-                message: "Could not delete",
+                message: "Delete Failure"
             });
         });
 };
@@ -141,11 +144,13 @@ exports.addAllStudents = (req, res) => {
             data.studentIds = list;
             data.save()
                 .then((data) => {
-                    res.send(data);
+                    // res.send(data);
+                    res.send("Add Student Successfully!")
                 })
                 .catch((err) => {
+                    console.log("Add student" + err.message);
                     res.status(500).send({
-                        message: err.message || "Some error occurred while adding students.",
+                        message: "Add student failure"
                     });
                 });
         })

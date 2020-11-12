@@ -8,7 +8,11 @@ const forum = new mongoose.Schema({
         required: true
     },
     description: String,
-    topics: [topicSchema]
+    topics: [topicSchema],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 

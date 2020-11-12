@@ -48,8 +48,8 @@ exports.authLecture = (req, res, next) => {
         User.findOne({ _id: data._id, idPrivilege: 'teacher', 'tokens.token': token })
             .then((user) => {
                 if (!user) {
-                    return res.status(404).send({
-                        message: "Please login"
+                    return res.status(401).send({
+                        message: "Not authorized to access this resource!"
                     });
                 }
 
@@ -94,35 +94,33 @@ exports.authInSubject = (req, res, next) => {
 
                 var idSubject = req.params.idSubject != null ? req.params.idSubject : req.body.idSubject;
                 if (user.idPrivilege == "student") {
-                    Subject.findOne({ _id: idSubject, 'studentIds': user._id })
+                    Subject.findOne({ _id: idSubject, isDeleted: false, 'studentIds': user._id })
                         .then((subject) => {
                             if (subject) {
-                                req.idUser = user._id;
-                                req.idPrivilege = 'student';
+                                req.user = user;
                                 req.subject = subject;
                                 next();
                             } else {
                                 throw 'Not found Subject';
                             }
                         }).catch((err) => {
-                            return res.status(401).send({
-                                message: "Not authorized to access this resource"
+                            return res.status(404).send({
+                                message: "Not found Subject"
                             });
                         });
                 } else if (user.idPrivilege == "teacher") {
-                    Subject.findOne({ _id: idSubject, lectureId: user._id })
+                    Subject.findOne({ _id: idSubject, isDeleted: false, lectureId: user._id })
                         .then((subject) => {
                             if (subject) {
-                                req.idUser = user._id;
-                                req.idPrivilege = 'teacher';
+                                req.user = user;
                                 req.subject = subject;
                                 next();
                             } else {
                                 throw 'not found Subject';
                             }
                         }).catch((err) => {
-                            return res.status(401).send({
-                                message: "Not authorized to access this resource"
+                            return res.status(404).send({
+                                message: "Not found Subject"
                             });
                         });
                 }

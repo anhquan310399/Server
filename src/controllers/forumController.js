@@ -1,174 +1,189 @@
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+
+    const model = {
+        name: req.body.data.name,
+        description: req.body.data.description
+    };
+
+    const length = timeline.forums.push(model);
+
+    data.save()
         .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-
-            const model = {
-                name: req.body.data.name,
-                description: req.body.data.description
-            };
-
-            timeline.forums.push(model);
-
-            data.save()
-                .then((data) => {
-                    res.send(timeline.forums);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+            res.send(timeline.forums[length - 1]);
         })
         .catch((err) => {
             res.status(500).send({
                 message: err.message,
             });
         });
+
 };
 
 exports.find = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const forum = timeline.forums.find(value => value._id == req.params.idForum);
-            if (!forum) {
-                return res.status(404).send({
-                    message: "Not found discussion",
-                });
-            }
-            res.send(forum);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
         });
+    }
+    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    if (!forum) {
+        return res.status(404).send({
+            message: "Not found discussion",
+        });
+    }
+
+    if (req.idPrivilege === 'student') {
+        if (forum.isDeleted === true) {
+            res.status(404).send('Not found forum!');
+        } else {
+            res.send({
+                _id: forum._id,
+                name: forum.name,
+                description: forum.description,
+                topics: forum.topics.map((value) => {
+                    return {
+                        _id: value._id,
+                        name: value.name,
+                        createId: value.createId,
+                        replies: value.discussions.length
+                    }
+                })
+            });
+        }
+    } else {
+        res.send({
+            _id: forum._id,
+            name: forum.name,
+            description: forum.description,
+            topics: forum.topics.map((value) => {
+                return {
+                    _id: value._id,
+                    name: value.name,
+                    createId: value.createId,
+                    replies: value.discussions.length
+                }
+            }),
+            isDeleted: forum.isDeleted
+        })
+    }
 };
 
 exports.findAll = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            res.send(data.timelines[index].forums);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
         });
+    }
+    let index = data.timelines.indexOf(timeline);
+    let forums = data.timelines[index].forums;
+    if (req.idPrivilege === 'student') {
+        res.send(forums.reduce((res, value) => {
+            if (!value.isDeleted) {
+                res.push({
+                    _id: value._id,
+                    name: value.name,
+                    description: value.description
+                })
+            }
+            return res;
+        }, []));
+    } else {
+        res.send(forums.map((value) => {
+            return {
+                _id: value._id,
+                name: value.name,
+                description: value.description,
+                isDeleted: value.isDeleted
+            }
+        }))
+    }
 };
 
 exports.update = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+
+    const forum = timeline.forums.find(function(value, index, arr) {
+        if (value._id == req.params.idForum) {
+            arr[index].name = req.body.data.name || arr[index].name;
+            arr[index].description = req.body.data.description || arr[index].description;
+            return true;
+        } else {
+            return false;
+        }
+    });
+
+    data.save()
         .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-
-            const forum = timeline.forums.find(function(value, index, arr) {
-                if (value._id == req.params.idForum) {
-                    arr[index].name = req.body.data.name;
-                    arr[index].description = req.body.data.description;
-                    return true;
-                } else {
-                    return false;
-                }
+            res.send({
+                _id: forum._id,
+                name: forum.name,
+                description: forum.description,
+                topics: forum.topics.map((value) => {
+                    return {
+                        _id: value._id,
+                        name: value.name,
+                        createId: value.createId,
+                        replies: value.discussions.length
+                    }
+                }),
+                isDeleted: forum.isDeleted
             });
-
-            data.save()
-                .then((data) => {
-                    res.send(forum);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
         })
         .catch((err) => {
+            console.log("Update Forum: " + err.message);
             res.status(500).send({
-                message: err.message,
+                message: "Update Forum Failure!"
             });
         });
 };
 
 exports.delete = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
-            const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
-            if (indexForum === -1) {
-                return res.status(404).send({
-                    message: "Not found forum",
-                });
-            }
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    const indexTimeline = data.timelines.indexOf(timeline);
+    const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
+    // const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
+    if (!forum) {
+        return res.status(404).send({
+            message: "Not found forum",
+        });
+    }
+    forum.isDeleted = true;
 
-            timeline.forums.splice(indexForum, 1);
-            data.save()
-                .then((data) => {
-                    res.send(timeline.forums);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+
+    data.save()
+        .then((data) => {
+            res.send("Delete Successfully!");
         })
         .catch((err) => {
+            console.log("Delete forum: " + err.message);
             res.status(500).send({
-                message: err.message,
+                message: "Delete Failure!"
             });
         });
+
 };

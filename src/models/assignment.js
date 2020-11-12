@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const file = require("./file");
 
-const fileSchema = require("./file");
-
 const assignment = new mongoose.Schema({
     name: {
         type: String,

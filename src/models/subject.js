@@ -28,24 +28,13 @@ const Schema = mongoose.Schema({
     },
     timelines: [timelineSchema],
     studentIds: [String],
-    quizBank: [chapter]
+    quizBank: [chapter],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
-
-Schema.methods.createTimeline = async function(name, description) {
-    const subject = this
-    try {
-        const timeLine = {
-            name: name,
-            description: description
-        };
-        subject.timelines.push(timeLine);
-        await subject.save()
-        return true
-    } catch (error) {
-        console.log(error.message)
-    }
-}
 
 module.exports = mongoose.model("subject", Schema);

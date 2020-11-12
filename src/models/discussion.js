@@ -1,22 +1,16 @@
 const mongoose = require("mongoose");
 
+const infoUser = require('./infoUser');
+
 const discussion = new mongoose.Schema({
-    subject: {
-        type: String,
-        required: true
-    },
     content: {
         type: String,
         required: true
     },
-    createId: {
-        type: String,
+    create: {
+        type: infoUser,
         required: true
-    },
-    parentId: {
-        type: String,
-        default: null
     }
-})
+}, { timestamps: true })
 
 module.exports = discussion

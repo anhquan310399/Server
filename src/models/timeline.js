@@ -17,7 +17,11 @@ const timeline = new mongoose.Schema({
     forums: [forumSchema],
     exams: [examSchema],
     information: [informationSchema],
-    assignments: [assignmentSchema]
+    assignments: [assignmentSchema],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 
 }, {
     timestamps: true,
