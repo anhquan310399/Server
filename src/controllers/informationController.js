@@ -1,171 +1,116 @@
+const subject = require("../models/subject");
 const dbSubject = require("../models/subject");
 
 exports.create = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
 
-            const model = {
-                name: req.body.data.name,
-                description: req.body.data.description,
-                content: req.body.data.content
-            };
+    const model = {
+        name: req.body.data.name,
+        content: req.body.data.content
+    };
 
-            timeline.information.push(model);
-            data.save()
-                .then((data) => {
-                    res.send(timeline.information);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    var length = timeline.information.push(model);
+
+    data.save()
+        .then(() => {
+            res.send(timeline.information[length - 1]);
         })
         .catch((err) => {
+            console.log("Create information: " + err.message);
             res.status(500).send({
-                message: err.message,
+                message: "Create information Failure!"
             });
         });
 };
 
 exports.find = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-
-            const information = timeline.information.find(value => value._id == req.params.idInformation);
-
-            res.send(information);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
         });
+    }
+
+    const information = timeline.information.find(value => value._id == req.params.idInformation);
+
+    res.send(information);
 };
 
 exports.findAll = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            res.send(data.timelines[index].information);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
         });
+    }
+    res.send(timeline.information);
 };
 
 exports.update = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const information = timeline.information.find(function(value, index, arr) {
-                if (value._id == req.params.idInformation) {
-                    arr[index].name = req.body.data.name;
-                    arr[index].description = req.body.data.description;
-                    arr[index].content = req.body.data.content;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    const information = timeline.information.find(function(value, index, arr) {
+        if (value._id == req.params.idInformation) {
+            arr[index].name = req.body.data.name || arr[index].name;
+            arr[index].content = req.body.data.content || arr[index].content;
+            return true;
+        } else {
+            return false;
+        }
+    });
 
-            data.save()
-                .then((data) => {
-                    res.send(information);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    data.save()
+        .then(() => {
+            res.send(information);
         })
         .catch((err) => {
+            console.log("Update information: " + err.message);
             res.status(500).send({
-                message: err.message,
+                message: "Update information failure!"
             });
         });
+
 };
 
 exports.delete = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const information = timeline.information.find(value => value._id == req.params.idInformation);
-            const indexInfo = timeline.information.indexOf(information);
-            if (indexInfo === -1) {
-                return res.status(404).send({
-                    message: "Not found information",
-                });
-            }
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    const information = timeline.information.find(value => value._id == req.params.idInformation);
+    const indexInfo = timeline.information.indexOf(information);
+    if (indexInfo === -1) {
+        return res.status(404).send({
+            message: "Not found information",
+        });
+    }
 
-            timeline.information.splice(indexInfo, 1);
-            data.save()
-                .then((data) => {
-                    res.send(timeline.information);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    timeline.information.splice(indexInfo, 1);
+
+    data.save()
+        .then(() => {
+            res.send("Delete successfully!");
         })
         .catch((err) => {
+            console.log("Delete information: " + err.message);
             res.status(500).send({
-                message: err.message,
+                message: "Delete failure!"
             });
         });
 };

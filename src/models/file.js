@@ -14,10 +14,6 @@ const file = new mongoose.Schema({
         type: String,
         require: true
     },
-    idUser: {
-        type: String,
-        require: true
-    },
     uploadDay: {
         type: Date,
         default: Date.now()

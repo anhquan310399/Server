@@ -56,6 +56,7 @@ exports.findAll = (req, res) => {
                     let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
                     let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
                     return {
+                        _id: value._id,
                         name: value.name,
                         description: value.description,
                         forums: forums,
