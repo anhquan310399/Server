@@ -12,4 +12,4 @@ const studentAnswer = new mongoose.Schema({
 })
 
 
-exports.studentAnswerSchema = studentAnswer
+module.exports = studentAnswer

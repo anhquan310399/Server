@@ -1,28 +1,14 @@
-const { model } = require("../models/subject");
-const dbSubject = require("../models/subject");
+const _ = require('lodash');
 
 exports.createChapter = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            const model = {
-                name: req.body.data.name,
-            };
-            data.quizBank.push(model);
-            data.save()
-                .then((data) => {
-                    var length = data.quizBank.length;
-                    res.send(data.quizBank[length - 1]);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    let data = req.subject;
+    const model = {
+        name: req.body.data.name,
+    };
+    let length = data.quizBank.push(model);
+    data.save()
+        .then(() => {
+            res.send(data.quizBank[length - 1]);
         })
         .catch((err) => {
             res.status(500).send({
@@ -32,66 +18,38 @@ exports.createChapter = (req, res) => {
 };
 
 exports.findAllChapter = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            console.log(data);
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            res.send(data.quizBank);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
-        });
+    let data = req.subject;
+    res.send(data.quizBank.map(value => {
+        return {
+            _id: value._id,
+            name: value.name,
+            questions: value.questions.length
+        }
+    }));
 };
 
 exports.findChapter = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
-            res.send(chapter);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
-        });
+    let data = req.subject;
+    const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    res.send(chapter);
 };
 
 exports.updateChapter = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            const chapter = data.quizBank.find(function(value, index, arr) {
-                if (value._id == req.params.idChapter) {
-                    arr[index].name = req.body.data.name;
-                    return true;
-                } else {
-                    return false;
-                }
+    let data = req.subject;
+    const chapter = data.quizBank.find(function(value, index, arr) {
+        if (value._id == req.params.idChapter) {
+            arr[index].name = req.body.data.name;
+            return true;
+        } else {
+            return false;
+        }
+    });
+    data.save()
+        .then(() => {
+            res.send({
+                _id: chapter._id,
+                name: chapter.name
             });
-            data.save()
-                .then((data) => {
-                    res.send(chapter);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
         })
         .catch((err) => {
             res.status(500).send({
@@ -101,31 +59,19 @@ exports.updateChapter = (req, res) => {
 };
 
 exports.deleteChapter = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
-            if (!chapter) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
+    let data = req.subject;
+    const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    if (!chapter) {
+        return res.status(404).send({
+            message: "Not found chapter",
+        });
+    }
 
-            const index = data.quizBank.indexOf(chapter);
-            data.quizBank.splice(index, 1);
-            data.save()
-                .then((data) => {
-                    res.send(data.quizBank);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    const index = data.quizBank.indexOf(chapter);
+    data.quizBank.splice(index, 1);
+    data.save()
+        .then((data) => {
+            res.send("Delete Successfully!");
         })
         .catch((err) => {
             res.status(500).send({
@@ -136,33 +82,20 @@ exports.deleteChapter = (req, res) => {
 
 
 exports.pushQuestion = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-
-            var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
-            if (!chapter) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            var model = req.body.data.questions;
-            model.forEach(element => {
-                chapter.questions.push(element);
-            });
-            data.save()
-                .then((data) => {
-                    res.send(chapter);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    let data = req.subject;
+    var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    if (!chapter) {
+        return res.status(404).send({
+            message: "Not found chapter",
+        });
+    }
+    var model = req.body.data.questions;
+    model.forEach(element => {
+        chapter.questions.push(element);
+    });
+    data.save()
+        .then(() => {
+            res.send(chapter);
         })
         .catch((err) => {
             res.status(500).send({
@@ -172,24 +105,13 @@ exports.pushQuestion = (req, res) => {
 };
 
 exports.getQuestion = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
-            if (!chapter) {
-                return res.status(404).send({
-                    message: "Not found",
-                });
-            }
-            res.send(chapter.questions);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+    let data = req.subject;
+    var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    if (!chapter) {
+        return res.status(404).send({
+            message: "Not found chapter",
         });
+    }
+
+    res.send(chapter.questions);
 };

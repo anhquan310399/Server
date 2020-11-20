@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-const studentAnswerSheet = require("./studentAnswerSheet")
-const studentAnswerSheetSchema = studentAnswerSheet.studentAnswerSheetSchema
+const studentAnswerSheetSchema = require("./studentAnswerSheet")
 
 const setting = new mongoose.Schema({
     questionCount: {
@@ -15,6 +14,11 @@ const setting = new mongoose.Schema({
     code: {
         type: String,
         require: true
+    },
+    attemptCount: {
+        type: Number,
+        required: true,
+        default: 1
     }
 }, { _id: false });
 
@@ -23,7 +27,6 @@ const exam = new mongoose.Schema({
         type: String,
         required: true
     },
-    description: String,
     content: {
         type: String,
         required: true
@@ -35,11 +38,6 @@ const exam = new mongoose.Schema({
     expireTime: {
         type: Date,
         required: true
-    },
-    attemptCount: {
-        type: Number,
-        required: true,
-        default: 1
     },
     submissions: [studentAnswerSheetSchema],
     setting: {

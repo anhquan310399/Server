@@ -1,40 +1,37 @@
-const dbSubject = require("../models/subject");
+const assignment = require("../models/assignment");
+const _ = require('lodash');
 
 exports.create = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
 
-            const model = {
-                name: req.body.data.name,
-                description: req.body.data.description,
-                content: req.body.data.content,
-                startTime: new Date(req.body.data.startTime),
-                expireTime: new Date(req.body.data.expireTime),
-                attemptCount: req.body.data.attemptCount,
-                setting: req.body.data.setting
-            };
+    var code = req.body.data.setting.code;
 
-            timeline.exams.push(model);
-            data.save()
-                .then((data) => {
-                    res.send(timeline.exams);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    var chapter = data.quizBank.find(value => value._id == code);
+    if (!chapter) {
+        return res.status(404).send({
+            message: "Not found quiz bank",
+        });
+    }
+
+    const model = {
+        name: req.body.data.name,
+        content: req.body.data.content,
+        startTime: new Date(req.body.data.startTime),
+        expireTime: new Date(req.body.data.expireTime),
+        setting: req.body.data.setting
+    };
+
+    var length = timeline.exams.push(model);
+
+    data.save()
+        .then(() => {
+            res.send(timeline.exams[length - 1]);
         })
         .catch((err) => {
             res.status(500).send({
@@ -44,26 +41,96 @@ exports.create = (req, res) => {
 };
 
 exports.find = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
 
-            const exam = timeline.exams.find(value => value._id == req.params.idExam);
-            if (!exam) {
-                return res.status(404).send({
-                    message: "Not found exam",
-                });
-            }
+    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    if (!exam) {
+        return res.status(404).send({
+            message: "Not found exam",
+        });
+    }
+    if (req.user.idPrivilege === 'student') {
+        let submission = exam.submissions.find(value => value.idUser === req.user._id);
+        if (submission) {
+            res.send({
+                _id: exam._id,
+                name: exam.name,
+                content: exam.content,
+                startTime: exam.expireTime,
+                expireTime: exam.expireTime,
+                setting: exam.setting,
+                submission: submission
+            })
+        } else {
+            res.send({
+                _id: exam._id,
+                name: exam.name,
+                content: exam.content,
+                startTime: assignment.expireTime,
+                expireTime: assignment.expireTime,
+                setting: exam.setting,
+                submission: null
+            });
+        }
+    } else {
+        res.send({
+            _id: exam._id,
+            name: exam.name,
+            content: exam.content,
+            startTime: exam.expireTime,
+            expireTime: exam.expireTime,
+            setting: exam.setting,
+            submissions: exam.submissions
+        });
+    }
+};
+
+exports.findAll = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    res.send(timeline.exams.map((value) => {
+        return {
+            _id: value._id,
+            name: value.name,
+            content: value.content
+        }
+    }));
+};
+
+exports.update = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    const exam = timeline.exams.find(function(value, index, arr) {
+        if (value._id == req.params.idExam) {
+            arr[index].name = req.body.data.name || arr[index].name;
+            arr[index].content = req.body.data.content || arr[index].content;
+            arr[index].startTime = req.body.data.startTime != null ? new Date(req.body.data.startTime) : arr[index].startTime;
+            arr[index].expireTime = req.body.data.expireTime != null ? new Date(req.body.data.expireTime) : arr[index].expireTime;
+            arr[index].setting = req.body.data.setting || arr[index].setting;
+            return true;
+        } else {
+            return false;
+        }
+    });
+
+    data.save()
+        .then(() => {
             res.send(exam);
         })
         .catch((err) => {
@@ -73,103 +140,22 @@ exports.find = (req, res) => {
         });
 };
 
-exports.findAll = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            res.send(timeline.exams);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
-        });
-};
-
-exports.update = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const exam = timeline.exams.find(function(value, index, arr) {
-                if (value._id == req.params.idExam) {
-                    arr[index].name = req.body.data.name != null ? req.body.data.name : arr[index].name;
-                    arr[index].description = req.body.data.description != null ? req.body.data.description : arr[index].description;
-                    arr[index].content = req.body.data.content != null ? req.body.data.content : arr[index].content;
-                    arr[index].startTime = req.body.data.startTime != null ? new Date(req.body.data.startTime) : arr[index].startTime;
-                    arr[index].expireTime = req.body.data.expireTime != null ? new Date(req.body.data.expireTime) : arr[index].expireTime;
-                    arr[index].setting = req.body.data.setting != null ? req.body.data.setting : arr[index].setting;
-                    arr[index].attemptCount = req.body.data.attemptCount != null ? req.body.data.attemptCount : arr[index].attemptCount;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-
-            data.save()
-                .then((data) => {
-                    res.send(exam);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
-        });
-};
-
 exports.delete = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Not found subject",
-                });
-            }
-            const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
-            if (!timeline) {
-                return res.status(404).send({
-                    message: "Not found timeline",
-                });
-            }
-            const exam = timeline.exams.find(value => value._id == req.params.idExam);
-            const indexExam = timeline.exams.indexOf(exam);
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    const indexExam = timeline.exams.indexOf(exam);
 
 
-            timeline.exams.splice(indexExam, 1);
-            data.save()
-                .then((data) => {
-                    res.send(timeline.exams);
-                })
-                .catch((err) => {
-                    res.status(500).send({
-                        message: err.message,
-                    });
-                });
+    timeline.exams.splice(indexExam, 1);
+    data.save()
+        .then(() => {
+            res.send("Delete Exam Successfully!");
         })
         .catch((err) => {
             res.status(500).send({
@@ -177,3 +163,71 @@ exports.delete = (req, res) => {
             });
         });
 };
+
+exports.doExam = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        });
+    }
+    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+
+    if (!exam) {
+        res.status(404).send({
+            message: "Not found exam!"
+        });
+    }
+
+    const today = Date.now();
+    if (today >= exam.startTime && today < exam.expireTime) {
+
+        const setting = exam.setting;
+
+        let submission = exam.submissions.find(value => value.idUser === req.user._id);
+        let attempt = 0;
+        if (submission) {
+            attempt = submission.length
+        }
+
+        if (attempt < setting.attemptCount) {
+            var chapter = data.quizBank.find(value => value._id == setting.code);
+            if (!chapter) {
+                return res.status(404).send({
+                    message: "Not found question",
+                });
+            }
+            const questions = _.sampleSize(chapter.questions, setting.attemptCount)
+                .map(value => {
+                    return {
+                        _id: value._id,
+                        question: value.question,
+                        typeQuestion: value.typeQuestion,
+                        answers: value.answers.map(value => { return { _id: value.id, answer: value.answer } })
+                    }
+                });
+            res.send({
+                _id: exam._id,
+                name: exam.name,
+                timeToDo: setting.timeToDo,
+                questions: questions
+            });
+        } else {
+            res.status(403).send({
+                message: "Đã vượt quá số lần tham gia!"
+            })
+        }
+    } else {
+        if (today < exam.startTime) {
+            res.status(403).send({
+                message: "Chưa đến thời gian làm bài"
+            });
+        } else {
+            res.status(403).send({
+                message: "Đã quá thời hạn làm bài!"
+            });
+        }
+    }
+
+}

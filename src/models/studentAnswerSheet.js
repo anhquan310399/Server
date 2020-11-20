@@ -8,8 +8,12 @@ const studentAnswerSheet = new mongoose.Schema({
         type: String,
         required: true
     },
-    answers: [studentAnswerSchema]
+    answers: {
+        type: [studentAnswerSchema],
+        required: true
+    },
+    grade: Number
 })
 
 
-exports.studentAnswerSheetSchema = studentAnswerSheet
+module.exports = studentAnswerSheet

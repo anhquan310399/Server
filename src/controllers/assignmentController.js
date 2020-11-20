@@ -47,7 +47,6 @@ exports.find = (req, res) => {
     }
     if (req.user.idPrivilege === 'student') {
         let submission = assignment.submission.find(value => value.idUser === req.user._id);
-        console.log(submission);
         if (submission) {
             res.send({
                 _id: assignment._id,

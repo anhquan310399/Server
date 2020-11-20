@@ -10,8 +10,8 @@ router.post('/', authLecture, quizBankController.createChapter);
 router.put('/:idChapter/', authLecture, quizBankController.updateChapter);
 router.delete('/:idChapter/', authLecture, quizBankController.deleteChapter);
 
-router.get('/:idChapter', authLecture, quizBankController.getQuestion);
-router.post('/:idChapter', authLecture, quizBankController.pushQuestion);
+router.get('/:idChapter/question', authLecture, quizBankController.getQuestion);
+router.post('/:idChapter/', authLecture, quizBankController.pushQuestion);
 // router.put('/:idChapter/', quizBankController.updateChapter);
 
 module.exports = router;
