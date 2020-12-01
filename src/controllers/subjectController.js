@@ -1,6 +1,7 @@
 const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
+const subject = require("../models/subject");
 
 exports.create = async(req, res) => {
     // Validate request
@@ -115,8 +116,8 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
-    db.findByIdAndUpdate(
+exports.delete = async(req, res) => {
+    await db.findByIdAndUpdate(
             req.params.idSubject, {
                 isDeleted: true
             }
@@ -204,4 +205,48 @@ exports.getOrderOfTimeLine = async(req, res) => {
         }), ['index']),
     };
     res.send(result);
+}
+
+
+exports.getDeadline = async(req, res) => {
+    db.find({ 'studentIds': req.idUser, isDeleted: false })
+        .then(function(listSubject) {
+            let deadline = [];
+            const today = Date.now();
+            listSubject.forEach(subject => {
+                subject.timelines.forEach(timeline => {
+                    let exams = timeline.exams.map(exam => {
+                        var submission = exam.submissions.find(value => value.idUser === req.idUser)
+                        return {
+                            idSubject: subject._id,
+                            idTimeline: timeline._id,
+                            _id: exam._id,
+                            name: exam.name,
+                            expireTime: exam.expireTime,
+                            isSubmit: submission ? true : false,
+                            type: 'exam'
+                        }
+                    }).filter(exam => { return exam.expireTime > today });
+                    let assignments = timeline.assignments.map(assignment => {
+                        let submission = assignment.submission.find(value => value.idUser === req.idUser);
+                        return {
+                            idSubject: subject._id,
+                            idTimeline: timeline._id,
+                            _id: assignment._id,
+                            name: assignment.name,
+                            expireTime: assignment.setting.expireTime,
+                            isSubmit: submission ? true : false,
+                            type: 'assignment'
+                        }
+                    }).filter(assignment => { return assignment.expireTime > today });
+                    deadline = deadline.concat(exams, assignments);
+                });
+            });
+            res.send(deadline);
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while listing subject.",
+            });
+        });
 }

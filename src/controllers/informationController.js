@@ -22,9 +22,9 @@ exports.create = (req, res) => {
             res.send(timeline.information[length - 1]);
         })
         .catch((err) => {
-            console.log("Create information: " + err.message);
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: "Create information Failure!"
+                message: err.errors[key].message,
             });
         });
 };
