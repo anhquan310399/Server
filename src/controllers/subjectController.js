@@ -1,6 +1,8 @@
 const db = require("../models/subject");
+const userDb = require('../models/user');
+const _ = require('lodash');
 
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     // Validate request
     const data = new db({
         _id: req.body._id,
@@ -10,7 +12,7 @@ exports.create = (req, res) => {
         timelines: req.body.timelines
     });
 
-    data.save()
+    await data.save()
         .then((data) => {
             res.send(data);
         })
@@ -21,13 +23,13 @@ exports.create = (req, res) => {
         });
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     var idPrivilege = req.idPrivilege;
     if (idPrivilege === 'teacher') {
         db.find({ lectureId: req.idUser, isDeleted: false })
             .then((data) => {
                 var info = data.map(function(value) {
-                    return { _id: value._id, name: value.name, lectureId: value.lectureId };
+                    return { _id: value._id, name: value.name };
                 });
                 res.send(info);
             })
@@ -38,10 +40,14 @@ exports.findAll = (req, res) => {
             });
     } else if (idPrivilege === 'student') {
         db.find({ 'studentIds': req.idUser, isDeleted: false })
-            .then((data) => {
-                var info = data.map(function(value) {
-                    return { _id: value._id, name: value.name, lectureId: value.lectureId };
-                });
+            .then(async function(data) {
+                var info = await Promise.all(data.map(async function(value) {
+                    var teacher = await userDb.findById(value.lectureId, 'firstName surName urlAvatar')
+                        .then(value => {
+                            return value
+                        });
+                    return { _id: value._id, name: value.name, lecture: teacher };
+                }));
                 res.send(info);
             })
             .catch((err) => {
@@ -53,41 +59,44 @@ exports.findAll = (req, res) => {
 
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let data = req.subject;
     let timelines = req.subject.timelines;
     if (req.idPrivilege === 'student') {
         timelines.filter((value) => { if (value.isDeleted === false) return true });
     }
+    let teacher = await userDb.findById(data.lectureId, 'firstName surName urlAvatar')
+        .then(value => { return value });
+
     let result = {
         _id: data._id,
         name: data.name,
-        lectureId: data.lectureId,
-        timelines: timelines.map((value) => {
+        lecture: teacher,
+        timelines: _.sortBy(timelines.map((value) => {
             let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-            let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-            let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+            let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
+            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
             if (req.idPrivilege === 'student') {
-                return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
+                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index };
             } else {
-                return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, isDeleted: value.isDeleted };
+                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index, isDeleted: value.isDeleted };
             }
-        })
+        }), ['index']),
     };
     res.send(result);
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     if (!req.body) {
         return res.status(400).send({
             message: "Lack of information",
         });
     };
-    db.findByIdAndUpdate(
+    await db.findByIdAndUpdate(
             req.params.idSubject, {
-                name: req.body.name == null ? data.name : req.body.name,
-                lectureId: req.body.name == null ? data.lectureId : req.body.lectureId
+                name: req.body.name,
+                lectureId: req.body.lectureId
             }
         )
         .then((data) => {
@@ -160,3 +169,39 @@ exports.addAllStudents = (req, res) => {
             });
         });
 };
+
+exports.adjustOrderOfTimeline = async(req, res) => {
+    const adjust = req.body;
+    const subject = req.subject;
+    await adjust.forEach(element => {
+        var timeline = subject.timelines.find(x => x._id == element._id);
+        console.log(timeline);
+        timeline.index = element.index;
+    });
+    await subject.save()
+        .then(data => {
+            let result = {
+                _id: data._id,
+                name: data.name,
+                timelines: _.sortBy(data.timelines.map((value) => {
+                    return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
+                }), ['index']),
+            };
+            res.send(result);
+        }).catch(err => {
+            console.log("adjust index timeline" + err.message);
+            res.status(500).send({ message: "Đã có lỗi xảy ra" });
+        })
+}
+
+exports.getOrderOfTimeLine = async(req, res) => {
+    const data = req.subject;
+    let result = {
+        _id: data._id,
+        name: data.name,
+        timelines: _.sortBy(data.timelines.map((value) => {
+            return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
+        }), ['index']),
+    };
+    res.send(result);
+}

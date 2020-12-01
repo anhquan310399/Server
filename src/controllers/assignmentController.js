@@ -1,5 +1,3 @@
-const dbSubject = require("../models/subject");
-
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -11,21 +9,23 @@ exports.create = (req, res) => {
 
     const model = {
         name: req.body.data.name,
-        description: req.body.data.description,
         content: req.body.data.content,
-        startTime: new Date(req.body.data.startTime),
-        expireTime: new Date(req.body.data.expireTime)
+        setting: req.body.data.setting
     };
 
     let length = timeline.assignments.push(model);
+
+    const setting = req.body.data.setting;
+    console.log(setting.expireTime < setting.startTime);
 
     data.save()
         .then(() => {
             res.send(timeline.assignments[length - 1]);
         })
         .catch((err) => {
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: err.message,
+                message: err.errors[key].message,
             });
         });
 
@@ -54,7 +54,7 @@ exports.find = (req, res) => {
                 content: assignment.content,
                 submissionStatus: true,
                 gradeStatus: submission.feedBack ? true : false,
-                dueDate: assignment.expireTime,
+                setting: assignment.setting,
                 submission: submission
             })
         } else {
@@ -64,7 +64,7 @@ exports.find = (req, res) => {
                 content: assignment.content,
                 submissionStatus: false,
                 gradeStatus: false,
-                dueDate: assignment.expireTime,
+                setting: assignment.setting,
                 submission: null
             });
         }
@@ -73,8 +73,7 @@ exports.find = (req, res) => {
             _id: assignment._id,
             name: assignment.name,
             content: assignment.content,
-            startTime: assignment.startTime,
-            expireTime: assignment.expireTime,
+            setting: assignment.setting,
             submissionCount: assignment.submission.length,
             submission: assignment.submission
         });
@@ -93,9 +92,8 @@ exports.findAll = (req, res) => {
         return {
             _id: value._id,
             name: value.name,
-            description: value.description,
-            startTime: value.startTime,
-            expireTime: value.expireTime
+            startTime: value.setting.startTime,
+            expireTime: value.setting.expireTime
         }
     }));
 };
@@ -112,10 +110,8 @@ exports.update = (req, res) => {
     const assignment = timeline.assignments.find(function(value, index, arr) {
         if (value._id == req.params.idAssignment) {
             arr[index].name = req.body.data.name || arr[index].name;
-            arr[index].description = req.body.data.description || arr[index].description;
             arr[index].content = req.body.data.content || arr[index].content;
-            arr[index].startTime = req.body.data.startTime != null ? new Date(req.body.data.startTime) : arr[index].startTime;
-            arr[index].expireTime = req.body.data.expireTime != null ? new Date(req.body.data.expireTime) : arr[index].expireTime;
+            arr[index].setting = req.body.data.setting || arr[index].setting;
             return true;
         } else {
             return false;
@@ -128,14 +124,14 @@ exports.update = (req, res) => {
                 _id: assignment._id,
                 name: assignment.name,
                 content: assignment.content,
-                startTime: assignment.startTime,
-                expireTime: assignment.expireTime,
+                setting: assignment.setting,
                 submission: assignment.submission.length
             });
         })
         .catch((err) => {
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: err.message,
+                message: err.errors[key].message,
             });
         });
 };
@@ -157,38 +153,37 @@ exports.submit = (req, res) => {
     }
 
     let today = Date.now();
-    if (today >= assignment.startTime && today <= assignment.expireTime) {
-        var submission = {
-            file: {
-                name: req.body.data.file.name,
-                link: req.body.data.file.link,
-                uploadDay: Date.now(),
-                type: req.body.data.file.type
-            },
-            idUser: req.idStudent,
-            submitTime: Date.now()
-        }
-
+    const setting = assignment.setting;
+    if ((today >= setting.startTime && today <= setting.expireTime) ||
+        (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
+        const files = req.body.data.files
+        var index = 0;
         var submitted = assignment.submission.find(value => value.idUser === req.idStudent);
         if (submitted) {
             index = assignment.submission.indexOf(submitted);
-            assignment.submission.splice(index, 1);
+            submitted.submitTime = today;
+            submitted.file = files;
+        } else {
+            var submission = {
+                idUser: req.idStudent,
+                submitTime: today,
+                file: files
+            }
+            index = assignment.submission.push(submission) - 1;
         }
-        let length = assignment.submission.push(submission);
-
         data.save()
             .then(() => {
-                res.send(assignment.submission[length - 1]);
-
+                res.send(assignment.submission[index]);
             })
             .catch((err) => {
+                const key = Object.keys(err.errors)[0];
                 res.status(500).send({
-                    message: err.message,
+                    message: err.errors[key].message,
                 });
             });
     } else {
         let message = "";
-        if (today <= assignment.startTime) {
+        if (today <= setting.startTime) {
             message = "Chưa tới thời gian nộp bài!";
         } else {
             message = "Đã quá thời hạn nộp bài!"
@@ -227,8 +222,9 @@ exports.gradeSubmission = (req, res) => {
 
             })
             .catch((err) => {
+                const key = Object.keys(err.errors)[0];
                 res.status(500).send({
-                    message: err.message,
+                    message: err.errors[key].message,
                 });
             });
     } else {

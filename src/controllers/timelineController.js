@@ -32,8 +32,8 @@ exports.findAll = (req, res) => {
                 res.send(data.timelines.map((value) => {
                     let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
                     let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-                    let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-                    let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+                    let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
+                    let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
                     return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
                 }));
             })
@@ -53,8 +53,8 @@ exports.findAll = (req, res) => {
                 res.send(data.timelines.map((value) => {
                     let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
                     let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-                    let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-                    let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+                    let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
+                    let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
                     return {
                         _id: value._id,
                         name: value.name,
@@ -83,8 +83,8 @@ exports.find = (req, res) => {
     let result = timelines.map((value) => {
         let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
         let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-        let information = value.exams.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-        let assignments = value.exams.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+        let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
+        let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
         if (req.idPrivilege === 'student') {
             return { id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
         } else {

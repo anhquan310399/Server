@@ -16,7 +16,7 @@ const file = new mongoose.Schema({
     },
     uploadDay: {
         type: Date,
-        default: Date.now()
+        required: true
     }
 });
 

@@ -21,6 +21,11 @@ const timeline = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    index: {
+        type: mongoose.Schema.Types.Number,
+        min: 1,
+        required: true
     }
 
 }, {
