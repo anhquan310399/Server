@@ -250,3 +250,16 @@ exports.getDeadline = async(req, res) => {
             });
         });
 }
+
+exports.getListStudent = async(req, res) => {
+    const subject = req.subject;
+
+    var info = await Promise.all(subject.studentIds.map(async function(value) {
+        var student = await userDb.findById(value, 'emailAddress firstName surName urlAvatar')
+            .then(value => {
+                return value
+            });
+        return student;
+    }));
+    res.send(info);
+}
