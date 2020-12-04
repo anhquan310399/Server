@@ -37,4 +37,12 @@ const Schema = mongoose.Schema({
     timestamps: true
 });
 
+Schema.pre('save', function(next) {
+    var subject = this;
+    if (subject.isModified('studentIds')) {
+        subject.studentIds = subject.studentIds.sort();
+    }
+    next();
+});
+
 module.exports = mongoose.model("subject", Schema);

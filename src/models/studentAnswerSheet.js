@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-const studentAnswer = require("./studentAnswer")
-const studentAnswerSchema = studentAnswer.studentAnswerSchema
+const studentAnswerSchema = require("./studentAnswer")
 
 const studentAnswerSheet = new mongoose.Schema({
     studentId: {
@@ -12,8 +11,15 @@ const studentAnswerSheet = new mongoose.Schema({
         type: [studentAnswerSchema],
         required: true
     },
-    grade: Number
-})
-
+    grade: Number,
+    isSubmitted: {
+        type: Boolean,
+        default: false
+    },
+    startTime: {
+        type: Date,
+        default: Date.now()
+    }
+});
 
 module.exports = studentAnswerSheet

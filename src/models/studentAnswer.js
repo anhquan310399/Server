@@ -7,7 +7,7 @@ const studentAnswer = new mongoose.Schema({
     },
     answerId: {
         type: String,
-        required: true
+        default: ''
     },
 })
 

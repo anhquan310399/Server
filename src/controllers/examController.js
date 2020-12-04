@@ -62,7 +62,7 @@ exports.find = (req, res) => {
                 _id: exam._id,
                 name: exam.name,
                 content: exam.content,
-                startTime: exam.expireTime,
+                startTime: exam.startTime,
                 expireTime: exam.expireTime,
                 setting: exam.setting,
                 submission: submission
@@ -72,8 +72,8 @@ exports.find = (req, res) => {
                 _id: exam._id,
                 name: exam.name,
                 content: exam.content,
-                startTime: assignment.expireTime,
-                expireTime: assignment.expireTime,
+                startTime: exam.startTime,
+                expireTime: exam.expireTime,
                 setting: exam.setting,
                 submission: null
             });
@@ -164,6 +164,10 @@ exports.delete = (req, res) => {
         });
 };
 
+//Kiểm tra đã tham gia làm chưa
+//Nếu đã tham gia kiểm tra hết thời gian làm của lần này chưa
+//Nếu quá thời gian kiểm tra còn lượt tham gia hay không
+
 exports.doExam = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -198,7 +202,7 @@ exports.doExam = (req, res) => {
                     message: "Not found question",
                 });
             }
-            const questions = _.sampleSize(chapter.questions, setting.attemptCount)
+            const questions = _.sampleSize(chapter.questions, setting.questionCount)
                 .map(value => {
                     return {
                         _id: value._id,

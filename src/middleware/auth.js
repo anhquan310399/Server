@@ -9,7 +9,7 @@ exports.authStudent = (req, res, next) => {
         User.findOne({ _id: data._id, idPrivilege: 'student', 'tokens.token': token })
             .then((user) => {
                 if (!user) {
-                    return res.status(404).send({
+                    return res.status(401).send({
                         message: "Please login"
                     });
                 }
@@ -65,8 +65,8 @@ exports.authLecture = (req, res, next) => {
                             throw 'Not found Subject'
                         }
                     }).catch((err) => {
-                        return res.status(401).send({
-                            message: "Not authorized to access this resource"
+                        return res.status(404).send({
+                            message: "Not found this subject"
                         });
                     });
             })
@@ -87,7 +87,7 @@ exports.authInSubject = (req, res, next) => {
         User.findOne({ _id: data._id, 'tokens.token': token })
             .then((user) => {
                 if (!user) {
-                    return res.status(404).send({
+                    return res.status(401).send({
                         message: "Please login"
                     });
                 }

@@ -1,7 +1,6 @@
 const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
-const subject = require("../models/subject");
 
 exports.create = async(req, res) => {
     // Validate request
@@ -74,10 +73,10 @@ exports.find = async(req, res) => {
         name: data.name,
         lecture: teacher,
         timelines: _.sortBy(timelines.map((value) => {
-            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
-            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-            let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
+            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt } });
+            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt } });
+            let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt } });
+            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt } });
             if (req.idPrivilege === 'student') {
                 return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index };
             } else {
@@ -89,7 +88,7 @@ exports.find = async(req, res) => {
 };
 
 exports.update = async(req, res) => {
-    if (!req.body) {
+    if (!req.body || !(req.body.name && req.body.lectureId)) {
         return res.status(400).send({
             message: "Lack of information",
         });
@@ -148,7 +147,6 @@ exports.addAllStudents = (req, res) => {
                     message: "Not found subject",
                 });
             }
-
             var list = data.studentIds.concat(req.body).sort();
             list = list.filter((a, b) => list.indexOf(a) === b);
             data.studentIds = list;
@@ -170,6 +168,58 @@ exports.addAllStudents = (req, res) => {
             });
         });
 };
+
+exports.addStudent = (req, res) => {
+    // Validate request
+    let subject = req.subject;
+
+    let idStudent = subject.studentIds.find(value => { return value === req.body.idStudent });
+    if (idStudent) {
+        return res.send({ message: 'This student has already in subject' });
+    }
+
+    userDb.findOne({ _id: req.body.idStudent })
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({ message: "Not found student with id: " + req.body.idStudent });
+            }
+            subject.studentIds.push(req.body.idStudent);
+            subject.save()
+                .then((data) => {
+                    // res.send(data);
+                    res.send({ message: "Add Student Successfully!" });
+                })
+                .catch((err) => {
+                    console.log("Add student" + err.message);
+                    res.status(500).send({
+                        message: "Add student failure"
+                    });
+                });
+        });
+};
+
+exports.removeStudent = (req, res) => {
+    // Validate request
+    let subject = req.subject;
+
+    let index = subject.studentIds.indexOf(req.body.idStudent);
+    if (!index) {
+        return res.send({ message: 'Not found this student with id: ' + req.body.idStudent });
+    }
+    subject.studentIds.splice(index, 1);
+    subject.save()
+        .then((data) => {
+            // res.send(data);
+            res.send({ message: "Remove Student Successfully!" });
+        })
+        .catch((err) => {
+            console.log("Remove student" + err.message);
+            res.status(500).send({
+                message: "Remove student failure"
+            });
+        });
+};
+
 
 exports.adjustOrderOfTimeline = async(req, res) => {
     const adjust = req.body;
