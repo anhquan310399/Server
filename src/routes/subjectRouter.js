@@ -13,5 +13,5 @@ router.put('/:idSubject/', subjectController.update);
 router.delete('/:idSubject/', subjectController.delete);
 router.put('/:idSubject/students', subjectController.addAllStudents);
 router.get('/:idSubject/index', authLecture, subjectController.getOrderOfTimeLine);
-router.put('/:idSubject/index', authLecture, subjectController.adjustOrderOfTimeline);
+router.post('/:idSubject/index', authLecture, subjectController.adjustOrderOfTimeline);
 module.exports = router;

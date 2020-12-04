@@ -1,5 +1,4 @@
 const dbUser = require("../models/user");
-const { use } = require("../routes/userRouter");
 
 exports.create = (req, res) => {
     try {
