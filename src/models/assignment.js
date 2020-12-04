@@ -91,6 +91,6 @@ const assignment = new mongoose.Schema({
         required: true
     },
     submission: [submission]
-});
+}, { timestamps: true });
 
 module.exports = assignment

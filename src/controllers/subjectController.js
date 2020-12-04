@@ -17,9 +17,7 @@ exports.create = async(req, res) => {
             res.send(data);
         })
         .catch((err) => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating privilege.",
-            });
+            res.status(500).send({ message: err.message });
         });
 };
 
@@ -78,12 +76,10 @@ exports.find = async(req, res) => {
         name: data.name,
         lecture: teacher,
         timelines: _.sortBy(timelines.map((value) => {
-            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt } });
-            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt } });
-            let information = value.information.map((info) => {
-                return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) }
-            });
-            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt } });
+            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt) } });
+            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt) } });
+            let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
+            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt) } });
             if (req.idPrivilege === 'student') {
                 return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index };
             } else {
@@ -143,7 +139,6 @@ exports.delete = async(req, res) => {
             });
         });
 };
-
 
 exports.addAllStudents = (req, res) => {
     // Validate request

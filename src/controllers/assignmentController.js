@@ -1,3 +1,5 @@
+const User = require('../models/user');
+
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -31,15 +33,79 @@ exports.create = (req, res) => {
 
 };
 
-exports.find = (req, res) => {
+// exports.find = async(req, res) => {
+//     let data = req.subject;
+//     const timeline = await data.timelines.find(value => value._id == req.body.idTimeline);
+//     if (!timeline) {
+//         return res.status(404).send({
+//             message: "Not found timeline",
+//         });
+//     }
+//     const assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
+//     if (!assignment) {
+//         return res.status(404).send({
+//             message: "Not found assignment",
+//         });
+//     }
+//     if (req.user.idPrivilege === 'student') {
+//         let submission = assignment.submission.find(value => value.idUser === req.user._id);
+//         if (submission) {
+//             res.send({
+//                 _id: assignment._id,
+//                 name: assignment.name,
+//                 content: assignment.content,
+//                 submissionStatus: true,
+//                 gradeStatus: submission.feedBack ? true : false,
+//                 setting: assignment.setting,
+//                 submission: submission
+//             })
+//         } else {
+//             res.send({
+//                 _id: assignment._id,
+//                 name: assignment.name,
+//                 content: assignment.content,
+//                 submissionStatus: false,
+//                 gradeStatus: false,
+//                 setting: assignment.setting,
+//                 submission: null
+//             });
+//         }
+//     } else {
+//         let submissions = await Promise.all(assignment.submission
+//             .map(async function(submit) {
+//                 var student = await User.findById(submit.idUser, 'firstName surName urlAvatar')
+//                     .then(value => {
+//                         return value
+//                     });
+//                 return {
+//                     _id: submit._id,
+//                     student: student,
+//                     submitTime: submit.submitTime,
+//                     file: submit.file,
+//                     feedBack: submit.feedBack
+//                 };
+//             }));
+
+//         res.send({
+//             _id: assignment._id,
+//             name: assignment.name,
+//             content: assignment.content,
+//             setting: assignment.setting,
+//             submissionCount: assignment.submission.length,
+//             submission: submissions
+//         });
+//     }
+// };
+
+exports.find = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = await data.timelines.find(value => value._id == req.params.idTimeline || req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    const assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             message: "Not found assignment",
@@ -69,13 +135,28 @@ exports.find = (req, res) => {
             });
         }
     } else {
+        let submissions = await Promise.all(assignment.submission
+            .map(async function(submit) {
+                var student = await User.findById(submit.idUser, 'firstName surName urlAvatar')
+                    .then(value => {
+                        return value
+                    });
+                return {
+                    _id: submit._id,
+                    student: student,
+                    submitTime: submit.submitTime,
+                    file: submit.file,
+                    feedBack: submit.feedBack
+                };
+            }));
+
         res.send({
             _id: assignment._id,
             name: assignment.name,
             content: assignment.content,
             setting: assignment.setting,
             submissionCount: assignment.submission.length,
-            submission: assignment.submission
+            submission: submissions
         });
     }
 };
@@ -92,6 +173,7 @@ exports.findAll = (req, res) => {
         return {
             _id: value._id,
             name: value.name,
+            content: value.content,
             startTime: value.setting.startTime,
             expireTime: value.setting.expireTime
         }
@@ -231,7 +313,6 @@ exports.gradeSubmission = (req, res) => {
         res.status(404).send("Not found submission!")
     }
 }
-
 
 exports.delete = (req, res) => {
     let data = req.subject;
