@@ -6,7 +6,7 @@ exports.create = (req, res) => {
     const model = {
         name: req.body.data.name,
         description: req.body.data.description,
-        index: data.timelines.length
+        index: data.timelines.length + 1
     };
 
     var length = data.timelines.push(model);
