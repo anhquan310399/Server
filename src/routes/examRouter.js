@@ -11,5 +11,5 @@ router.get('/:idExam', authInSubject, examController.find);
 router.put('/:idExam', authLecture, examController.update);
 router.delete('/:idExam', authLecture, examController.delete);
 router.get('/:idExam/attempt', authStudent, examController.doExam);
-
+router.put('/:idExam/submit', authStudent, examController.submitExam);
 module.exports = router;

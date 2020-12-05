@@ -41,7 +41,7 @@ exports.create = (req, res) => {
         });
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -63,33 +63,31 @@ exports.find = (req, res) => {
 
 
     if (req.user.idPrivilege === 'student') {
-        let submission = exam.submissions.find(value => value.studentId == req.user._id);
-        if (submission) {
-            res.send({
-                _id: exam._id,
-                name: exam.name,
-                content: exam.content,
-                startTime: exam.startTime,
-                expireTime: exam.expireTime,
-                setting: exam.setting,
-                isRemain: isRemain,
-                timingRemain: timingRemain,
-                submission: submission
-            })
-        } else {
-            res.send({
-                _id: exam._id,
-                name: exam.name,
-                content: exam.content,
-                startTime: exam.startTime,
-                expireTime: exam.expireTime,
-                setting: exam.setting,
-                isRemain: isRemain,
-                timingRemain: timingRemain,
-                submission: null
-            });
-        }
+        let submissions = exam.submissions.filter(value => value.studentId == req.user._id);
+        submissions = submissions.map(value => {
+            return {
+                _id: value._id,
+                grade: value.isSubmitted ? value.grade : null,
+                isSubmitted: value.isSubmitted
+            }
+        })
+        res.send({
+            _id: exam._id,
+            name: exam.name,
+            content: exam.content,
+            startTime: exam.startTime,
+            expireTime: exam.expireTime,
+            setting: exam.setting,
+            isRemain: isRemain,
+            timingRemain: timingRemain,
+            submissions: submissions
+        })
     } else {
+        let submissions = exam.submissions.map(value => {
+            return {
+
+            }
+        })
         res.send({
             _id: exam._id,
             name: exam.name,
@@ -99,7 +97,7 @@ exports.find = (req, res) => {
             setting: exam.setting,
             isRemain: isRemain,
             timingRemain: timingRemain,
-            submissions: exam.submissions
+            submissions: submissions
         });
     }
 };
@@ -181,7 +179,7 @@ exports.delete = (req, res) => {
 //Nếu đã tham gia kiểm tra hết thời gian làm của lần này chưa
 //Nếu quá thời gian kiểm tra còn lượt tham gia hay không
 
-exports.doExam = (req, res) => {
+exports.doExam = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -200,11 +198,12 @@ exports.doExam = (req, res) => {
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
-        let submission = exam.submissions.find(value => value.studentId === req.idStudent);
+        let submissions = exam.submissions.filter(value => value.studentId === req.idStudent);
         let attempt = 0;
-        console.log(submission);
-        if (submission) {
-            attempt = submission.length
+        console.log(submissions);
+        if (submissions) {
+            attempt = submissions.length
+            let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
                 let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                 console.log(totalTime);
@@ -213,7 +212,6 @@ exports.doExam = (req, res) => {
                         let quizBank = subject.quizBank.find(bank => {
                             return bank._id == setting.code;
                         });
-                        console.log(quizBank);
                         let question = quizBank.questions.find(ques => {
                             return ques._id == value.questionId;
                         })
@@ -289,4 +287,70 @@ exports.doExam = (req, res) => {
         }
     }
 
+}
+
+exports.submitExam = async(req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        });
+    }
+    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+
+    if (!exam) {
+        res.status(404).send({
+            message: "Not found exam!"
+        });
+    }
+
+    const today = Date.now();
+    if (today >= exam.startTime && today < exam.expireTime) {
+        const setting = exam.setting;
+        let submissions = exam.submissions.filter(value => value.studentId === req.idStudent);
+        let attempt = 0;
+        if (submissions) {
+            attempt = submissions.length
+            let submission = submissions[attempt - 1];
+            if (!submission.isSubmitted) {
+                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                console.log(totalTime);
+                if (totalTime <= setting.timeToDo) {
+                    submission.answers = req.body.data;
+                    submission.isSubmitted = true;
+                    subject.save()
+                        .then(() => {
+                            res.send({ message: "Nộp bài thành công" });
+                        })
+                        .catch(err => {
+                            res.status(500).send({ message: err.message });
+                        })
+                } else {
+                    res.status(403).send({
+                        message: "Đã hết thời gian nộp bài!"
+                    })
+                }
+            } else {
+                res.status(403).send({
+                    message: "Đã nộp bài rồi!"
+                })
+            }
+
+        } else {
+            res.status(403).send({
+                message: "Chưa có thông tin làm bài vui lòng làm bài trước!"
+            })
+        }
+    } else {
+        if (today < exam.startTime) {
+            res.status(403).send({
+                message: "Chưa đến thời gian làm bài"
+            });
+        } else {
+            res.status(403).send({
+                message: "Đã quá thời hạn làm bài!"
+            });
+        }
+    }
 }

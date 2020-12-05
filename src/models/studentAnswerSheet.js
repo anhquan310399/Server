@@ -6,10 +6,10 @@ const studentAnswer = new mongoose.Schema({
         required: true
     },
     answerId: {
-        type: String,
-        default: ''
+        type: mongoose.Schema.Types.Mixed,
+        default: null
     },
-})
+}, { _id: false })
 
 const studentAnswerSheet = new mongoose.Schema({
     studentId: {
@@ -45,20 +45,36 @@ studentAnswerSheet.pre('save', async function(next) {
                 });
                 let grade = 0;
 
-                question.answers.forEach(element => {
-                    if (element._id == current.answerId && element.isCorrect) {
+                if (question.typeQuestion === 'choice') {
+                    let correctAnswer = question.answers.find(answer => {
+                        return answer.isCorrect;
+                    });
+                    if (correctAnswer._id == current.answerId) {
                         grade++;
                     }
-                });
-                if (question.typeQuestion === 'multiple') {
-                    grade /= question.answers.length;
+                } else if (question.typeQuestion === 'multiple') {
+                    let correctAnswers = question.answers.filter(answer => {
+                        return answer.isCorrect;
+                    });
+                    if (current.answerId.length <= correctAnswers.length) {
+                        correctAnswers.forEach(answer => {
+                            current.answerId.forEach(element => {
+                                if (answer._id == element) {
+                                    grade++;
+                                    return;
+                                }
+                            });
+                        });
+                        grade /= correctAnswers.length;
+                    }
                 }
-
                 return (await res) + grade;
             },
             0);
 
-        answerSheet.grade = amount;
+        let factor = 10 / exam.setting.questionCount;
+
+        answerSheet.grade = (amount * factor).toFixed(2);
     }
     next();
 })
