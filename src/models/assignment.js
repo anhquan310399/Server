@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const file = require('./file');
 
+//Thêm trường comment để khiếu nại điểm
 const feedBack = new mongoose.Schema({
     grade: {
         type: Number,
