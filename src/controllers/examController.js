@@ -83,6 +83,7 @@ exports.find = async(req, res) => {
             submissions: submissions
         })
     } else {
+        //Lấy bài kiểm tra cao nhất của từng sinh viên
         let submissions = exam.submissions.map(value => {
             return {
 
@@ -174,10 +175,6 @@ exports.delete = (req, res) => {
             });
         });
 };
-
-//Kiểm tra đã tham gia làm chưa
-//Nếu đã tham gia kiểm tra hết thời gian làm của lần này chưa
-//Nếu quá thời gian kiểm tra còn lượt tham gia hay không
 
 exports.doExam = async(req, res) => {
     let subject = req.subject;
