@@ -46,4 +46,5 @@ const exam = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+
 module.exports = exam

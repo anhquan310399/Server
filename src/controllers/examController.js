@@ -182,8 +182,8 @@ exports.delete = (req, res) => {
 //Nếu quá thời gian kiểm tra còn lượt tham gia hay không
 
 exports.doExam = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline"
@@ -201,15 +201,41 @@ exports.doExam = (req, res) => {
     if (today >= exam.startTime && today < exam.expireTime) {
 
         const setting = exam.setting;
-
-        let submission = exam.submissions.find(value => value.idUser === req.user._id);
+        let submission = exam.submissions.find(value => value.studentId === req.idStudent);
         let attempt = 0;
         if (submission) {
             attempt = submission.length
+            if (!submission.isSubmitted) {
+                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                console.log(totalTime);
+                if (totalTime < exam.setting.timeToDo) {
+                    let questions = submission.answers.map(value => {
+                        let quizBank = subject.quizBank.find(bank => {
+                            return bank._id == setting.code;
+                        });
+                        console.log(quizBank);
+                        let question = quizBank.questions.find(ques => {
+                            return ques._id == value.questionId;
+                        })
+                        return {
+                            _id: question._id,
+                            question: question.question,
+                            typeQuestion: question.typeQuestion,
+                            answers: question.answers.map(value => { return { _id: value.id, answer: value.answer } })
+                        }
+                    })
+                    return res.send({
+                        _id: exam._id,
+                        name: exam.name,
+                        timeToDo: setting.timeToDo,
+                        questions: questions
+                    });
+                }
+            }
         }
 
         if (attempt < setting.attemptCount) {
-            var chapter = data.quizBank.find(value => value._id == setting.code);
+            var chapter = subject.quizBank.find(value => value._id == setting.code);
             if (!chapter) {
                 return res.status(404).send({
                     message: "Not found question",
@@ -224,12 +250,28 @@ exports.doExam = (req, res) => {
                         answers: value.answers.map(value => { return { _id: value.id, answer: value.answer } })
                     }
                 });
-            res.send({
-                _id: exam._id,
-                name: exam.name,
-                timeToDo: setting.timeToDo,
-                questions: questions
-            });
+
+            var submit = {
+                studentId: req.idStudent,
+                answers: questions.map(value => {
+                    return { questionId: value._id }
+                }),
+
+            }
+            exam.submissions.push(submit);
+
+            subject.save()
+                .then((data) => {
+                    res.send({
+                        _id: exam._id,
+                        name: exam.name,
+                        timeToDo: setting.timeToDo,
+                        questions: questions
+                    });
+                }).
+            catch(err => {
+                res.status(500).send({ message: err.message });
+            })
         } else {
             res.status(403).send({
                 message: "Đã vượt quá số lần tham gia!"
