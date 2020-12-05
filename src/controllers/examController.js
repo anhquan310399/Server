@@ -63,7 +63,7 @@ exports.find = (req, res) => {
 
 
     if (req.user.idPrivilege === 'student') {
-        let submission = exam.submissions.find(value => value.idUser === req.user._id);
+        let submission = exam.submissions.find(value => value.studentId == req.user._id);
         if (submission) {
             res.send({
                 _id: exam._id,
@@ -199,10 +199,10 @@ exports.doExam = (req, res) => {
 
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
-
         const setting = exam.setting;
         let submission = exam.submissions.find(value => value.studentId === req.idStudent);
         let attempt = 0;
+        console.log(submission);
         if (submission) {
             attempt = submission.length
             if (!submission.isSubmitted) {
