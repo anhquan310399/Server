@@ -1,5 +1,5 @@
-const assignment = require("../models/assignment");
 const _ = require('lodash');
+const moment = require('moment');
 
 exports.create = (req, res) => {
     let data = req.subject;
@@ -56,6 +56,12 @@ exports.find = (req, res) => {
             message: "Not found exam",
         });
     }
+
+    const today = Date.now();
+    const isRemain = (today <= exam.expireTime);
+    const timingRemain = moment(exam.expireTime).from(moment(today));
+
+
     if (req.user.idPrivilege === 'student') {
         let submission = exam.submissions.find(value => value.idUser === req.user._id);
         if (submission) {
@@ -66,6 +72,8 @@ exports.find = (req, res) => {
                 startTime: exam.startTime,
                 expireTime: exam.expireTime,
                 setting: exam.setting,
+                isRemain: isRemain,
+                timingRemain: timingRemain,
                 submission: submission
             })
         } else {
@@ -76,6 +84,8 @@ exports.find = (req, res) => {
                 startTime: exam.startTime,
                 expireTime: exam.expireTime,
                 setting: exam.setting,
+                isRemain: isRemain,
+                timingRemain: timingRemain,
                 submission: null
             });
         }
@@ -87,6 +97,8 @@ exports.find = (req, res) => {
             startTime: exam.expireTime,
             expireTime: exam.expireTime,
             setting: exam.setting,
+            isRemain: isRemain,
+            timingRemain: timingRemain,
             submissions: exam.submissions
         });
     }
