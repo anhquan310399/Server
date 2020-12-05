@@ -22,7 +22,7 @@ exports.create = (req, res) => {
 
 exports.findAll = (req, res) => {
     if (req.idPrivilege === 'student') {
-        dbSubject.findOne({ _id: req.body.idSubject, isDeleted: false })
+        dbSubject.findOne({ _id: req.query.idSubject, isDeleted: false })
             .then((data) => {
                 if (!data) {
                     return res.status(404).send({
@@ -43,7 +43,7 @@ exports.findAll = (req, res) => {
                 });
             });
     } else {
-        dbSubject.findById(req.body.idSubject)
+        dbSubject.findById(req.query.idSubject)
             .then((data) => {
                 if (!data) {
                     return res.status(404).send({
@@ -129,7 +129,7 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-    dbSubject.findById(req.body.idSubject)
+    dbSubject.findById(req.query.idSubject)
         .then((data) => {
             if (!data) {
                 return res.status(404).send({

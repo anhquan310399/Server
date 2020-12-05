@@ -111,7 +111,7 @@ exports.findAll = (req, res) => {
 
 exports.update = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -119,11 +119,11 @@ exports.update = (req, res) => {
     }
     const exam = timeline.exams.find(function(value, index, arr) {
         if (value._id == req.params.idExam) {
-            arr[index].name = req.body.name || arr[index].name;
-            arr[index].content = req.body.content || arr[index].content;
-            arr[index].startTime = req.body.startTime != null ? new Date(req.body.startTime) : arr[index].startTime;
-            arr[index].expireTime = req.body.expireTime != null ? new Date(req.body.expireTime) : arr[index].expireTime;
-            arr[index].setting = req.body.setting || arr[index].setting;
+            if (req.body.data.name) { arr[index].name = req.body.data.name };
+            if (req.body.data.content) { arr[index].content = req.body.data.content };
+            if (req.body.data.startTime) { arr[index].startTime = new Date(req.body.data.startTime) };
+            if (req.body.data.expireTime) { arr[index].expireTime = new Date(req.body.data.expireTime) };
+            if (req.body.data.setting) { arr[index].setting = req.body.data.setting };
             return true;
         } else {
             return false;

@@ -14,7 +14,7 @@ exports.authStudent = (req, res, next) => {
                     });
                 }
 
-                var idSubject = req.params.idSubject || req.query.idSubject;
+                var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
                 Subject.findOne({ _id: idSubject, 'studentIds': user._id })
                     .then((subject) => {
@@ -53,7 +53,7 @@ exports.authLecture = (req, res, next) => {
                     });
                 }
 
-                var idSubject = req.params.idSubject || req.query.idSubject;
+                var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
                 Subject.findOne({ _id: idSubject, lectureId: user._id })
                     .then((subject) => {
@@ -91,7 +91,7 @@ exports.authInSubject = (req, res, next) => {
                         message: "Please login"
                     });
                 }
-                var idSubject = req.params.idSubject || req.query.idSubject;
+                var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
                 console.log(idSubject);
                 if (user.idPrivilege == "student") {
