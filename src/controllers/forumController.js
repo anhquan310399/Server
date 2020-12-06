@@ -118,18 +118,7 @@ exports.update = (req, res) => {
     data.save()
         .then((data) => {
             res.send({
-                _id: forum._id,
-                name: forum.name,
-                description: forum.description,
-                topics: forum.topics.map((value) => {
-                    return {
-                        _id: value._id,
-                        name: value.name,
-                        createId: value.createId,
-                        replies: value.discussions.length
-                    }
-                }),
-                isDeleted: forum.isDeleted
+                message: "Update Forum Successfully!"
             });
         })
         .catch((err) => {
@@ -142,15 +131,14 @@ exports.update = (req, res) => {
 
 exports.delete = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
-    const indexTimeline = data.timelines.indexOf(timeline);
-    const forum = data.timelines[indexTimeline].forums.find(value => value._id == req.params.idForum);
-    // const indexForum = data.timelines[indexTimeline].forums.indexOf(forum);
+
+    const forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
             message: "Not found forum",

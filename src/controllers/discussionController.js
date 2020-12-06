@@ -1,3 +1,5 @@
+const User = require('../models/user');
+
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -24,11 +26,7 @@ exports.create = (req, res) => {
 
     const model = {
         content: req.body.data.content,
-        create: {
-            id: req.user._id,
-            urlAvatar: req.user.urlAvatar,
-            name: req.user.surName + " " + req.user.firstName
-        }
+        idUser: req.user._id
     };
 
     var length = topic.discussions.push(model);
@@ -36,10 +34,11 @@ exports.create = (req, res) => {
     data.save()
         .then(() => {
             let discussion = topic.discussions[length - 1];
+            let creator = User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
             res.send({
                 id: discussion._id,
                 content: discussion.content,
-                create: discussion.create,
+                create: creator,
                 time: discussion.updatedAt,
                 isChanged: discussion.createdAt === discussion.updatedAt ? false : true
             });
@@ -53,21 +52,21 @@ exports.create = (req, res) => {
 
 exports.find = (req, res) => {
     let data = req.subject
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.body.idForum);
+    const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
             message: "Not found forum",
         });
     }
 
-    const topic = forum.topics.find(value => value._id == req.body.idTopic);
+    const topic = forum.topics.find(value => value._id == req.query.idTopic);
 
     if (!topic) {
         return res.status(404).send({
@@ -85,7 +84,7 @@ exports.find = (req, res) => {
     res.send({
         id: discussion._id,
         content: discussion.content,
-        create: discussion.create,
+        create: discussion.idUser,
         time: discussion.updatedAt,
         isChanged: discussion.createdAt === discussion.updatedAt ? false : true
     });
@@ -93,21 +92,21 @@ exports.find = (req, res) => {
 
 exports.findAll = (req, res) => {
     let data = req.subject
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.body.idForum);
+    const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
             message: "Not found forum",
         });
     }
 
-    const topic = forum.topics.find(value => value._id == req.body.idTopic);
+    const topic = forum.topics.find(value => value._id == req.query.idTopic);
 
     if (!topic) {
         return res.status(404).send({
@@ -115,11 +114,12 @@ exports.findAll = (req, res) => {
         });
     }
 
-    var result = topic.discussions.map((value) => {
+    var result = topic.discussions.map(async function(value) {
+        let creator = await User.findById(value.idUser, 'firstName surName urlAvatar').then(value => { return value });
         return {
             id: value._id,
             content: value.content,
-            create: value.create,
+            create: creator,
             time: value.updatedAt,
             isChanged: value.createdAt === value.updatedAt ? false : true
         }
@@ -157,8 +157,7 @@ exports.update = (req, res) => {
 
     const discussion = topic.discussions.find(function(value, index, arr) {
         if (value._id == req.params.idDiscussion) {
-            if (value.create.id === req.user._id) {
-                arr[index].subject = req.body.data.subject;
+            if (value.idUser === req.user._id) {
                 arr[index].content = req.body.data.content;
             } else {
                 isTrueCreate = false;
@@ -172,10 +171,11 @@ exports.update = (req, res) => {
     if (isTrueCreate) {
         data.save()
             .then(() => {
+                let creator = User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
                 res.send({
                     id: discussion._id,
                     content: discussion.content,
-                    create: discussion.create,
+                    create: creator,
                     time: discussion.updatedAt,
                     isChanged: discussion.createdAt === discussion.updatedAt ? false : true
                 });
@@ -195,21 +195,21 @@ exports.update = (req, res) => {
 
 exports.delete = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.body.idForum);
+    const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
             message: "Not found forum",
         });
     }
 
-    const topic = forum.topics.find(value => value._id == req.body.idTopic);
+    const topic = forum.topics.find(value => value._id == req.query.idTopic);
 
     if (!topic) {
         return res.status(404).send({
