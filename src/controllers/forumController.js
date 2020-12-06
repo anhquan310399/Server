@@ -1,5 +1,4 @@
-const dbSubject = require("../models/subject");
-
+const User = require('../models/user');
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -28,9 +27,9 @@ exports.create = (req, res) => {
 
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -43,45 +42,30 @@ exports.find = (req, res) => {
         });
     }
 
-    if (req.idPrivilege === 'student') {
-        if (forum.isDeleted === true) {
-            res.status(404).send('Not found forum!');
-        } else {
-            res.send({
-                _id: forum._id,
-                name: forum.name,
-                description: forum.description,
-                topics: forum.topics.map((value) => {
-                    return {
-                        _id: value._id,
-                        name: value.name,
-                        createId: value.createId,
-                        replies: value.discussions.length
-                    }
-                })
-            });
-        }
+    if (req.idPrivilege === 'student' && forum.isDeleted === true) {
+        res.status(404).send('Not found forum!');
     } else {
         res.send({
             _id: forum._id,
             name: forum.name,
             description: forum.description,
-            topics: forum.topics.map((value) => {
+            topics: await Promise.all(forum.topics.map(async function(value) {
+                let creator = await User.findById(value.idUser, 'firstName surName urlAvatar')
+                    .then(value => { return value });
                 return {
                     _id: value._id,
                     name: value.name,
-                    createId: value.createId,
+                    create: creator,
                     replies: value.discussions.length
                 }
-            }),
-            isDeleted: forum.isDeleted
+            }))
         })
     }
 };
 
 exports.findAll = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",

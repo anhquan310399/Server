@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 
 const discussionSchema = require("./discussion");
 
-const infoUser = require('./infoUser');
-
 const topic = new mongoose.Schema({
     name: {
         type: String,
@@ -14,8 +12,8 @@ const topic = new mongoose.Schema({
         required: true
     },
     discussions: [discussionSchema],
-    create: {
-        type: infoUser,
+    idUser: {
+        type: String,
         required: true
     }
 }, { timestamps: true });
