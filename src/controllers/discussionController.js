@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -31,26 +31,29 @@ exports.create = (req, res) => {
 
     var length = topic.discussions.push(model);
 
-    data.save()
-        .then(() => {
+    await data.save()
+        .then(async function() {
             let discussion = topic.discussions[length - 1];
-            let creator = User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+            let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
             res.send({
                 id: discussion._id,
                 content: discussion.content,
                 create: creator,
                 time: discussion.updatedAt,
-                isChanged: discussion.createdAt === discussion.updatedAt ? false : true
+                isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
             });
         })
         .catch((err) => {
+            console.log("Create discussion: ");
+            console.log(err);
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: err.message,
+                message: err.errors[key].message,
             });
         });
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let data = req.subject
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -80,17 +83,18 @@ exports.find = (req, res) => {
             message: "Not found discussion",
         });
     }
-    console.log(discussion);
+    let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+
     res.send({
         id: discussion._id,
         content: discussion.content,
-        create: discussion.idUser,
+        create: creator,
         time: discussion.updatedAt,
-        isChanged: discussion.createdAt === discussion.updatedAt ? false : true
+        isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
     });
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     let data = req.subject
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -114,22 +118,22 @@ exports.findAll = (req, res) => {
         });
     }
 
-    var result = topic.discussions.map(async function(value) {
-        let creator = await User.findById(value.idUser, 'firstName surName urlAvatar').then(value => { return value });
+    var result = await Promise.all(topic.discussions.map(async function(discussion) {
+        let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
         return {
-            id: value._id,
-            content: value.content,
+            id: discussion._id,
+            content: discussion.content,
             create: creator,
-            time: value.updatedAt,
-            isChanged: value.createdAt === value.updatedAt ? false : true
+            time: discussion.updatedAt,
+            isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
         }
-    })
+    }))
 
     res.send(result);
 
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     let data = req.subject
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -169,9 +173,9 @@ exports.update = (req, res) => {
     });
 
     if (isTrueCreate) {
-        data.save()
-            .then(() => {
-                let creator = User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+        await data.save()
+            .then(async() => {
+                let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
                 res.send({
                     id: discussion._id,
                     content: discussion.content,
@@ -181,9 +185,11 @@ exports.update = (req, res) => {
                 });
             })
             .catch((err) => {
-                console.log("Update discussion:" + err.message);
+                console.log("Update discussion: ");
+                console.log(err);
+                const key = Object.keys(err.errors)[0];
                 res.status(500).send({
-                    message: "Update Failure!"
+                    message: err.errors[key].message,
                 });
             });
     } else {
@@ -193,7 +199,7 @@ exports.update = (req, res) => {
     }
 };
 
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -217,30 +223,21 @@ exports.delete = (req, res) => {
         });
     }
 
-    let isExist = false;
-    let isTrueCreate = false;
-
     const discussion = topic.discussions
-        .filter((value) => {
-            if (value._id == req.params.idDiscussion) {
-                isExist = true;
-                if (value.create.id === req.user._id) {
-                    isTrueCreate = true;
-                    return false;
-                } else {
-                    return true;
-                }
-            } else {
-                return true;
-            }
+        .find((value) => {
+            return (value._id == req.params.idDiscussion)
         });
-
-    if (isExist) {
-        if (isTrueCreate) {
-            topic.discussions = discussion;
-            data.save()
+    if (!discussion) {
+        return res.status(401).send("Not found discussion!");
+    } else {
+        if (discussion.idUser != req.user._id) {
+            return res.status(401).send({ message: "You can't delete this discussion!" });
+        } else {
+            let index = topic.discussions.indexOf(discussion);
+            topic.discussions.splice(index, 1);
+            await data.save()
                 .then(() => {
-                    res.send("Delete Successfully!");
+                    res.send({ message: "Delete Successfully!" });
                 })
                 .catch((err) => {
                     console.log("Delete discussion:" + err.message);
@@ -248,10 +245,6 @@ exports.delete = (req, res) => {
                         message: "Delete Failure!"
                     });
                 });
-        } else {
-            res.status(401).send("You can't delete this discussion!");
         }
-    } else {
-        res.status(401).send("Not found discussion!");
     }
 };

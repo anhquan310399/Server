@@ -42,10 +42,11 @@ exports.create = async(req, res) => {
             });
         })
         .catch((err) => {
+            console.log("Create topic: ");
             console.log(err);
-            console.log("Create topic: " + err);
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: "Create Topic Failure!"
+                message: err.errors[key].message,
             });
         });
 
@@ -188,9 +189,11 @@ exports.update = (req, res) => {
                 });
             })
             .catch((err) => {
-                console.log("Update topic: " + err.message);
+                console.log("Update topic: ");
+                console.log(err);
+                const key = Object.keys(err.errors)[0];
                 res.status(500).send({
-                    message: "Update topic failure!"
+                    message: err.errors[key].message,
                 });
             });
     } else {

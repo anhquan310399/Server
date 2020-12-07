@@ -1,5 +1,3 @@
-const dbSubject = require("../models/subject");
-
 exports.create = (req, res) => {
     let data = req.subject;
 

@@ -93,7 +93,6 @@ exports.authInSubject = (req, res, next) => {
                 }
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
-                console.log(idSubject);
                 if (user.idPrivilege == "student") {
                     Subject.findOne({ _id: idSubject, isDeleted: false, 'studentIds': user._id })
                         .then((subject) => {

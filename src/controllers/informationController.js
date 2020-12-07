@@ -1,6 +1,3 @@
-const subject = require("../models/subject");
-const dbSubject = require("../models/subject");
-
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -31,7 +28,7 @@ exports.create = (req, res) => {
 
 exports.find = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -40,12 +37,20 @@ exports.find = (req, res) => {
 
     const information = timeline.information.find(value => value._id == req.params.idInformation);
 
-    res.send(information);
+    if (information) {
+        return res.send(information);
+    } else {
+        return res.status(404).send({
+            message: "Not found information",
+        });
+    }
+
+
 };
 
 exports.findAll = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -64,8 +69,8 @@ exports.update = (req, res) => {
     }
     const information = timeline.information.find(function(value, index, arr) {
         if (value._id == req.params.idInformation) {
-            arr[index].name = req.body.data.name || arr[index].name;
-            arr[index].content = req.body.data.content || arr[index].content;
+            arr[index].name = req.body.data.name;
+            arr[index].content = req.body.data.content;
             return true;
         } else {
             return false;
@@ -77,9 +82,9 @@ exports.update = (req, res) => {
             res.send(information);
         })
         .catch((err) => {
-            console.log("Update information: " + err.message);
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: "Update information failure!"
+                message: err.errors[key].message,
             });
         });
 
@@ -87,7 +92,7 @@ exports.update = (req, res) => {
 
 exports.delete = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -105,7 +110,7 @@ exports.delete = (req, res) => {
 
     data.save()
         .then(() => {
-            res.send("Delete successfully!");
+            res.send({ message: "Delete successfully!" });
         })
         .catch((err) => {
             console.log("Delete information: " + err.message);

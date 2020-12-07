@@ -11,7 +11,7 @@ const examSchema = require("./exam");
 const timeline = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, 'Vui lòng nhập tiều đề']
     },
     description: String,
     forums: [forumSchema],

@@ -20,8 +20,9 @@ exports.create = (req, res) => {
             res.send(timeline.forums[length - 1]);
         })
         .catch((err) => {
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: err.message,
+                message: err.errors[key].message,
             });
         });
 
@@ -107,8 +108,8 @@ exports.update = (req, res) => {
 
     const forum = timeline.forums.find(function(value, index, arr) {
         if (value._id == req.params.idForum) {
-            arr[index].name = req.body.data.name || arr[index].name;
-            arr[index].description = req.body.data.description || arr[index].description;
+            arr[index].name = req.body.data.name;
+            arr[index].description = req.body.data.description;
             return true;
         } else {
             return false;
@@ -118,13 +119,16 @@ exports.update = (req, res) => {
     data.save()
         .then((data) => {
             res.send({
-                message: "Update Forum Successfully!"
+                _id: forum._id,
+                name: forum.name,
+                description: forum.description,
+                isDeleted: forum.isDeleted
             });
         })
         .catch((err) => {
-            console.log("Update Forum: " + err.message);
+            const key = Object.keys(err.errors)[0];
             res.status(500).send({
-                message: "Update Forum Failure!"
+                message: err.errors[key].message,
             });
         });
 };
