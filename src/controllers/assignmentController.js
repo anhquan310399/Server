@@ -60,7 +60,7 @@ exports.find = async(req, res) => {
         });
     }
     if (req.user.idPrivilege === 'student') {
-        let submission = assignment.submission.find(value => value.idUser === req.user._id);
+        let submission = assignment.submission.find(value => value.idStudent == req.user._id);
         console.log(submission);
         if (submission) {
             res.send({
@@ -86,7 +86,7 @@ exports.find = async(req, res) => {
     } else {
         let submissions = await Promise.all(assignment.submission
             .map(async function(submit) {
-                var student = await User.findById(submit.idUser, 'firstName surName urlAvatar')
+                var student = await User.findById(submit.idStudent, 'firstName surName urlAvatar')
                     .then(value => {
                         return value
                     });
@@ -308,7 +308,6 @@ exports.submit = (req, res) => {
 
 exports.download = (req, res) => {
     let data = req.subject;
-    console.log(req);
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
@@ -322,8 +321,9 @@ exports.download = (req, res) => {
             message: "Not found assignment",
         });
     }
-
-    if (req.idPrivilege === 'student') {
+    console.log(req.user.idPrivilege);
+    if (req.user.idPrivilege === 'student') {
+        console.log(req.user._id);
         var submission = assignment.submission.find(value => value.idStudent == req.user._id);
         if (!submission) {
             return res.status(404).send({
