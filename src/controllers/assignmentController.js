@@ -258,6 +258,7 @@ exports.submit = (req, res) => {
                 return res.end("Error uploading file.");
             }
             console.log(req.file);
+            console.log(req.idStudent);
             const files = [];
             let file = {
                 name: req.file.name,
@@ -274,13 +275,13 @@ exports.submit = (req, res) => {
                 submitted.file = files;
             } else {
                 var submission = {
-                    idUser: req.idStudent,
+                    idStudent: req.idStudent,
                     submitTime: today,
                     file: files
                 }
+                console.log(submission);
                 index = assignment.submission.push(submission) - 1;
             }
-
             data.save()
                 .then(() => {
                     res.send(assignment.submission[index]);
@@ -328,7 +329,7 @@ exports.download = (req, res) => {
                 message: "Not found submission",
             });
         }
-        let file = submission.files.find(value => value._id == req.query.file);
+        let file = submission.file.find(value => value._id == req.query.file);
         if (!file) {
             return res.status(404).send({
                 message: "Not found file",
@@ -342,7 +343,7 @@ exports.download = (req, res) => {
                 message: "Not found submission",
             });
         }
-        let file = submission.files.find(value => value._id == req.query.file);
+        let file = submission.file.find(value => value._id == req.query.file);
         if (!file) {
             return res.status(404).send({
                 message: "Not found file",
