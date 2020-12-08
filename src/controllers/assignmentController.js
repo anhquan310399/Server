@@ -261,27 +261,28 @@ exports.submit = (req, res) => {
             console.log(req.idStudent);
             const files = [];
             let file = {
-                name: req.file.name,
+                name: req.file.originalname,
                 link: req.file.path,
                 type: req.file.path.split('.').pop(),
                 uploadDay: Date.now()
             }
             files.push(file);
             var index = 0;
-            var submitted = assignment.submission.find(value => value.idUser === req.idStudent);
+            var submitted = assignment.submission.find(value => value.idStudent === req.idStudent);
             if (submitted) {
                 index = assignment.submission.indexOf(submitted);
                 submitted.submitTime = today;
                 submitted.file = files;
+                console.log(submitted);
             } else {
                 var submission = {
                     idStudent: req.idStudent,
                     submitTime: today,
                     file: files
                 }
-                console.log(submission);
                 index = assignment.submission.push(submission) - 1;
             }
+
             data.save()
                 .then(() => {
                     res.send(assignment.submission[index]);
