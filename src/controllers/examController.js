@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
+const { index } = require('../models/file');
+const User = require('../models/user');
 
 exports.create = (req, res) => {
     let data = req.subject;
@@ -64,6 +66,7 @@ exports.find = async(req, res) => {
 
     if (req.user.idPrivilege === 'student') {
         let submissions = exam.submissions.filter(value => value.studentId == req.user._id);
+        console.log(submissions);
         submissions = submissions.map(value => {
             return {
                 _id: value._id,
@@ -84,11 +87,34 @@ exports.find = async(req, res) => {
         })
     } else {
         //Lấy bài kiểm tra cao nhất của từng sinh viên
-        let submissions = exam.submissions.map(value => {
-            return {
+        let exists = [];
+        let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
+            let result = await prePromise;
 
+            let exist = await exists.find(value => value.idStudent == submission.studentId);
+            if (exist) {
+                let existSubmission = result[exist.index];
+                result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                result[exist.index].attemptCount++;
+                return result;
+            } else {
+                var student = await User.findById(submission.studentId, 'firstName surName urlAvatar')
+                    .then(value => {
+                        return value
+                    });
+
+                exists = exists.concat({
+                    idStudent: submission.studentId,
+                    grade: submission.grade,
+                    index: result.length
+                })
+                return result.concat({
+                    student: student,
+                    grade: submission.grade,
+                    attemptCount: 1
+                })
             }
-        })
+        }, []);
         res.send({
             _id: exam._id,
             name: exam.name,
@@ -178,13 +204,13 @@ exports.delete = (req, res) => {
 
 exports.doExam = async(req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = await subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline"
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    const exam = await timeline.exams.find(value => value._id == req.params.idExam);
 
     if (!exam) {
         res.status(404).send({
@@ -195,7 +221,7 @@ exports.doExam = async(req, res) => {
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
-        let submissions = exam.submissions.filter(value => value.studentId === req.idStudent);
+        let submissions = await exam.submissions.filter(value => value.studentId === req.idStudent);
         let attempt = 0;
         console.log(submissions);
         if (submissions) {
@@ -288,13 +314,13 @@ exports.doExam = async(req, res) => {
 
 exports.submitExam = async(req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = await subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline"
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    const exam = await timeline.exams.find(value => value._id == req.params.idExam);
 
     if (!exam) {
         res.status(404).send({
@@ -305,7 +331,7 @@ exports.submitExam = async(req, res) => {
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
-        let submissions = exam.submissions.filter(value => value.studentId === req.idStudent);
+        let submissions = await exam.submissions.filter(value => value.studentId === req.idStudent);
         let attempt = 0;
         if (submissions) {
             attempt = submissions.length
@@ -314,8 +340,20 @@ exports.submitExam = async(req, res) => {
                 let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                 console.log(totalTime);
                 if (totalTime <= setting.timeToDo) {
-                    submission.answers = req.body.data;
+                    let data = req.body.data;
+                    submission.answers = submission.answers.map(value => {
+                        let answer = data.find(answer => {
+                            return answer.questionId == value.questionId;
+                        });
+                        let answerId = answer ? answer.answerId : '';
+                        return {
+                            questionId: value.questionId,
+                            answerId: answerId
+                        }
+
+                    });
                     submission.isSubmitted = true;
+
                     subject.save()
                         .then(() => {
                             res.send({ message: "Nộp bài thành công" });
