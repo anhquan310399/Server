@@ -10,13 +10,13 @@ const file = new mongoose.Schema({
         type: String,
         require: true
     },
-    link: {
+    path: {
         type: String,
         require: true
     },
     uploadDay: {
         type: Date,
-        required: true
+        default: Date.now()
     }
 });
 

@@ -25,18 +25,15 @@ const submission = new mongoose.Schema({
         required: true
     },
     file: {
-        type: [file],
+        type: file,
         required: [true, "Vui lòng thêm file"],
-        validate: [function(value) {
-            return value.length > 0
-        }, "Vui lòng thêm file"]
     },
     submitTime: {
         type: Date,
         default: Date.now()
     },
     feedBack: feedBack
-}, { _id: false });
+});
 
 const setting = new mongoose.Schema({
     startTime: {
@@ -63,12 +60,12 @@ const setting = new mongoose.Schema({
             return value > this.expireTime
         }, "Thời gian quá hạn phải hơn thời gian kết thúc"]
     },
-    fileCount: {
-        type: Number,
-        min: [1, "Số lượng file nộp tối thiểu là 1"],
-        max: [5, "Số lượng file nộp tối đa là 5"],
-        default: 1
-    },
+    // fileCount: {
+    //     type: Number,
+    //     min: [1, "Số lượng file nộp tối thiểu là 1"],
+    //     max: [5, "Số lượng file nộp tối đa là 5"],
+    //     default: 1
+    // },
     fileSize: {
         type: Number,
         min: [5, "Kích thước file nộp tối thiểu là 5mb"],

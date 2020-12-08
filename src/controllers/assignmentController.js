@@ -19,7 +19,7 @@ exports.create = async(req, res) => {
             expireTime: data.setting.expireTime,
             isOverDue: data.setting.isOverDue,
             overDueDate: data.setting.overDueDate,
-            fileCount: data.setting.fileCount,
+            // fileCount: data.setting.fileCount,
             fileSize: data.setting.fileSize,
         }
     };
@@ -157,7 +157,7 @@ exports.update = async(req, res) => {
         expireTime: data.setting.expireTime,
         isOverDue: data.setting.isOverDue,
         overDueDate: data.setting.overDueDate,
-        fileCount: data.setting.fileCount,
+        // fileCount: data.setting.fileCount,
         fileSize: data.setting.fileSize
     }
 
@@ -221,7 +221,8 @@ var storage = multer.diskStorage({
         cb(null, path)
     },
     filename: function(req, file, cb) {
-        cb(null, file.originalname)
+        let name = Date.now() + '-' + file.originalname;
+        cb(null, name)
     }
 });
 
@@ -249,8 +250,7 @@ exports.submit = (req, res) => {
         var upload = multer({
             storage: storage,
             limits: {
-                fileSize: setting.fileSize * 1020 * 1024,
-                fileCount: setting.fileCount
+                fileSize: setting.fileSize * 1020 * 1024
             }
         }).single('file');
         upload(req, res, function(err) {
@@ -259,30 +259,27 @@ exports.submit = (req, res) => {
             }
             console.log(req.file);
             console.log(req.idStudent);
-            const files = [];
             let file = {
                 name: req.file.originalname,
-                link: req.file.path,
+                path: req.file.path,
                 type: req.file.path.split('.').pop(),
                 uploadDay: Date.now()
             }
-            files.push(file);
             var index = 0;
             var submitted = assignment.submission.find(value => value.idStudent === req.idStudent);
             if (submitted) {
                 index = assignment.submission.indexOf(submitted);
                 submitted.submitTime = today;
-                submitted.file = files;
+                submitted.file = file;
                 console.log(submitted);
             } else {
                 var submission = {
                     idStudent: req.idStudent,
                     submitTime: today,
-                    file: files
+                    file: file
                 }
                 index = assignment.submission.push(submission) - 1;
             }
-
             data.save()
                 .then(() => {
                     res.send(assignment.submission[index]);
@@ -330,27 +327,15 @@ exports.download = (req, res) => {
                 message: "Not found submission",
             });
         }
-        let file = submission.file.find(value => value._id == req.query.file);
-        if (!file) {
-            return res.status(404).send({
-                message: "Not found file",
-            });
-        }
-        res.download(file.link);
+        res.download(submission.file.path);
     } else {
-        var submission = assignment.submission.find(value => value.idStudent === req.query.idStudent);
+        var submission = assignment.submission.find(value => value._id == req.query.idSubmission);
         if (!submission) {
             return res.status(404).send({
                 message: "Not found submission",
             });
         }
-        let file = submission.file.find(value => value._id == req.query.file);
-        if (!file) {
-            return res.status(404).send({
-                message: "Not found file",
-            });
-        }
-        res.download(file.link);
+        res.download(submission.file.path);
     }
 
 }
