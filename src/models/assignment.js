@@ -20,7 +20,7 @@ const feedBack = new mongoose.Schema({
 }, { _id: false });
 
 const submission = new mongoose.Schema({
-    idUser: {
+    idStudent: {
         type: String,
         required: true
     },
@@ -36,7 +36,7 @@ const submission = new mongoose.Schema({
         default: Date.now()
     },
     feedBack: feedBack
-});
+}, { _id: false });
 
 const setting = new mongoose.Schema({
     startTime: {
@@ -91,7 +91,11 @@ const assignment = new mongoose.Schema({
         type: setting,
         required: true
     },
-    submission: [submission]
+    submission: [submission],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 module.exports = assignment

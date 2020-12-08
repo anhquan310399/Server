@@ -1,23 +1,32 @@
 const User = require('../models/user');
+const multer = require('multer');
+const fs = require('fs');
 
-exports.create = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+exports.create = async(req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
-
+    let data = req.body.data;
     const model = {
-        name: req.body.data.name,
-        content: req.body.data.content,
-        setting: req.body.data.setting
+        name: data.name,
+        content: data.content,
+        setting: {
+            startTime: data.setting.startTime,
+            expireTime: data.setting.expireTime,
+            isOverDue: data.setting.isOverDue,
+            overDueDate: data.setting.overDueDate,
+            fileCount: data.setting.fileCount,
+            fileSize: data.setting.fileSize,
+        }
     };
 
     let length = timeline.assignments.push(model);
 
-    data.save()
+    await subject.save()
         .then(() => {
             res.send(timeline.assignments[length - 1]);
         })
@@ -38,7 +47,13 @@ exports.find = async(req, res) => {
             message: "Not found timeline",
         });
     }
-    const assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
+    let assignment;
+    if (req.user.idPrivilege === 'student') {
+        assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted == false);
+
+    } else {
+        assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
+    }
     if (!assignment) {
         return res.status(404).send({
             message: "Not found assignment",
@@ -95,7 +110,7 @@ exports.find = async(req, res) => {
     }
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -103,6 +118,7 @@ exports.findAll = (req, res) => {
             message: "Not found timeline",
         });
     }
+
     res.send(timeline.assignments.map((value) => {
         return {
             _id: value._id,
@@ -114,31 +130,38 @@ exports.findAll = (req, res) => {
     }));
 };
 
-exports.update = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+exports.update = async(req, res) => {
+    let data = req.body.data;
+
+    if (!(data.name && data.content && data.setting)) {
+        return res.status(400).send({ message: 'Thiếu dữ liệu' });
+    }
+
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
 
-    if (!(req.body.name && req.body.content && req.body.setting)) {
-        res.status(400).send({ message: 'Thiếu dữ liệu' });
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    if (!assignment) {
+        return res.status(404).send({ message: 'Not found assignment' });
     }
 
-    const assignment = timeline.assignments.find(function(value, index, arr) {
-        if (value._id == req.params.idAssignment) {
-            arr[index].name = req.body.data.name;
-            arr[index].content = req.body.data.content;
-            arr[index].setting = req.body.data.setting;
-            return true;
-        } else {
-            return false;
-        }
-    });
+    assignment.name = data.name;
+    assignment.content = data.content;
+    assignment.setting = {
+        startTime: data.setting.startTime,
+        expireTime: data.setting.expireTime,
+        isOverDue: data.setting.isOverDue,
+        overDueDate: data.setting.overDueDate,
+        fileCount: data.setting.fileCount,
+        fileSize: data.setting.fileSize
+    }
 
-    data.save()
+    await subject.save()
         .then(() => {
             res.send({
                 _id: assignment._id,
@@ -155,9 +178,57 @@ exports.update = (req, res) => {
         });
 };
 
+exports.delete = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    // const indexAssignment = timeline.assignments.indexOf(assignment);
+    if (!assignment) {
+        return res.status(404).send({
+            message: "Not found assignment",
+        });
+    }
+    assignment.isDeleted = true;
+
+    // timeline.assignments.splice(indexAssignment, 1);
+
+    data.save()
+        .then(() => {
+            res.send({ message: "Delete Assignment Successfully!" });
+        })
+        .catch((err) => {
+            res.status(500).send({
+                message: err.message,
+            });
+        });
+};
+
+var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        let subject = req.query.idSubject;
+        let timeline = req.query.idTimeline;
+        let assignment = req.params.idAssignment;
+        let path = `${appRoot}/uploads/${subject}/${timeline}/${assignment}/`;
+        if (!fs.existsSync(path)) {
+            fs.mkdirSync(path, { recursive: true });
+        }
+        cb(null, path)
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.originalname)
+    }
+});
+
 exports.submit = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    console.log(req.body);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -175,31 +246,53 @@ exports.submit = (req, res) => {
     const setting = assignment.setting;
     if ((today >= setting.startTime && today <= setting.expireTime) ||
         (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
-        const files = req.body.files
-        var index = 0;
-        var submitted = assignment.submission.find(value => value.idUser === req.idStudent);
-        if (submitted) {
-            index = assignment.submission.indexOf(submitted);
-            submitted.submitTime = today;
-            submitted.file = files;
-        } else {
-            var submission = {
-                idUser: req.idStudent,
-                submitTime: today,
-                file: files
+        var upload = multer({
+            storage: storage,
+            limits: {
+                fileSize: setting.fileSize * 1020 * 1024,
+                fileCount: setting.fileCount
             }
-            index = assignment.submission.push(submission) - 1;
-        }
-        data.save()
-            .then(() => {
-                res.send(assignment.submission[index]);
-            })
-            .catch((err) => {
-                const key = Object.keys(err.errors)[0];
-                res.status(500).send({
-                    message: err.errors[key].message,
+        }).single('file');
+        upload(req, res, function(err) {
+            if (err) {
+                return res.end("Error uploading file.");
+            }
+            console.log(req.file);
+            const files = [];
+            let file = {
+                name: req.file.name,
+                link: req.file.path,
+                type: req.file.path.split('.').pop(),
+                uploadDay: Date.now()
+            }
+            files.push(file);
+            var index = 0;
+            var submitted = assignment.submission.find(value => value.idUser === req.idStudent);
+            if (submitted) {
+                index = assignment.submission.indexOf(submitted);
+                submitted.submitTime = today;
+                submitted.file = files;
+            } else {
+                var submission = {
+                    idUser: req.idStudent,
+                    submitTime: today,
+                    file: files
+                }
+                index = assignment.submission.push(submission) - 1;
+            }
+
+            data.save()
+                .then(() => {
+                    res.send(assignment.submission[index]);
+                })
+                .catch((err) => {
+                    const key = Object.keys(err.errors)[0];
+                    res.status(500).send({
+                        message: err.errors[key].message,
+                    });
                 });
-            });
+        });
+
     } else {
         let message = "";
         if (today <= setting.startTime) {
@@ -210,6 +303,55 @@ exports.submit = (req, res) => {
         res.status(500).send({ message: message });
     }
 };
+
+exports.download = (req, res) => {
+    let data = req.subject;
+    console.log(req);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline",
+        });
+    }
+
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    if (!assignment) {
+        return res.status(404).send({
+            message: "Not found assignment",
+        });
+    }
+
+    if (req.idPrivilege === 'student') {
+        var submission = assignment.submission.find(value => value.idStudent === req.user._id);
+        if (!submission) {
+            return res.status(404).send({
+                message: "Not found submission",
+            });
+        }
+        let file = submission.files.find(value => value._id == req.query.file);
+        if (!file) {
+            return res.status(404).send({
+                message: "Not found file",
+            });
+        }
+        res.download(file.link);
+    } else {
+        var submission = assignment.submission.find(value => value.idStudent === req.query.idStudent);
+        if (!submission) {
+            return res.status(404).send({
+                message: "Not found submission",
+            });
+        }
+        let file = submission.files.find(value => value._id == req.query.file);
+        if (!file) {
+            return res.status(404).send({
+                message: "Not found file",
+            });
+        }
+        res.download(file.link);
+    }
+
+}
 
 exports.gradeSubmission = (req, res) => {
     let data = req.subject;
@@ -249,34 +391,3 @@ exports.gradeSubmission = (req, res) => {
         res.status(404).send("Not found submission!")
     }
 }
-
-exports.delete = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
-    if (!timeline) {
-        return res.status(404).send({
-            message: "Not found timeline",
-        });
-    }
-
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
-    const indexAssignment = timeline.assignments.indexOf(assignment);
-    if (indexAssignment === -1) {
-        return res.status(404).send({
-            message: "Not found assignment",
-        });
-    }
-
-
-    timeline.assignments.splice(indexAssignment, 1);
-
-    data.save()
-        .then(() => {
-            res.send(timeline.assignments);
-        })
-        .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
-        });
-};

@@ -4,7 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
-
+global.appRoot = path.resolve(__dirname);
 /** Import router */
 var indexRouter = require('./src/routes/index');
 var userRouter = require('./src/routes/userRouter');
