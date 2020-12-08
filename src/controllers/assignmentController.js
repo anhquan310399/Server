@@ -324,7 +324,7 @@ exports.download = (req, res) => {
     }
 
     if (req.idPrivilege === 'student') {
-        var submission = assignment.submission.find(value => value.idStudent === req.user._id);
+        var submission = assignment.submission.find(value => value.idStudent == req.user._id);
         if (!submission) {
             return res.status(404).send({
                 message: "Not found submission",
