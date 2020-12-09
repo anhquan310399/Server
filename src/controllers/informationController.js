@@ -1,3 +1,5 @@
+const isToday = require('../common/isToday');
+
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -16,7 +18,14 @@ exports.create = (req, res) => {
 
     data.save()
         .then(() => {
-            res.send(timeline.information[length - 1]);
+            let information = timeline.information[length - 1];
+            res.send({
+                _id: information._id,
+                name: information.name,
+                content: information.content,
+                time: information.createdAt,
+                isNew: true
+            });
         })
         .catch((err) => {
             const key = Object.keys(err.errors)[0];

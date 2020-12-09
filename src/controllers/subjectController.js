@@ -1,7 +1,7 @@
 const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
-
+const isToday = require('../common/isToday');
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
@@ -56,11 +56,6 @@ exports.findAll = async(req, res) => {
     }
 
 };
-
-const isToday = function(dateParameter) {
-    var today = new Date();
-    return dateParameter.getDate() === today.getDate() && dateParameter.getMonth() === today.getMonth() && dateParameter.getFullYear() === today.getFullYear();
-}
 
 exports.find = async(req, res) => {
     let data = req.subject;
