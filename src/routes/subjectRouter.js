@@ -19,4 +19,7 @@ router.get('/:idSubject/index', authLecture, subjectController.getOrderOfTimeLin
 router.post('/:idSubject/index', authLecture, subjectController.adjustOrderOfTimeline);
 
 
+router.get('/:idSubject/score', authInSubject, subjectController.getSubjectTranscript);
+
+
 module.exports = router;

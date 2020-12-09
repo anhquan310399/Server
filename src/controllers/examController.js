@@ -11,7 +11,7 @@ exports.create = (req, res) => {
         });
     }
 
-    var code = req.body.setting.code;
+    var code = req.body.data.setting.code;
 
     var chapter = subject.quizBank.find(value => value._id == code);
     if (!chapter) {

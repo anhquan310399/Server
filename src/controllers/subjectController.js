@@ -315,8 +315,68 @@ exports.getSubjectTranscript = async(req, res) => {
     let subject = req.subject;
     let fields = await subject.timelines.reduce(
         async(preField, currentTimeline) => {
+            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+                let exists = [];
+                let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
+                    let exist = await exists.find(value => value.idStudent == submission.studentId);
+                    if (exist) {
+                        let result = await prePromise;
+                        let existSubmission = result[exist.index];
+                        result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                        return result;
+                    } else {
+                        let result = await prePromise;
+                        exists = exists.concat({
+                            idStudent: submission.studentId,
+                            grade: submission.grade,
+                            index: result.length
+                        })
+                        return result.concat({
+                            _id: submission._id,
+                            idStudent: submission.studentId,
+                            grade: submission.grade
+                        })
+                    }
+                }, []);
+                return {
+                    idSubject: subject._id,
+                    idTimeline: currentTimeline._id,
+                    _id: exam._id,
+                    name: exam.name,
+                    submissions: submissions,
+                    type: 'exam'
+                }
+            }));
+            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+                let submissions = await Promise.all(assignment.submission.map(async(submission) => {
+                    return {
+                        _id: submission._id,
+                        idStudent: submission.idStudent,
+                        grade: submission.feedBack ? submission.feedBack.grade : 0
+                    }
+                }));
+
+                return {
+                    idSubject: subject._id,
+                    idTimeline: currentTimeline._id,
+                    _id: assignment._id,
+                    name: assignment.name,
+                    submissions: submissions,
+                    type: 'assignment'
+                }
+            }));
+
+            let currentFields = exams.concat(assignments);
+            let result = await preField;
+            return result.concat(currentFields);
+        }, []);
 
 
-        }, []
-    )
+
+    if (req.user.idPrivilege === 'student') {
+
+    } else {
+
+    }
+    res.send(fields);
 }
