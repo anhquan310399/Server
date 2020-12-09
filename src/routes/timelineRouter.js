@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { authInSubject, authLecture } = require("../middleware/auth")
+const { authInSubject, authLecture, authStudent } = require("../middleware/auth")
     /* ROUTER FOR PRIVILEGE */
 const timelineController = require("../controllers/timelineController")
 
@@ -13,6 +13,6 @@ router.delete('/:idTimeline/', authLecture, timelineController.delete);
 
 router.post('/:idTimeline/upload', authLecture, timelineController.uploadFile);
 router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
-router.delete('/:idTimeline/download/:idFile', authInSubject, timelineController.removeFile);
+router.delete('/:idTimeline/remove/:idFile', authLecture, timelineController.removeFile);
 
 module.exports = router;
