@@ -33,7 +33,21 @@ exports.create = (req, res) => {
     var length = timeline.exams.push(model);
     subject.save()
         .then(() => {
-            res.send(timeline.exams[length - 1]);
+            let exam = timeline.exams[length - 1];
+            const today = Date.now();
+            const isRemain = (today <= exam.expireTime);
+            const timingRemain = moment(exam.expireTime).from(moment(today));
+            res.send({
+                _id: exam._id,
+                name: exam.name,
+                content: exam.content,
+                startTime: exam.expireTime,
+                expireTime: exam.expireTime,
+                setting: exam.setting,
+                isRemain: isRemain,
+                timingRemain: timingRemain,
+                submissions: exam.submissions
+            });
         })
         .catch((err) => {
             const key = Object.keys(err.errors)[0];
