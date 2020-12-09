@@ -66,13 +66,41 @@ exports.find = async(req, res) => {
     if (req.user.idPrivilege === 'student') {
         let submissions = exam.submissions.filter(value => value.studentId == req.user._id);
         console.log(submissions);
-        submissions = submissions.map(value => {
-            return {
-                _id: value._id,
-                grade: value.isSubmitted ? value.grade : null,
-                isSubmitted: value.isSubmitted
+        let isContinue = false;
+        submissions = await Promise.all(submissions.map(async(submission, index) => {
+            if (index = submissions.length) {
+                if (today >= exam.startTime && today < exam.expireTime) {
+                    if (!submission.isSubmitted) {
+                        let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                        console.log(totalTime);
+                        if (totalTime <= setting.timeToDo) {
+                            isContinue = true;
+                        }
+                    }
+                }
             }
-        })
+
+            return {
+                _id: submission._id,
+                student: {
+                    _id: req.user._id,
+                    firstName: req.user.firstName,
+                    surName: req.user.surName,
+                    urlAvatar: req.user.urlAvatar,
+                },
+                grade: submission.isSubmitted ? submission.grade : null,
+                isSubmitted: submission.isSubmitted,
+                isContinue: isContinue
+            }
+        }));
+        let isAttempt = false;
+        let attemptAvailable = exam.setting.attemptCount - submissions.length;
+        if (!isContinue && attemptAvailable > 0) {
+            if (today >= exam.startTime && today < exam.expireTime) {
+                isAttempt = true;
+            }
+        }
+
         res.send({
             _id: exam._id,
             name: exam.name,
@@ -82,6 +110,8 @@ exports.find = async(req, res) => {
             setting: exam.setting,
             isRemain: isRemain,
             timingRemain: timingRemain,
+            isAttempt: isAttempt,
+            attemptAvailable: attemptAvailable,
             submissions: submissions
         })
     } else {
@@ -108,6 +138,7 @@ exports.find = async(req, res) => {
                     index: result.length
                 })
                 return result.concat({
+                    _id: submission._id,
                     student: student,
                     grade: submission.grade,
                     attemptCount: 1
