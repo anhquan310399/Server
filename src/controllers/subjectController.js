@@ -58,17 +58,17 @@ exports.findAll = async(req, res) => {
 };
 
 exports.find = async(req, res) => {
-    let data = req.subject;
+    let subject = req.subject;
     let timelines = req.subject.timelines;
     if (req.idPrivilege === 'student') {
         timelines.filter((value) => { if (value.isDeleted === false) return true });
     }
-    let teacher = await userDb.findById(data.lectureId, 'firstName surName urlAvatar')
+    let teacher = await userDb.findById(subject.lectureId, 'firstName surName urlAvatar')
         .then(value => { return value });
 
     let result = {
-        _id: data._id,
-        name: data.name,
+        _id: subject._id,
+        name: subject.name,
         lecture: teacher,
         timelines: _.sortBy(timelines.map((value) => {
             let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt) } });
@@ -309,4 +309,14 @@ exports.getListStudent = async(req, res) => {
         return student;
     }));
     res.send(info);
+}
+
+exports.getSubjectTranscript = async(req, res) => {
+    let subject = req.subject;
+    let fields = await subject.timelines.reduce(
+        async(preField, currentTimeline) => {
+
+
+        }, []
+    )
 }

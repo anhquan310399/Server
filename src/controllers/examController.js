@@ -3,8 +3,8 @@ const moment = require('moment');
 const User = require('../models/user');
 
 exports.create = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -13,7 +13,7 @@ exports.create = (req, res) => {
 
     var code = req.body.setting.code;
 
-    var chapter = data.quizBank.find(value => value._id == code);
+    var chapter = subject.quizBank.find(value => value._id == code);
     if (!chapter) {
         return res.status(404).send({
             message: "Not found quiz bank",
@@ -30,7 +30,7 @@ exports.create = (req, res) => {
 
     var length = timeline.exams.push(model);
 
-    data.save()
+    subject.save()
         .then(() => {
             res.send(timeline.exams[length - 1]);
         })
