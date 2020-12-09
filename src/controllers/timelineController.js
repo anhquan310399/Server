@@ -1,14 +1,17 @@
+const multer = require('multer');
+const fs = require('fs');
+
 exports.create = (req, res) => {
-    let data = req.subject;
+    let subject = req.subject;
 
     const model = {
         name: req.body.data.name,
         description: req.body.data.description,
-        index: data.timelines.length + 1
+        index: subject.timelines.length + 1
     };
 
-    var length = data.timelines.push(model);
-    data.save()
+    var length = subject.timelines.push(model);
+    subject.save()
         .then((data) => {
             res.send(data.timelines[length - 1]);
         })
@@ -20,9 +23,9 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = async(req, res) => {
-    let data = req.subject;
+    let subject = req.subject;
 
-    let timelines = await Promise.all(data.timelines.map(async(value) => {
+    let timelines = await Promise.all(subject.timelines.map(async(value) => {
         return {
             _id: value._id,
             name: value.name,
@@ -33,39 +36,41 @@ exports.findAll = async(req, res) => {
     res.send(timelines);
 };
 
-// exports.find = (req, res) => {
-//     let timelines = req.subject.timelines;
-//     if (req.idPrivilege === 'student') {
-//         timelines.filter((value) => { if (value.isDeleted === false) return true });
-//     }
-//     let result = timelines.map((value) => {
-//         let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
-//         let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-//         let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-//         let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
-//         if (req.idPrivilege === 'student') {
-//             return { id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
-//         } else {
-//             return { id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, isDeleted: value.isDeleted };
-//         }
-//     });
-//     res.send(result);
-// };
+exports.find = (req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        })
+    }
+    res.send(timeline);
+};
 
 exports.update = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(function(value, index, arr) {
-        if (value._id == req.params.idTimeline) {
-            arr[index].name = req.body.data.name;
-            arr[index].description = req.body.data.description;
-            return true;
-        } else {
-            return false;
-        }
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
     });
-    data.save()
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        })
+    }
+
+    timeline.name = req.body.data.name;
+    timeline.description = req.body.data.description;
+
+    subject.save()
         .then((data) => {
-            res.send(timeline);
+            res.send({
+                _id: timeline._id,
+                name: timeline.name,
+                description: timeline.description,
+                isDeleted: timeline.isDeleted
+            });
         })
         .catch((err) => {
             res.status(500).send({
@@ -75,15 +80,15 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.params.idTimeline);
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.params.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline"
         })
     }
     timeline.isDeleted = true;
-    data.save()
+    subject.save()
         .then((data) => {
             res.send(data.timelines);
         })
@@ -93,3 +98,124 @@ exports.delete = (req, res) => {
             });
         });
 };
+var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        let subject = req.query.idSubject;
+        let timeline = req.query.idTimeline;
+        let path = `${appRoot}/uploads/${subject}/${timeline}/files/`;
+        if (!fs.existsSync(path)) {
+            fs.mkdirSync(path, { recursive: true });
+        }
+        cb(null, path)
+    },
+    filename: function(req, file, cb) {
+        let name = Date.now() + '-' + file.originalname;
+        cb(null, name)
+    }
+});
+
+exports.uploadFile = (req, res) => {
+
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        })
+    }
+
+    var upload = multer({
+        storage: storage,
+        limits: {
+            fileSize: 30 * 1020 * 1024
+        }
+    }).single('file');
+
+    upload(req, res, function(err) {
+        if (err) {
+            return res.status(500).send({ message: "Error uploading file." });
+        }
+        console.log(req.file);
+        let file = {
+            name: req.file.originalname,
+            path: req.file.path,
+            type: req.file.path.split('.').pop(),
+            uploadDay: Date.now()
+        }
+        let index = timeline.files.push(file);
+        console.log(timeline.files[index - 1]);
+
+        subject.save()
+            .then(() => {
+                res.send(timeline.files[index - 1]);
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message: err.message
+                })
+            })
+    })
+}
+
+
+exports.downloadFile = (req, res) => {
+
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        })
+    }
+
+    const file = timeline.files.find(value => value._id == req.params.idFile);
+    if (!file) {
+        return res.status(404).send({
+            message: "Not found file"
+        })
+    }
+    res.download(file.path);
+}
+
+
+exports.removeFile = (req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            message: "Not found timeline"
+        })
+    }
+
+    const file = timeline.files.find(value => value._id == req.params.idFile);
+    if (!file) {
+        return res.status(404).send({
+            message: "Not found file"
+        })
+    }
+    let index = timeline.files.indexOf(file);
+    fs.unlink(file.path, function(err) {
+        if (err) {
+            return res.status(404).send({
+                message: err.message
+            })
+        }
+        timeline.files.splice(index, 1);
+
+        subject.save()
+            .then(() => {
+                res.send({ message: "Delete file successfully!" });
+            })
+            .catch(err => {
+                res.status(500).send({
+                    message: err.message
+                })
+            })
+    })
+}

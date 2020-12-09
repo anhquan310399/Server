@@ -8,6 +8,8 @@ const assignmentSchema = require("./assignment");
 
 const examSchema = require("./exam");
 
+const fileSchema = require('./file');
+
 const timeline = new mongoose.Schema({
     name: {
         type: String,
@@ -18,6 +20,7 @@ const timeline = new mongoose.Schema({
     exams: [examSchema],
     information: [informationSchema],
     assignments: [assignmentSchema],
+    files: [fileSchema],
     isDeleted: {
         type: Boolean,
         default: false

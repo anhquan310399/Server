@@ -6,8 +6,13 @@ const timelineController = require("../controllers/timelineController")
 
 router.post('/', authLecture, timelineController.create);
 router.get('/', authLecture, timelineController.findAll);
-// router.get('/:idTimeline', authInSubject, timelineController.find);
-router.put('/idTimeline/', authLecture, timelineController.update);
+router.get('/:idTimeline', authLecture, timelineController.find);
+router.put('/:idTimeline/', authLecture, timelineController.update);
 router.delete('/:idTimeline/', authLecture, timelineController.delete);
+
+
+router.post('/:idTimeline/upload', authLecture, timelineController.uploadFile);
+router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
+router.delete('/:idTimeline/download/:idFile', authInSubject, timelineController.removeFile);
 
 module.exports = router;

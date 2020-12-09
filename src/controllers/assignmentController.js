@@ -255,7 +255,7 @@ exports.submit = (req, res) => {
         }).single('file');
         upload(req, res, function(err) {
             if (err) {
-                return res.end("Error uploading file.");
+                return res.status(500).send({ message: "Error uploading file." });
             }
             console.log(req.file);
             console.log(req.idStudent);
@@ -270,6 +270,11 @@ exports.submit = (req, res) => {
             if (submitted) {
                 index = assignment.submission.indexOf(submitted);
                 submitted.submitTime = today;
+                fs.unlink(submitted.file.path, function(err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                })
                 submitted.file = file;
                 console.log(submitted);
             } else {

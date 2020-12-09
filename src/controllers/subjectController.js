@@ -263,7 +263,7 @@ exports.getDeadline = async(req, res) => {
             listSubject.forEach(subject => {
                 subject.timelines.forEach(timeline => {
                     let exams = timeline.exams.map(exam => {
-                        var submission = exam.submissions.find(value => value.idUser === req.idUser)
+                        var submission = exam.submissions.find(value => value.studentId === req.idUser)
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
@@ -275,7 +275,7 @@ exports.getDeadline = async(req, res) => {
                         }
                     }).filter(exam => { return exam.expireTime > today });
                     let assignments = timeline.assignments.map(assignment => {
-                        let submission = assignment.submission.find(value => value.idUser === req.idUser);
+                        let submission = assignment.submission.find(value => value.idStudent === req.idUser);
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
