@@ -76,9 +76,9 @@ exports.find = async(req, res) => {
             let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
             let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt) } });
             if (req.idPrivilege === 'student') {
-                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index };
+                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
             } else {
-                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, index: value.index, isDeleted: value.isDeleted };
+                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
             }
         }), ['index']),
     };
