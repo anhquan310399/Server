@@ -47,7 +47,13 @@ exports.find = (req, res) => {
     const information = timeline.information.find(value => value._id == req.params.idInformation);
 
     if (information) {
-        return res.send(information);
+        return res.send({
+            _id: information._id,
+            name: information.name,
+            content: information.content,
+            time: information.createdAt,
+            isNew: isToday(information.updatedAt)
+        });
     } else {
         return res.status(404).send({
             message: "Not found information",
@@ -57,7 +63,7 @@ exports.find = (req, res) => {
 
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -65,7 +71,16 @@ exports.findAll = (req, res) => {
             message: "Not found timeline",
         });
     }
-    res.send(timeline.information);
+    var information = await Promise.all(timeline.information.map(async(value) => {
+        return {
+            _id: value._id,
+            name: value.name,
+            content: value.content,
+            time: value.createdAt,
+            isNew: isToday(value.updatedAt)
+        };
+    }));
+    res.send(information);
 };
 
 exports.update = (req, res) => {
@@ -77,18 +92,25 @@ exports.update = (req, res) => {
         });
     }
     const information = timeline.information.find(function(value, index, arr) {
-        if (value._id == req.params.idInformation) {
-            arr[index].name = req.body.data.name;
-            arr[index].content = req.body.data.content;
-            return true;
-        } else {
-            return false;
-        }
+        return (value._id == req.params.idInformation)
     });
+    if (!information) {
+        return res.status(404).send({
+            message: "Not found information",
+        });
+    }
 
+    information.name = req.body.data.name;
+    information.content = req.body.data.content;
     data.save()
         .then(() => {
-            res.send(information);
+            res.send({
+                _id: information._id,
+                name: information.name,
+                content: information.content,
+                time: information.createdAt,
+                isNew: isToday(information.updatedAt)
+            });
         })
         .catch((err) => {
             const key = Object.keys(err.errors)[0];
