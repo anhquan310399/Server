@@ -371,8 +371,6 @@ exports.getSubjectTranscript = async(req, res) => {
             return result.concat(currentFields);
         }, []);
 
-
-
     if (req.user.idPrivilege === 'student') {
         let transcript = await Promise.all(fields.map(async(field) => {
             let submission = await field.submissions.find(value => value.idStudent == req.user._id);

@@ -20,16 +20,17 @@ exports.create = (req, res) => {
         });
     }
 
+    console.log(req.body);
+
     const model = {
-        name: req.body.name,
-        content: req.body.content,
-        startTime: new Date(req.body.startTime),
-        expireTime: new Date(req.body.expireTime),
-        setting: req.body.setting
+        name: req.body.data.name,
+        content: req.body.data.content,
+        startTime: new Date(req.body.data.startTime),
+        expireTime: new Date(req.body.data.expireTime),
+        setting: req.body.data.setting
     };
 
     var length = timeline.exams.push(model);
-
     subject.save()
         .then(() => {
             res.send(timeline.exams[length - 1]);
