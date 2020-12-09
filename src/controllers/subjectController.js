@@ -332,37 +332,37 @@ exports.getSubjectTranscript = async(req, res) => {
                             index: result.length
                         })
                         return result.concat({
-                            _id: submission._id,
+                            // _id: submission._id,
                             idStudent: submission.studentId,
                             grade: submission.grade
                         })
                     }
                 }, []);
                 return {
-                    idSubject: subject._id,
-                    idTimeline: currentTimeline._id,
-                    _id: exam._id,
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    // _id: exam._id,
                     name: exam.name,
                     submissions: submissions,
-                    type: 'exam'
+                    // type: 'exam'
                 }
             }));
             let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
                 let submissions = await Promise.all(assignment.submission.map(async(submission) => {
                     return {
-                        _id: submission._id,
+                        // _id: submission._id,
                         idStudent: submission.idStudent,
                         grade: submission.feedBack ? submission.feedBack.grade : 0
                     }
                 }));
 
                 return {
-                    idSubject: subject._id,
-                    idTimeline: currentTimeline._id,
-                    _id: assignment._id,
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    // _id: assignment._id,
                     name: assignment.name,
                     submissions: submissions,
-                    type: 'assignment'
+                    // type: 'assignment'
                 }
             }));
 
@@ -374,9 +374,41 @@ exports.getSubjectTranscript = async(req, res) => {
 
 
     if (req.user.idPrivilege === 'student') {
-
+        let transcript = await Promise.all(fields.map(async(field) => {
+            let submission = await field.submissions.find(value => value.idStudent == req.user._id);
+            let grade = 0;
+            if (submission) {
+                grade = submission.grade;
+            }
+            return {
+                name: field.name,
+                grade: grade
+            }
+        }))
+        return res.send(transcript);
     } else {
+        let transcript = await Promise.all(fields.map(async(field) => {
+            let submissions = await Promise.all(subject.studentIds.map(
+                async(value) => {
+                    let student = await userDb.findById(value, 'firstName surName urlAvatar')
+                        .then(value => { return value });
 
+                    let submission = field.submissions.find(value => value.idStudent == student._id);
+                    if (!submission) {
+                        return {
+                            idStudent: student._id,
+                            grade: 0
+                        }
+                    } else {
+                        return submission
+                    }
+                }))
+            return {
+                name: field.name,
+                submissions: submissions
+            }
+        }));
+
+        return res.send(transcript);
     }
-    res.send(fields);
 }
