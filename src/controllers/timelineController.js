@@ -19,36 +19,19 @@ exports.create = (req, res) => {
         });
 };
 
-// exports.findAll = (req, res) => {
-//     let data = req.subject;
-//     if (req.idPrivilege === 'student') {
-//         res.send(data.timelines.map((value) => {
-//             let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
-//             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-//             let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-//             let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
-//             return { name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments };
-//         }));
+exports.findAll = async(req, res) => {
+    let data = req.subject;
 
-//     } else {
-//         res.send(data.timelines.map((value) => {
-//             let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description } });
-//             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description } });
-//             let information = value.information.map((info) => { return { _id: info._id, name: info.name, description: info.description, content: info.content } });
-//             let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description } });
-//             return {
-//                 _id: value._id,
-//                 name: value.name,
-//                 description: value.description,
-//                 forums: forums,
-//                 exams: exams,
-//                 information: information,
-//                 assignments: assignments,
-//                 isDeleted: value.isDeleted
-//             };
-//         }));
-//     }
-// };
+    let timelines = await Promise.all(data.timelines.map(async(value) => {
+        return {
+            _id: value._id,
+            name: value.name,
+            description: value.description,
+            isDeleted: value.isDeleted
+        };
+    }))
+    res.send(timelines);
+};
 
 // exports.find = (req, res) => {
 //     let timelines = req.subject.timelines;

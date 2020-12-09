@@ -5,7 +5,7 @@ const { authInSubject, authLecture } = require("../middleware/auth")
 const timelineController = require("../controllers/timelineController")
 
 router.post('/', authLecture, timelineController.create);
-// router.get('/', authInSubject, timelineController.findAll);
+router.get('/', authLecture, timelineController.findAll);
 // router.get('/:idTimeline', authInSubject, timelineController.find);
 router.put('/idTimeline/', authLecture, timelineController.update);
 router.delete('/:idTimeline/', authLecture, timelineController.delete);

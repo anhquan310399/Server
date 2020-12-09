@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const moment = require('moment');
-const { index } = require('../models/file');
 const User = require('../models/user');
 
 exports.create = (req, res) => {
