@@ -126,9 +126,8 @@ exports.uploadFile = (req, res) => {
         })
     }
 
-    console.log(req);
-    console.log("body --------------");
-    console.log(req.body);
+    console.log("file --------------");
+    console.log(req.files);
 
     var upload = multer({
         storage: storage,
