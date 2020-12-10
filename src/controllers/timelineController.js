@@ -1,6 +1,6 @@
 const multer = require('multer');
 const fs = require('fs');
-
+const path = require('path');
 exports.create = (req, res) => {
     let subject = req.subject;
 
@@ -101,7 +101,7 @@ exports.delete = (req, res) => {
 var storage = multer.diskStorage({
     destination: function(req, file, cb) {
         let subject = req.query.idSubject;
-        let timeline = req.query.idTimeline;
+        let timeline = req.params.idTimeline;
         let path = `${appRoot}/uploads/${subject}/${timeline}/files/`;
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path, { recursive: true });
@@ -126,19 +126,25 @@ exports.uploadFile = (req, res) => {
         })
     }
 
-    console.log("file --------------");
-    console.log(req.files);
-
     var upload = multer({
         storage: storage,
         limits: {
             fileSize: 30 * 1020 * 1024
+        },
+        fileFilter: (req, file, cb) => {
+            let extName = path.extname(file.originalname);
+            console.log('extname : ' + extName);
+            if (extName == ".doc" || extName == ".docx" || extName == ".pdf" || extName == ".xls" || extName == ".xlsx") {
+                cb(null, true);
+            } else {
+                return cb(new Error('Only .doc/.docx, .pdf and .xls/.xlsx format allowed!'));
+            }
         }
     }).single('file');
 
     upload(req, res, function(err) {
         if (err) {
-            return res.status(500).send({ message: "Error uploading file." });
+            return res.status(500).send({ message: err.message });
         }
         console.log(req.file);
         let file = {
