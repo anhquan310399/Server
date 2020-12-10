@@ -100,7 +100,7 @@ exports.find = async(req, res) => {
         content: topic.content,
         create: creator,
         discussions: discussions,
-        time: topic.updatedAt
+        time: topic.createdAt
     });
 };
 
