@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const multer = require('multer');
 const fs = require('fs');
+const moment = require('moment');
 
 exports.create = async(req, res) => {
     let subject = req.subject;
@@ -59,13 +60,20 @@ exports.find = async(req, res) => {
             message: "Not found assignment",
         });
     }
+    let today = Date.now();
+    const timingRemain = moment(assignment.setting.expireTime).from(moment(today));
+
     if (req.user.idPrivilege === 'student') {
         let submission = assignment.submission.find(value => value.idStudent == req.user._id);
         console.log(submission);
-        let today = Date.now();
         let isCanSubmit = false;
         if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
             isCanSubmit = true;
+
+        } else if (assignment.setting.isOverDue) {
+            if (today <= assignment.setting.overDueDate) {
+                isCanSubmit = true;
+            }
         }
         if (submission) {
             res.send({
@@ -76,6 +84,7 @@ exports.find = async(req, res) => {
                 gradeStatus: submission.feedBack ? true : false,
                 setting: assignment.setting,
                 isCanSubmit: isCanSubmit,
+                timingRemain: timingRemain,
                 submission: submission
             })
         } else {
@@ -87,6 +96,7 @@ exports.find = async(req, res) => {
                 gradeStatus: false,
                 setting: assignment.setting,
                 isCanSubmit: isCanSubmit,
+                timingRemain: timingRemain,
                 submission: null
             });
         }
@@ -279,6 +289,7 @@ exports.submit = (req, res) => {
                 submitted.submitTime = today;
                 fs.unlink(submitted.file.path, function(err) {
                     if (err) {
+                        console.log('Delete previous file');
                         console.log(err);
                     }
                 })
