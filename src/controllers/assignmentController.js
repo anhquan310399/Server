@@ -41,7 +41,7 @@ exports.create = async(req, res) => {
 
 exports.find = async(req, res) => {
     let data = req.subject;
-    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline || req.query.idTimeline);
+    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
@@ -62,6 +62,11 @@ exports.find = async(req, res) => {
     if (req.user.idPrivilege === 'student') {
         let submission = assignment.submission.find(value => value.idStudent == req.user._id);
         console.log(submission);
+        let today = Date.now();
+        let isCanSubmit = false;
+        if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
+            isCanSubmit = true;
+        }
         if (submission) {
             res.send({
                 _id: assignment._id,
@@ -70,6 +75,7 @@ exports.find = async(req, res) => {
                 submissionStatus: true,
                 gradeStatus: submission.feedBack ? true : false,
                 setting: assignment.setting,
+                isCanSubmit: isCanSubmit,
                 submission: submission
             })
         } else {
@@ -80,6 +86,7 @@ exports.find = async(req, res) => {
                 submissionStatus: false,
                 gradeStatus: false,
                 setting: assignment.setting,
+                isCanSubmit: isCanSubmit,
                 submission: null
             });
         }
