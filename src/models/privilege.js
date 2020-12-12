@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema({
-    _id: {
+    role: {
         type: String,
         unique: true,
         required: true
@@ -10,9 +10,6 @@ const schema = mongoose.Schema({
         unique: true,
         required: true
     }
-}, {
-    timestamps: true,
-    _id: false
 });
 
 

@@ -34,7 +34,7 @@ exports.create = async(req, res) => {
     await data.save()
         .then(async function() {
             let discussion = topic.discussions[length - 1];
-            let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+            let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
             res.send({
                 id: discussion._id,
                 content: discussion.content,
@@ -83,7 +83,7 @@ exports.find = async(req, res) => {
             message: "Not found discussion",
         });
     }
-    let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+    let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
 
     res.send({
         id: discussion._id,
@@ -119,7 +119,7 @@ exports.findAll = async(req, res) => {
     }
 
     var result = await Promise.all(topic.discussions.map(async function(discussion) {
-        let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+        let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
         return {
             id: discussion._id,
             content: discussion.content,
@@ -175,7 +175,7 @@ exports.update = async(req, res) => {
     if (isTrueCreate) {
         await data.save()
             .then(async() => {
-                let creator = await User.findById(discussion.idUser, 'firstName surName urlAvatar').then(value => { return value });
+                let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
                 res.send({
                     id: discussion._id,
                     content: discussion.content,

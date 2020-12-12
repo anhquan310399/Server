@@ -4,7 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
+var passport = require('passport');
+var cookieSession = require('cookie-session');
 global.appRoot = path.resolve(__dirname);
+
 /** Import router */
 var indexRouter = require('./src/routes/index');
 var userRouter = require('./src/routes/userRouter');
@@ -18,6 +21,7 @@ var assignmentRouter = require('./src/routes/assignmentRouter');
 var examRouter = require('./src/routes/examRouter');
 var topicRouter = require('./src/routes/topicRouter');
 var quizBankRouter = require('./src/routes/quizBankRouter');
+
 /** Config database */
 const dbConfig = process.env.MONGODB_URL;
 const mongoose = require("mongoose");
@@ -29,6 +33,16 @@ mongoose.Promise = global.Promise;
 app.set('views', path.join(__dirname, 'src/views'));
 app.set('view engine', 'jade');
 
+//Config passport
+app.use(cookieSession({
+    // milliseconds of a day
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [process.env.HCMUTEUnversityHCMC]
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Config server
 app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
@@ -36,6 +50,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//Config router
 app.use('/', indexRouter);
 app.use('/user', userRouter);
 app.use('/privilege', privilegeRouter);
@@ -48,6 +63,7 @@ app.use('/assignment', assignmentRouter);
 app.use('/exam', examRouter);
 app.use('/topic', topicRouter);
 app.use('/quiz', quizBankRouter);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));

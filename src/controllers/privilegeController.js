@@ -2,7 +2,7 @@ const db = require("../models/privilege");
 
 exports.create = (req, res) => {
     const data = new db({
-        _id: req.body._id,
+        role: req.body.role,
         name: req.body.name
     });
 
@@ -61,6 +61,7 @@ exports.update = (req, res) => {
     // Find ads and update it with the request body
     db.findByIdAndUpdate(
             req.params.id, {
+                role: req.body.role,
                 name: req.body.name,
             }, { new: true }
         )

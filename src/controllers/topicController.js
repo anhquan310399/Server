@@ -28,7 +28,7 @@ exports.create = async(req, res) => {
     data.save()
         .then(async function(data) {
             let topic = forum.topics[length - 1];
-            let creator = await User.findById(topic.idUser, 'firstName surName urlAvatar')
+            let creator = await User.findById(topic.idUser, 'code firstName surName urlAvatar')
                 .then(value => {
                     return value;
                 })
@@ -76,7 +76,7 @@ exports.find = async(req, res) => {
         });
     }
     var discussions = await Promise.all(topic.discussions.map(async function(value) {
-        let creator = await User.findById(value.idUser, 'firstName surName urlAvatar')
+        let creator = await User.findById(value.idUser, 'code firstName surName urlAvatar')
             .then(value => {
                 return value;
             })
@@ -89,7 +89,7 @@ exports.find = async(req, res) => {
         }
     }));
 
-    let creator = await User.findById(topic.idUser, 'firstName surName urlAvatar')
+    let creator = await User.findById(topic.idUser, 'code firstName surName urlAvatar')
         .then(value => {
             return value;
         });
@@ -122,7 +122,7 @@ exports.findAll = async(req, res) => {
 
     let topics = await Promise.all(
         forum.topics.map(async function(value) {
-            let creator = await User.findById(value.idUser, 'firstName surName urlAvatar')
+            let creator = await User.findById(value.idUser, 'code firstName surName urlAvatar')
                 .then(value => {
                     return value;
                 });
@@ -175,7 +175,7 @@ exports.update = (req, res) => {
     if (isCreator) {
         data.save()
             .then(async function(data) {
-                let creator = await User.findById(topic.idUser, 'firstName surName urlAvatar')
+                let creator = await User.findById(topic.idUser, 'code firstName surName urlAvatar')
                     .then(value => {
                         return value;
                     })

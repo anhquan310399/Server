@@ -24,7 +24,7 @@ exports.create = async(req, res) => {
 exports.findAll = async(req, res) => {
     var idPrivilege = req.idPrivilege;
     if (idPrivilege === 'teacher') {
-        db.find({ lectureId: req.idUser, isDeleted: false })
+        db.find({ lectureId: req.code, isDeleted: false })
             .then((data) => {
                 var info = data.map(function(value) {
                     return { _id: value._id, name: value.name };
@@ -37,10 +37,10 @@ exports.findAll = async(req, res) => {
                 });
             });
     } else if (idPrivilege === 'student') {
-        db.find({ 'studentIds': req.idUser, isDeleted: false })
+        db.find({ 'studentIds': req.code, isDeleted: false })
             .then(async function(data) {
                 var info = await Promise.all(data.map(async function(value) {
-                    var teacher = await userDb.findById(value.lectureId, 'firstName surName urlAvatar')
+                    var teacher = await userDb.findOne({ code: value.lectureId }, 'code firstName surName urlAvatar')
                         .then(value => {
                             return value
                         });
@@ -63,7 +63,7 @@ exports.find = async(req, res) => {
     if (req.idPrivilege === 'student') {
         timelines.filter((value) => { if (value.isDeleted === false) return true });
     }
-    let teacher = await userDb.findById(subject.lectureId, 'firstName surName urlAvatar')
+    let teacher = await userDb.findOne({ code: subject.lectureId }, 'code firstName surName urlAvatar')
         .then(value => { return value });
 
     let result = {
@@ -175,7 +175,7 @@ exports.addStudent = (req, res) => {
         return res.send({ message: 'This student has already in subject' });
     }
 
-    userDb.findOne({ _id: req.body.idStudent })
+    userDb.findOne({ code: req.body.idStudent })
         .then(user => {
             if (!user) {
                 return res.status(404).send({ message: "Not found student with id: " + req.body.idStudent });
@@ -216,7 +216,6 @@ exports.removeStudent = (req, res) => {
             });
         });
 };
-
 
 exports.adjustOrderOfTimeline = async(req, res) => {
     const adjust = req.body;
@@ -263,7 +262,7 @@ exports.getDeadline = async(req, res) => {
             listSubject.forEach(subject => {
                 subject.timelines.forEach(timeline => {
                     let exams = timeline.exams.map(exam => {
-                        var submission = exam.submissions.find(value => value.studentId === req.idUser)
+                        var submission = exam.submissions.find(value => value.idStudent === req.idUser)
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
@@ -275,7 +274,7 @@ exports.getDeadline = async(req, res) => {
                         }
                     }).filter(exam => { return exam.expireTime > today });
                     let assignments = timeline.assignments.map(assignment => {
-                        let submission = assignment.submission.find(value => value.idStudent === req.idUser);
+                        let submission = assignment.submissions.find(value => value.idStudent === req.idUser);
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
@@ -302,7 +301,7 @@ exports.getListStudent = async(req, res) => {
     const subject = req.subject;
 
     var info = await Promise.all(subject.studentIds.map(async function(value) {
-        var student = await userDb.findById(value, 'emailAddress firstName surName urlAvatar')
+        var student = await userDb.findOne({ code: value }, 'code emailAddress firstName surName urlAvatar')
             .then(value => {
                 return value
             });
@@ -318,7 +317,7 @@ exports.getSubjectTranscript = async(req, res) => {
             let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
                 let exists = [];
                 let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
-                    let exist = await exists.find(value => value.idStudent == submission.studentId);
+                    let exist = await exists.find(value => value.idStudent == submission.idStudent);
                     if (exist) {
                         let result = await prePromise;
                         let existSubmission = result[exist.index];
@@ -327,13 +326,13 @@ exports.getSubjectTranscript = async(req, res) => {
                     } else {
                         let result = await prePromise;
                         exists = exists.concat({
-                            idStudent: submission.studentId,
+                            idStudent: submission.idStudent,
                             grade: submission.grade,
                             index: result.length
                         })
                         return result.concat({
                             // _id: submission._id,
-                            idStudent: submission.studentId,
+                            idStudent: submission.idStudent,
                             grade: submission.grade
                         })
                     }
@@ -348,7 +347,7 @@ exports.getSubjectTranscript = async(req, res) => {
                 }
             }));
             let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
-                let submissions = await Promise.all(assignment.submission.map(async(submission) => {
+                let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
                     return {
                         // _id: submission._id,
                         idStudent: submission.idStudent,
@@ -388,7 +387,7 @@ exports.getSubjectTranscript = async(req, res) => {
         let transcript = await Promise.all(fields.map(async(field) => {
             let submissions = await Promise.all(subject.studentIds.map(
                 async(value) => {
-                    let student = await userDb.findById(value, 'firstName surName urlAvatar')
+                    let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                         .then(value => { return value });
 
                     let submission = field.submissions.find(value => value.idStudent == student._id);

@@ -5,7 +5,7 @@ exports.create = (req, res) => {
         const user = new dbUser(req.body);
         user.save()
             .then((data) => {
-                user.generateAuthToken();
+                // user.generateAuthToken();
                 res.send(data);
             })
             .catch((err) => {
@@ -33,7 +33,7 @@ exports.findAll = (req, res) => {
 };
 
 exports.findUser = (req, res) => {
-    dbUser.findOne({ _id: req.params.id })
+    dbUser.findOne({ code: req.params.id })
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
@@ -41,7 +41,8 @@ exports.findUser = (req, res) => {
                 });
             }
             var re = {
-                id: user._id,
+                _id: user._id,
+                code: user.code,
                 emailAddress: user.emailAddress,
                 firstName: user.firstName,
                 surName: user.surName,
@@ -67,7 +68,7 @@ exports.update = (req, res) => {
             req.params.id, {
                 firstName: req.body.firstName,
                 surName: req.body.surName,
-            }, { new: true }
+            }
         )
         .then((user) => {
             if (!user) {
@@ -110,3 +111,66 @@ exports.delete = (req, res) => {
             });
         });
 };
+
+exports.authenticate = (req, res) => {
+    dbUser.findOne({ code: req.body.code })
+        .then(user => {
+            console.log(user);
+            if (!user) {
+                return res.json({
+                    success: false,
+                    message: 'Authentication failed. User not found'
+                });
+            } else if (user) {
+                var validPassword = user.comparePassword(req.body.password);
+                if (!validPassword) {
+                    return res.json({
+                        success: false,
+                        message: 'Authentication failed. Wrong password!'
+                    });
+                } else {
+                    let token = user.generateAuthToken();
+                    console.log(token);
+                    res.json({
+                        success: true,
+                        message: 'Login successfully!',
+                        token: token
+                    })
+                }
+            }
+        })
+        .catch(err => {
+            res.json({
+                success: false,
+                message: err.message
+            })
+        })
+}
+
+exports.authenticateByGoogle = (req, res) => {
+    dbUser.findById(req.user._id)
+        .then(user => {
+            console.log(user);
+            if (!user) {
+                return res.json({
+                    success: false,
+                    message: 'Authentication failed. User not found'
+                });
+            } else if (user) {
+                let token = user.generateAuthToken();
+                console.log(token);
+                res.json({
+                    success: true,
+                    message: 'Login successfully!',
+                    token: token
+                })
+
+            }
+        })
+        .catch(err => {
+            res.json({
+                success: false,
+                message: err.message
+            })
+        })
+}

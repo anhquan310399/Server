@@ -88,7 +88,7 @@ const assignment = new mongoose.Schema({
         type: setting,
         required: true
     },
-    submission: [submission],
+    submissions: [submission],
     isDeleted: {
         type: Boolean,
         default: false

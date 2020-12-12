@@ -64,7 +64,7 @@ exports.find = async(req, res) => {
     const timingRemain = moment(assignment.setting.expireTime).from(moment(today));
 
     if (req.user.idPrivilege === 'student') {
-        let submission = assignment.submission.find(value => value.idStudent == req.user._id);
+        let submission = assignment.submissions.find(value => value.idStudent == req.user._id);
         console.log(submission);
         let isCanSubmit = false;
         if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
@@ -101,9 +101,9 @@ exports.find = async(req, res) => {
             });
         }
     } else {
-        let submissions = await Promise.all(assignment.submission
+        let submissions = await Promise.all(assignment.submissions
             .map(async function(submit) {
-                var student = await User.findById(submit.idStudent, 'firstName surName urlAvatar')
+                var student = await User.findById(submit.idStudent, 'code firstName surName urlAvatar')
                     .then(value => {
                         return value
                     });
@@ -121,7 +121,7 @@ exports.find = async(req, res) => {
             name: assignment.name,
             content: assignment.content,
             setting: assignment.setting,
-            submissionCount: assignment.submission.length,
+            submissionCount: assignment.submissions.length,
             submission: submissions
         });
     }
@@ -283,9 +283,9 @@ exports.submit = (req, res) => {
                 uploadDay: Date.now()
             }
             var index = 0;
-            var submitted = assignment.submission.find(value => value.idStudent === req.idStudent);
+            var submitted = assignment.submissions.find(value => value.idStudent === req.idStudent);
             if (submitted) {
-                index = assignment.submission.indexOf(submitted);
+                index = assignment.submissions.indexOf(submitted);
                 submitted.submitTime = today;
                 fs.unlink(submitted.file.path, function(err) {
                     if (err) {
@@ -301,11 +301,11 @@ exports.submit = (req, res) => {
                     submitTime: today,
                     file: file
                 }
-                index = assignment.submission.push(submission) - 1;
+                index = assignment.submissions.push(submission) - 1;
             }
             data.save()
                 .then(() => {
-                    res.send(assignment.submission[index]);
+                    res.send(assignment.submissions[index]);
                 })
                 .catch((err) => {
                     const key = Object.keys(err.errors)[0];
@@ -344,7 +344,7 @@ exports.download = (req, res) => {
     console.log(req.user.idPrivilege);
     if (req.user.idPrivilege === 'student') {
         console.log(req.user._id);
-        var submission = assignment.submission.find(value => value.idStudent == req.user._id);
+        var submission = assignment.submissions.find(value => value.idStudent == req.user._id);
         if (!submission) {
             return res.status(404).send({
                 message: "Not found submission",
@@ -352,7 +352,7 @@ exports.download = (req, res) => {
         }
         res.download(submission.file.path);
     } else {
-        var submission = assignment.submission.find(value => value._id == req.query.idSubmission);
+        var submission = assignment.submissions.find(value => value._id == req.query.idSubmission);
         if (!submission) {
             return res.status(404).send({
                 message: "Not found submission",
@@ -379,7 +379,7 @@ exports.gradeSubmission = (req, res) => {
         });
     }
 
-    var submitted = assignment.submission.find(value => value._id == req.params.idSubmission);
+    var submitted = assignment.submissions.find(value => value._id == req.params.idSubmission);
     if (submitted) {
         submitted.feedBack = {
             grade: req.body.grade,

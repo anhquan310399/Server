@@ -79,7 +79,7 @@ exports.find = async(req, res) => {
 
 
     if (req.user.idPrivilege === 'student') {
-        let submissions = exam.submissions.filter(value => value.studentId == req.user._id);
+        let submissions = exam.submissions.filter(value => value.idStudent == req.user._id);
         console.log(submissions);
         let isContinue = false;
         submissions = await Promise.all(submissions.map(async(submission, index) => {
@@ -99,6 +99,7 @@ exports.find = async(req, res) => {
                 _id: submission._id,
                 student: {
                     _id: req.user._id,
+                    code: req.user.code,
                     firstName: req.user.firstName,
                     surName: req.user.surName,
                     urlAvatar: req.user.urlAvatar,
@@ -135,20 +136,20 @@ exports.find = async(req, res) => {
         let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
             let result = await prePromise;
 
-            let exist = await exists.find(value => value.idStudent == submission.studentId);
+            let exist = await exists.find(value => value.idStudent == submission.idStudent);
             if (exist) {
                 let existSubmission = result[exist.index];
                 result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
                 result[exist.index].attemptCount++;
                 return result;
             } else {
-                var student = await User.findById(submission.studentId, 'firstName surName urlAvatar')
+                var student = await User.findById(submission.idStudent, 'code firstName surName urlAvatar')
                     .then(value => {
                         return value
                     });
 
                 exists = exists.concat({
-                    idStudent: submission.studentId,
+                    idStudent: submission.idStudent,
                     grade: submission.grade,
                     index: result.length
                 })
@@ -266,7 +267,7 @@ exports.doExam = async(req, res) => {
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
-        let submissions = await exam.submissions.filter(value => value.studentId === req.idStudent);
+        let submissions = await exam.submissions.filter(value => value.idStudent === req.idStudent);
         let attempt = 0;
         console.log(submissions);
         if (submissions) {
@@ -318,7 +319,7 @@ exports.doExam = async(req, res) => {
                 });
 
             var submit = {
-                studentId: req.idStudent,
+                idStudent: req.idStudent,
                 answers: questions.map(value => {
                     return { questionId: value._id }
                 }),
@@ -376,7 +377,7 @@ exports.submitExam = async(req, res) => {
     const today = Date.now();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
-        let submissions = await exam.submissions.filter(value => value.studentId === req.idStudent);
+        let submissions = await exam.submissions.filter(value => value.idStudent === req.idStudent);
         let attempt = 0;
         if (submissions) {
             attempt = submissions.length

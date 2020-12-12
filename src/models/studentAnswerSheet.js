@@ -12,7 +12,7 @@ const studentAnswer = new mongoose.Schema({
 }, { _id: false })
 
 const studentAnswerSheet = new mongoose.Schema({
-    studentId: {
+    idStudent: {
         type: String,
         required: true
     },

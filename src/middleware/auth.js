@@ -16,11 +16,12 @@ exports.authStudent = (req, res, next) => {
 
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
-                Subject.findOne({ _id: idSubject, 'studentIds': user._id })
+                Subject.findOne({ _id: idSubject, 'studentIds': user.code })
                     .then((subject) => {
                         if (subject) {
                             req.subject = subject;
                             req.idStudent = user._id;
+                            req.code = user.code;
                             next();
                         } else {
                             throw 'Not found Subject'
@@ -55,11 +56,12 @@ exports.authLecture = (req, res, next) => {
 
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
-                Subject.findOne({ _id: idSubject, lectureId: user._id })
+                Subject.findOne({ _id: idSubject, lectureId: user.code })
                     .then((subject) => {
                         if (subject) {
                             req.subject = subject;
                             req.idTeacher = user._id;
+                            req.code = user.code;
                             next();
                         } else {
                             throw 'Not found Subject'
@@ -94,7 +96,7 @@ exports.authInSubject = (req, res, next) => {
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
                 if (user.idPrivilege == "student") {
-                    Subject.findOne({ _id: idSubject, isDeleted: false, 'studentIds': user._id })
+                    Subject.findOne({ _id: idSubject, isDeleted: false, 'studentIds': user.code })
                         .then((subject) => {
                             if (subject) {
                                 req.user = user;
@@ -109,7 +111,7 @@ exports.authInSubject = (req, res, next) => {
                             });
                         });
                 } else if (user.idPrivilege == "teacher") {
-                    Subject.findOne({ _id: idSubject, isDeleted: false, lectureId: user._id })
+                    Subject.findOne({ _id: idSubject, isDeleted: false, lectureId: user.code })
                         .then((subject) => {
                             if (subject) {
                                 req.user = user;
@@ -147,6 +149,7 @@ exports.authLogin = (req, res, next) => {
                     });
                 }
                 req.idUser = user._id;
+                req.code = user.code;
                 req.idPrivilege = user.idPrivilege;
                 next();
             })
