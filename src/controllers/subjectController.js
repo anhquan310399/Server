@@ -341,7 +341,7 @@ exports.getSubjectTranscript = async(req, res) => {
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
-                    // _id: exam._id,
+                    _id: exam._id,
                     name: exam.name,
                     submissions: submissions,
                     // type: 'exam'
@@ -359,7 +359,7 @@ exports.getSubjectTranscript = async(req, res) => {
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
-                    // _id: assignment._id,
+                    _id: assignment._id,
                     name: assignment.name,
                     submissions: submissions,
                     // type: 'assignment'
