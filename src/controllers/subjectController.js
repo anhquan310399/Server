@@ -7,7 +7,7 @@ exports.create = async(req, res) => {
     const data = new db({
         _id: req.body._id,
         name: req.body.name,
-        lectureId: req.body.lectureId,
+        idLecture: req.body.idLecture,
         studentIds: req.body.studentIds,
         timelines: req.body.timelines
     });
@@ -24,7 +24,7 @@ exports.create = async(req, res) => {
 exports.findAll = async(req, res) => {
     var idPrivilege = req.idPrivilege;
     if (idPrivilege === 'teacher') {
-        db.find({ lectureId: req.code, isDeleted: false })
+        db.find({ idLecture: req.code, isDeleted: false })
             .then((data) => {
                 var info = data.map(function(value) {
                     return { _id: value._id, name: value.name };
@@ -40,7 +40,7 @@ exports.findAll = async(req, res) => {
         db.find({ 'studentIds': req.code, isDeleted: false })
             .then(async function(data) {
                 var info = await Promise.all(data.map(async function(value) {
-                    var teacher = await userDb.findOne({ code: value.lectureId }, 'code firstName surName urlAvatar')
+                    var teacher = await userDb.findOne({ code: value.idLecture }, 'code firstName surName urlAvatar')
                         .then(value => {
                             return value
                         });
@@ -63,7 +63,7 @@ exports.find = async(req, res) => {
     if (req.idPrivilege === 'student') {
         timelines.filter((value) => { if (value.isDeleted === false) return true });
     }
-    let teacher = await userDb.findOne({ code: subject.lectureId }, 'code firstName surName urlAvatar')
+    let teacher = await userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
         .then(value => { return value });
 
     let result = {
@@ -86,7 +86,7 @@ exports.find = async(req, res) => {
 };
 
 exports.update = async(req, res) => {
-    if (!req.body || !(req.body.name && req.body.lectureId)) {
+    if (!req.body || !(req.body.name && req.body.idLecture)) {
         return res.status(400).send({
             message: "Lack of information",
         });
@@ -94,7 +94,7 @@ exports.update = async(req, res) => {
     await db.findByIdAndUpdate(
             req.params.idSubject, {
                 name: req.body.name,
-                lectureId: req.body.lectureId
+                idLecture: req.body.idLecture
             }
         )
         .then((data) => {

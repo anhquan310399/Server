@@ -13,16 +13,11 @@ const chapter = new mongoose.Schema({
 });
 
 const Schema = mongoose.Schema({
-    _id: {
-        type: String,
-        unique: true,
-        required: true
-    },
     name: {
         type: String,
         required: true
     },
-    lectureId: {
+    idLecture: {
         type: String,
         required: true
     },

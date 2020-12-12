@@ -56,7 +56,7 @@ exports.authLecture = (req, res, next) => {
 
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
 
-                Subject.findOne({ _id: idSubject, lectureId: user.code })
+                Subject.findOne({ _id: idSubject, idLecture: user.code })
                     .then((subject) => {
                         if (subject) {
                             req.subject = subject;
@@ -111,7 +111,7 @@ exports.authInSubject = (req, res, next) => {
                             });
                         });
                 } else if (user.idPrivilege == "teacher") {
-                    Subject.findOne({ _id: idSubject, isDeleted: false, lectureId: user.code })
+                    Subject.findOne({ _id: idSubject, isDeleted: false, idLecture: user.code })
                         .then((subject) => {
                             if (subject) {
                                 req.user = user;
