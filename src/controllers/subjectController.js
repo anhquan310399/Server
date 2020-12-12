@@ -379,6 +379,7 @@ exports.getSubjectTranscript = async(req, res) => {
                 grade = submission.grade;
             }
             return {
+                _id: field._id,
                 name: field.name,
                 grade: grade
             }
@@ -402,6 +403,7 @@ exports.getSubjectTranscript = async(req, res) => {
                     }
                 }))
             return {
+                _id: field._id,
                 name: field.name,
                 submissions: submissions
             }
