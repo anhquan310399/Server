@@ -200,7 +200,7 @@ exports.removeStudent = (req, res) => {
     let subject = req.subject;
 
     let index = subject.studentIds.indexOf(req.body.idStudent);
-    if (!index) {
+    if (index === -1) {
         return res.send({ message: 'Not found this student with id: ' + req.body.idStudent });
     }
     subject.studentIds.splice(index, 1);
