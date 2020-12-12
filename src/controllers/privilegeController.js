@@ -12,8 +12,15 @@ exports.create = (req, res) => {
             res.send(data);
         })
         .catch((err) => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating privilege.",
+            if (err.code === 11000) {
+                return res.status(400).send({
+                    message: `Duplicate ${Object.keys(err.keyValue).toString()}`,
+                });
+            }
+            const key = Object.keys(err.errors)[0];
+            console.log(err.errors[key])
+            res.status(400).send({
+                message: err.errors[key].message,
             });
         });
 };

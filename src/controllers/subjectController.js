@@ -5,7 +5,6 @@ const isToday = require('../common/isToday');
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
-        _id: req.body._id,
         name: req.body.name,
         idLecture: req.body.idLecture,
         studentIds: req.body.studentIds,
@@ -17,7 +16,11 @@ exports.create = async(req, res) => {
             res.send(data);
         })
         .catch((err) => {
-            res.status(500).send({ message: err.message });
+            const key = Object.keys(err.errors)[0];
+            console.log(err.errors[key])
+            res.status(400).send({
+                message: err.errors[key].message,
+            });
         });
 };
 
@@ -200,7 +203,7 @@ exports.removeStudent = (req, res) => {
     let subject = req.subject;
 
     let index = subject.studentIds.indexOf(req.body.idStudent);
-    if (!index) {
+    if (index === -1) {
         return res.send({ message: 'Not found this student with id: ' + req.body.idStudent });
     }
     subject.studentIds.splice(index, 1);

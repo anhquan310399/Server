@@ -16,8 +16,10 @@ exports.create = (req, res) => {
             res.send(data.timelines[length - 1]);
         })
         .catch((err) => {
-            res.status(500).send({
-                message: err.message,
+            const key = Object.keys(err.errors)[0];
+            console.log(err.errors[key])
+            res.status(400).send({
+                message: err.errors[key].message,
             });
         });
 };
@@ -84,16 +86,21 @@ exports.delete = (req, res) => {
     const timeline = subject.timelines.find(value => value._id == req.params.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
     timeline.isDeleted = true;
     subject.save()
         .then((data) => {
-            res.send(data.timelines);
+            res.send({
+                success: true,
+                message: 'Delete timeline successfully!'
+            });
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });

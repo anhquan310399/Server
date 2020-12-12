@@ -1,23 +1,30 @@
 const dbUser = require("../models/user");
 
 exports.create = (req, res) => {
-    try {
-        const user = new dbUser(req.body);
-        user.save()
-            .then((data) => {
-                // user.generateAuthToken();
-                res.send(data);
-            })
-            .catch((err) => {
-                res.status(500).send({
-                    message: err.message || "Some error occurred while creating user.",
+    const user = new dbUser({
+        code: req.body.code,
+        idPrivilege: req.body.idPrivilege,
+        emailAddress: req.body.emailAddress,
+        firstName: req.body.firstName,
+        surName: req.body.surName
+    });
+    user.save()
+        .then((data) => {
+            // user.generateAuthToken();
+            res.send(data);
+        })
+        .catch((err) => {
+            if (err.code === 11000) {
+                return res.status(400).send({
+                    message: `Duplicate ${Object.keys(err.keyValue).toString()}`,
                 });
+            }
+            const key = Object.keys(err.errors)[0];
+            console.log(err.errors[key])
+            res.status(400).send({
+                message: err.errors[key].message,
             });
-    } catch (error) {
-        res.status(400).send({
-            message: error.message || "Some error occurred while creating user."
         });
-    }
 };
 
 exports.findAll = (req, res) => {
@@ -121,7 +128,7 @@ exports.authenticate = (req, res) => {
                     success: false,
                     message: 'Authentication failed. User not found'
                 });
-            } else if (user) {
+            } else {
                 var validPassword = user.comparePassword(req.body.password);
                 if (!validPassword) {
                     return res.json({

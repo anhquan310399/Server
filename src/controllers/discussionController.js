@@ -5,6 +5,7 @@ exports.create = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -12,14 +13,15 @@ exports.create = async(req, res) => {
     const forum = timeline.forums.find(value => value._id == req.body.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
 
     const topic = forum.topics.find(value => value._id == req.body.idTopic);
-
     if (!topic) {
         return res.status(404).send({
+            success: false,
             message: "Not found topic",
         });
     }
@@ -48,6 +50,7 @@ exports.create = async(req, res) => {
             console.log(err);
             const key = Object.keys(err.errors)[0];
             res.status(500).send({
+                success: false,
                 message: err.errors[key].message,
             });
         });
@@ -58,6 +61,7 @@ exports.find = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -65,6 +69,7 @@ exports.find = async(req, res) => {
     const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
@@ -73,6 +78,7 @@ exports.find = async(req, res) => {
 
     if (!topic) {
         return res.status(404).send({
+            success: false,
             message: "Not found topic",
         });
     }
@@ -80,6 +86,7 @@ exports.find = async(req, res) => {
     const discussion = topic.discussions.find(value => value._id == req.params.idDiscussion)
     if (!discussion) {
         return res.status(404).send({
+            success: false,
             message: "Not found discussion",
         });
     }
@@ -99,6 +106,7 @@ exports.findAll = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -106,6 +114,7 @@ exports.findAll = async(req, res) => {
     const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
@@ -114,6 +123,7 @@ exports.findAll = async(req, res) => {
 
     if (!topic) {
         return res.status(404).send({
+            success: false,
             message: "Not found topic",
         });
     }
@@ -135,9 +145,11 @@ exports.findAll = async(req, res) => {
 
 exports.update = async(req, res) => {
     let data = req.subject
+    console.log(req.user);
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -145,6 +157,7 @@ exports.update = async(req, res) => {
     const forum = timeline.forums.find(value => value._id == req.body.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
@@ -153,26 +166,28 @@ exports.update = async(req, res) => {
 
     if (!topic) {
         return res.status(404).send({
+            success: false,
             message: "Not found topic",
         });
     }
 
-    let isTrueCreate = true;
+    let isCreator = false;
 
-    const discussion = topic.discussions.find(function(value, index, arr) {
-        if (value._id == req.params.idDiscussion) {
-            if (value.idUser === req.user._id) {
-                arr[index].content = req.body.data.content;
-            } else {
-                isTrueCreate = false;
-            }
-            return true;
-        } else {
-            return false;
-        }
-    });
+    const discussion = topic.discussions.find(value => value._id == req.params.idDiscussion);
 
-    if (isTrueCreate) {
+    if (!discussion) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found discussion",
+        });
+    } else if (discussion.idUser == req.user._id) {
+        discussion.content = req.body.data.content;
+        isCreator = true;
+    }
+
+
+
+    if (isCreator) {
         await data.save()
             .then(async() => {
                 let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
@@ -181,7 +196,7 @@ exports.update = async(req, res) => {
                     content: discussion.content,
                     create: creator,
                     time: discussion.updatedAt,
-                    isChanged: discussion.createdAt === discussion.updatedAt ? false : true
+                    isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
                 });
             })
             .catch((err) => {
@@ -189,11 +204,13 @@ exports.update = async(req, res) => {
                 console.log(err);
                 const key = Object.keys(err.errors)[0];
                 res.status(500).send({
+                    success: false,
                     message: err.errors[key].message,
                 });
             });
     } else {
         res.status(500).send({
+            success: false,
             message: "You can't change this discussion!"
         });
     }
@@ -204,6 +221,7 @@ exports.delete = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -211,6 +229,7 @@ exports.delete = async(req, res) => {
     const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
@@ -219,6 +238,7 @@ exports.delete = async(req, res) => {
 
     if (!topic) {
         return res.status(404).send({
+            success: false,
             message: "Not found topic",
         });
     }
@@ -228,20 +248,30 @@ exports.delete = async(req, res) => {
             return (value._id == req.params.idDiscussion)
         });
     if (!discussion) {
-        return res.status(401).send("Not found discussion!");
+        return res.status(401).send({
+            success: false,
+            message: "Not found discussion!"
+        });
     } else {
         if (discussion.idUser != req.user._id) {
-            return res.status(401).send({ message: "You can't delete this discussion!" });
+            return res.status(401).send({
+                success: false,
+                message: "You can't delete this discussion!"
+            });
         } else {
             let index = topic.discussions.indexOf(discussion);
             topic.discussions.splice(index, 1);
             await data.save()
                 .then(() => {
-                    res.send({ message: "Delete Successfully!" });
+                    res.send({
+                        success: true,
+                        message: "Delete Successfully!"
+                    });
                 })
                 .catch((err) => {
                     console.log("Delete discussion:" + err.message);
                     res.status(500).send({
+                        success: false,
                         message: "Delete Failure!"
                     });
                 });

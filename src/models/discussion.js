@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const discussion = new mongoose.Schema({
     content: {
         type: String,
-        required: [true, 'Vui lòng nhập nội dung thảo luận']
+        required: [true, 'Content of discussion is required!']
     },
     idUser: {
         type: String,

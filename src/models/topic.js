@@ -5,11 +5,11 @@ const discussionSchema = require("./discussion");
 const topic = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Vui lòng nhập tiêu đề Topic"]
+        required: [true, "Name of Topic is required"]
     },
     content: {
         type: String,
-        required: [true, "Vui lòng nhập nội dung Topic"]
+        required: [true, "Content of Topic is required"]
     },
     discussions: [discussionSchema],
     idUser: {

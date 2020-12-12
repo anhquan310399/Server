@@ -6,7 +6,7 @@ exports.authStudent = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, idPrivilege: 'student', 'tokens.token': token })
+        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'student' })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -24,21 +24,25 @@ exports.authStudent = (req, res, next) => {
                             req.code = user.code;
                             next();
                         } else {
-                            throw 'Not found Subject'
+                            return res.status(404).send({
+                                message: "Not found subject that you enroll"
+                            });
                         }
                     }).catch((err) => {
-                        return res.status(401).send({
-                            message: "Not authorized to access this resource"
+                        return res.status(500).send({
+                            message: err.message
                         });
                     });
             })
             .catch((err) => {
-                return res.status(401).send({
-                    message: "Not authorized to access this resource",
+                return res.status(500).send({
+                    message: err.message || "Error when get user",
                 });
             });
     } catch (error) {
-        res.status(401).send({ message: 'Not authorized to access this resource' })
+        return res.status(401).send({
+            message: "Not authorized to access this resource"
+        });
     }
 }
 
@@ -46,11 +50,11 @@ exports.authLecture = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, idPrivilege: 'teacher', 'tokens.token': token })
+        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'teacher' })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
-                        message: "Not authorized to access this resource!"
+                        message: "Please login"
                     });
                 }
 
@@ -64,17 +68,19 @@ exports.authLecture = (req, res, next) => {
                             req.code = user.code;
                             next();
                         } else {
-                            throw 'Not found Subject'
+                            return res.status(404).send({
+                                message: "Not found this subject"
+                            });
                         }
                     }).catch((err) => {
-                        return res.status(404).send({
-                            message: "Not found this subject"
+                        return res.status(500).send({
+                            message: err.message
                         });
                     });
             })
             .catch((err) => {
-                return res.status(401).send({
-                    message: "Not authorized to access this resource"
+                return res.status(500).send({
+                    message: err.message
                 });
             });
     } catch (error) {
@@ -86,7 +92,7 @@ exports.authInSubject = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, 'tokens.token': token })
+        User.findOne({ _id: data._id, code: data.code })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -103,11 +109,13 @@ exports.authInSubject = (req, res, next) => {
                                 req.subject = subject;
                                 next();
                             } else {
-                                throw 'Not found Subject';
+                                return res.status(404).send({
+                                    message: "Not found Subject"
+                                });
                             }
                         }).catch((err) => {
-                            return res.status(404).send({
-                                message: "Not found Subject"
+                            return res.status(500).send({
+                                message: err.message
                             });
                         });
                 } else if (user.idPrivilege == "teacher") {
@@ -118,18 +126,20 @@ exports.authInSubject = (req, res, next) => {
                                 req.subject = subject;
                                 next();
                             } else {
-                                throw 'not found Subject';
+                                return res.status(404).send({
+                                    message: "Not found Subject"
+                                });
                             }
                         }).catch((err) => {
-                            return res.status(404).send({
-                                message: "Not found Subject"
+                            return res.status(500).send({
+                                message: err.message
                             });
                         });
                 }
             })
             .catch((err) => {
                 return res.status(500).send({
-                    message: "Error",
+                    message: err.message,
                 });
             });
     } catch (error) {
@@ -141,7 +151,7 @@ exports.authLogin = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, 'tokens.token': token })
+        User.findOne({ _id: data._id, code: data.code })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -154,8 +164,8 @@ exports.authLogin = (req, res, next) => {
                 next();
             })
             .catch((err) => {
-                return res.status(401).send({
-                    message: "Not authorized to access this resource",
+                return res.status(500).send({
+                    message: err.message,
                 });
             });
     } catch (error) {

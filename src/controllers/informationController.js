@@ -25,11 +25,21 @@ exports.create = (req, res) => {
                 content: information.content,
                 time: information.createdAt,
                 isNew: true
+                    // success: true,
+                    // message: 'Create new information successfully!',
+                    // information: {
+                    //     _id: information._id,
+                    //     name: information.name,
+                    //     content: information.content,
+                    //     time: information.createdAt,
+                    //     isNew: true
+                    // }
             });
         })
         .catch((err) => {
             const key = Object.keys(err.errors)[0];
             res.status(500).send({
+                success: false,
                 message: err.errors[key].message,
             });
         });
@@ -141,11 +151,15 @@ exports.delete = (req, res) => {
 
     data.save()
         .then(() => {
-            res.send({ message: "Delete successfully!" });
+            res.send({
+                success: true,
+                message: "Delete successfully!"
+            });
         })
         .catch((err) => {
             console.log("Delete information: " + err.message);
             res.status(500).send({
+                success: false,
                 message: "Delete failure!"
             });
         });

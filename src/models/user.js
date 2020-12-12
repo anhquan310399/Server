@@ -2,49 +2,57 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require('jsonwebtoken');
 const privilegeDB = require('./privilege');
+const bcrypt = require('bcrypt');
+var ValidatorError = mongoose.Error.ValidatorError;
 
 const UserSchema = mongoose.Schema({
     code: {
         type: String,
-        unique: true,
-        required: true
+        unique: [true, 'Code is existed!'],
+        required: [true, 'Code is required']
     },
     password: {
         type: String,
-        default: this.code
+        default: function() {
+            return this.code
+        }
     },
     idPrivilege: {
         type: String,
-        required: true,
-        validate: value => {
-            privilegeDB.findOne({ role: value })
+        required: [true, 'idPrivilege is required'],
+        validate: async function(value) {
+            await privilegeDB.findOne({ role: value })
                 .then(privilege => {
                     if (!privilege) {
-                        throw new Error({ error: 'Not found privilege' });
+                        throw new ValidatorError({
+                            message: 'Not found privilege',
+                            type: 'validate',
+                            path: 'idPrivilege'
+                        })
                     }
                 });
         }
     },
     emailAddress: {
         type: String,
-        required: true,
-        unique: true,
+        required: [true, 'Email address is required'],
+        unique: [true, `Email address is existed`],
         lowercase: true,
         validate: value => {
             if (!validator.isEmail(value)) {
-                throw new Error({ error: 'Invalid Email address' });
-            } else if (value.split('@').pop().includes('hcmute.edu.vn')) {
-                throw new Error({ error: 'Email address not in HCMUTE' });
+                throw new ValidatorError({ message: 'Invalid Email address', type: 'validate', path: 'emailAddress' });
+            } else if (!value.split('@').pop().includes('hcmute.edu.vn')) {
+                throw new ValidatorError({ message: 'Email address not in HCMUTE', type: 'validate', path: 'emailAddress' });
             }
         }
     },
     firstName: {
         type: String,
-        required: true
+        required: [true, 'First name is required']
     },
     surName: {
         type: String,
-        required: true
+        required: [true, 'Surname is required']
     },
     urlAvatar: {
         type: String,
@@ -68,7 +76,11 @@ const saltRounds = 10;
 UserSchema.pre('save', function(next) {
     var user = this;
     // hash the password only if the password has been changed or user is new
-    if (!user.isModified('password')) return next();
+    if (!user.isModified('password')) {
+        if (!user.isNew) {
+            return next();
+        }
+    }
 
     // generate the hash
     bcrypt.hash(user.password, saltRounds, function(err, hash) {
@@ -88,16 +100,18 @@ UserSchema.methods.comparePassword = function(password) {
 UserSchema.methods.generateAuthToken = function() {
     // Generate an auth token for the user
     const user = this
+    var superSecret = process.env.JWT_KEY;
+    console.log(superSecret);
     const token = jwt.sign({
-            _id: user._id,
-            code: user.code,
-            idPrivilege: user.privilege,
-            emailAddress: user.emailAddress
-        }, process.env.JWT_KEY, {
-            expiresIn: '24h'
-        })
-        // user.tokens = user.tokens.concat({ token })
-        // await user.save()
+        _id: user._id,
+        code: user.code,
+        idPrivilege: user.privilege,
+        emailAddress: user.emailAddress
+    }, superSecret, {
+        expiresIn: '24h'
+    });
+    // user.tokens = user.tokens.concat({ token })
+    // await user.save()
     return token
 }
 

@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const information = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Chưa nhập tiêu đề thông báo!']
+        required: [true, 'Name of information is required!']
     },
     content: {
         type: String,
-        required: [true, 'Chưa nhập nội dung thông báo!']
+        required: [true, 'Content of information is required!']
     }
 }, { timestamps: true });
 

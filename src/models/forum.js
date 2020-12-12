@@ -5,7 +5,7 @@ const topicSchema = require("./topic")
 const forum = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Vui lòng nhập tiêu đề thông báo']
+        required: [true, 'Name of forum is required']
     },
     description: String,
     topics: [topicSchema],

@@ -3,12 +3,12 @@ const schema = mongoose.Schema({
     role: {
         type: String,
         unique: true,
-        required: true
+        required: [true, 'role is required']
     },
     name: {
         type: String,
         unique: true,
-        required: true
+        required: [true, 'name of privilege is required']
     }
 });
 

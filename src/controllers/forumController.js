@@ -4,6 +4,7 @@ exports.create = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -22,6 +23,7 @@ exports.create = (req, res) => {
         .catch((err) => {
             const key = Object.keys(err.errors)[0];
             res.status(500).send({
+                success: false,
                 message: err.errors[key].message,
             });
         });
@@ -33,25 +35,30 @@ exports.find = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
     const forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found discussion",
         });
     }
 
     if (req.idPrivilege === 'student' && forum.isDeleted === true) {
-        res.status(404).send('Not found forum!');
+        res.status(404).send({
+            success: false,
+            message: "Not found forum",
+        });
     } else {
         res.send({
             _id: forum._id,
             name: forum.name,
             description: forum.description,
             topics: await Promise.all(forum.topics.map(async function(value) {
-                let creator = await User.findById(value.idUser, 'firstName surName urlAvatar')
+                let creator = await User.findById(value.idUser, 'code firstName surName urlAvatar')
                     .then(value => { return value });
                 return {
                     _id: value._id,
@@ -69,6 +76,7 @@ exports.findAll = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -102,6 +110,7 @@ exports.update = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -128,6 +137,7 @@ exports.update = (req, res) => {
         .catch((err) => {
             const key = Object.keys(err.errors)[0];
             res.status(500).send({
+                success: false,
                 message: err.errors[key].message,
             });
         });
@@ -153,11 +163,15 @@ exports.delete = (req, res) => {
 
     data.save()
         .then((data) => {
-            res.send("Delete Successfully!");
+            res.send({
+                success: false,
+                message: "Delete Successfully!"
+            });
         })
         .catch((err) => {
             console.log("Delete forum: " + err.message);
             res.status(500).send({
+                success: false,
                 message: "Delete Failure!"
             });
         });
