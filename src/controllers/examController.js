@@ -59,14 +59,14 @@ exports.create = (req, res) => {
 
 exports.find = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             message: "Not found timeline",
         });
     }
 
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    const exam = await timeline.exams.find(value => value._id == req.params.idExam);
     if (!exam) {
         return res.status(404).send({
             message: "Not found exam",
@@ -79,7 +79,7 @@ exports.find = async(req, res) => {
 
 
     if (req.user.idPrivilege === 'student') {
-        let submissions = exam.submissions.filter(value => value.studentId == req.user._id);
+        let submissions = await exam.submissions.filter(value => value.studentId == req.user._id);
         console.log(submissions);
         let isContinue = false;
         submissions = await Promise.all(submissions.map(async(submission, index) => {
@@ -88,7 +88,7 @@ exports.find = async(req, res) => {
                     if (!submission.isSubmitted) {
                         let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                         console.log(totalTime);
-                        if (totalTime <= setting.timeToDo) {
+                        if (totalTime <= exam.setting.timeToDo) {
                             isContinue = true;
                         }
                     }

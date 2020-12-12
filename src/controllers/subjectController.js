@@ -317,21 +317,19 @@ exports.getSubjectTranscript = async(req, res) => {
         async(preField, currentTimeline) => {
             let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
                 let exists = [];
-                let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
-                    let exist = await exists.find(value => value.idStudent == submission.studentId);
+                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                    let exist = exists.find(value => value.idStudent == submission.studentId);
                     if (exist) {
-                        let result = await prePromise;
-                        let existSubmission = result[exist.index];
-                        result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
-                        return result;
+                        let existSubmission = prePromise[exist.index];
+                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                        return prePromise;
                     } else {
-                        let result = await prePromise;
                         exists = exists.concat({
                             idStudent: submission.studentId,
                             grade: submission.grade,
-                            index: result.length
+                            index: prePromise.length
                         })
-                        return result.concat({
+                        return prePromise.concat({
                             // _id: submission._id,
                             idStudent: submission.studentId,
                             grade: submission.grade
