@@ -5,15 +5,15 @@ const studentAnswerSheetSchema = require("./studentAnswerSheet")
 const setting = new mongoose.Schema({
     questionCount: {
         type: Number,
-        require: [true, "Vui lòng nhập số lượng câu hỏi"]
+        require: [true, "Amount questions of quiz is required"]
     },
     timeToDo: {
         type: Number,
-        require: [true, "Vui lòng nhập thời lượng làm bài"]
+        require: [true, "Time of quiz is required"]
     },
     code: {
         type: String,
-        require: [true, "Vui lòng chọn tập câu hỏi"]
+        require: [true, "Code of chapter is required"]
     },
     attemptCount: {
         type: Number,
@@ -25,24 +25,24 @@ const setting = new mongoose.Schema({
 const exam = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Vui lòng nhập tên bài kiểm tra"]
+        required: [true, "Name of exam is required"]
     },
     content: {
         type: String,
-        required: [true, "Vui lòng nhập yêu cầu bài kiểm tra"]
+        required: [true, "Requirement of exam is required"]
     },
     startTime: {
         type: Date,
-        required: [true, "Vui lòng chọn thời gian bắt đầu bài kiểm tra"]
+        required: [true, "Start time of exam is required"]
     },
     expireTime: {
         type: Date,
-        required: [true, "Vui lòng chọn thời gian kết thúc bài kiểm tra"]
+        required: [true, "Expire time of exam is required"]
     },
     submissions: [studentAnswerSheetSchema],
     setting: {
         type: setting,
-        required: [true, "Vui lòng thiết lập cài đặt bài kiểm tra"]
+        required: [true, "Setting of exam is required"]
     }
 }, { timestamps: true });
 

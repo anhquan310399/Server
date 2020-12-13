@@ -258,14 +258,14 @@ exports.getOrderOfTimeLine = async(req, res) => {
 
 
 exports.getDeadline = async(req, res) => {
-    db.find({ 'studentIds': req.idUser, isDeleted: false })
+    db.find({ 'studentIds': req.code, isDeleted: false })
         .then(function(listSubject) {
             let deadline = [];
             const today = Date.now();
             listSubject.forEach(subject => {
                 subject.timelines.forEach(timeline => {
                     let exams = timeline.exams.map(exam => {
-                        var submission = exam.submissions.find(value => value.idStudent === req.idUser)
+                        var submission = exam.submissions.find(value => value.idStudent == req.idUser)
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
@@ -277,7 +277,7 @@ exports.getDeadline = async(req, res) => {
                         }
                     }).filter(exam => { return exam.expireTime > today });
                     let assignments = timeline.assignments.map(assignment => {
-                        let submission = assignment.submissions.find(value => value.idStudent === req.idUser);
+                        let submission = assignment.submissions.find(value => value.idStudent == req.idUser);
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
@@ -315,36 +315,37 @@ exports.getListStudent = async(req, res) => {
 
 exports.getSubjectTranscript = async(req, res) => {
     let subject = req.subject;
-    let fields = await subject.timelines.reduce(
+    let today = Date.now();
+    let assignmentOrExam = await subject.timelines.reduce(
         async(preField, currentTimeline) => {
             let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
                 let exists = [];
-                let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
-                    let exist = await exists.find(value => value.idStudent == submission.idStudent);
+                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                    let exist = exists.find(value => value.idStudent == submission.idStudent);
                     if (exist) {
-                        let result = await prePromise;
-                        let existSubmission = result[exist.index];
-                        result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
-                        return result;
+                        let existSubmission = prePromise[exist.index];
+                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                        return prePromise;
                     } else {
-                        let result = await prePromise;
                         exists = exists.concat({
                             idStudent: submission.idStudent,
                             grade: submission.grade,
-                            index: result.length
+                            index: prePromise.length
                         })
-                        return result.concat({
+                        return prePromise.concat({
                             // _id: submission._id,
                             idStudent: submission.idStudent,
                             grade: submission.grade
                         })
                     }
                 }, []);
+                let isRemain = today <= exam.expireTime;
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
                     // _id: exam._id,
                     name: exam.name,
+                    isRemain: isRemain,
                     submissions: submissions,
                     // type: 'exam'
                 }
@@ -358,11 +359,14 @@ exports.getSubjectTranscript = async(req, res) => {
                     }
                 }));
 
+                let isRemain = today <= assignment.setting.expireTime;
+
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
                     // _id: assignment._id,
                     name: assignment.name,
+                    isRemain: isRemain,
                     submissions: submissions,
                     // type: 'assignment'
                 }
@@ -374,11 +378,15 @@ exports.getSubjectTranscript = async(req, res) => {
         }, []);
 
     if (req.user.idPrivilege === 'student') {
-        let transcript = await Promise.all(fields.map(async(field) => {
+        let transcript = await Promise.all(assignmentOrExam.map(async(field) => {
             let submission = await field.submissions.find(value => value.idStudent == req.user._id);
-            let grade = 0;
+            let grade = null;
             if (submission) {
                 grade = submission.grade;
+            } else if (isRemain) {
+                grade = null;
+            } else {
+                grade = 0;
             }
             return {
                 name: field.name,
@@ -387,28 +395,136 @@ exports.getSubjectTranscript = async(req, res) => {
         }))
         return res.send(transcript);
     } else {
-        let transcript = await Promise.all(fields.map(async(field) => {
-            let submissions = await Promise.all(subject.studentIds.map(
-                async(value) => {
-                    let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
-                        .then(value => { return value });
+        let fields = ['MSSV', 'Họ', 'Tên'];
 
-                    let submission = field.submissions.find(value => value.idStudent == student._id);
-                    if (!submission) {
-                        return {
-                            idStudent: student._id,
-                            grade: 0
-                        }
+        assignmentOrExam.forEach(value => { fields = fields.concat(value.name) });
+
+        let data = await Promise.all(subject.studentIds.map(
+            async(value) => {
+
+                let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
+                    .then(value => { return value });
+                let data = [student.code, student.surName, student.firstName];
+                let grade = await Promise.all(assignmentOrExam.map(async(value) => {
+                    let submission = value.submissions.find(value => value.idStudent == student._id);
+                    if (submission) {
+                        return submission.grade;
+                    } else if (value.isRemain) {
+                        return null;
                     } else {
-                        return submission
+                        return 0;
                     }
-                }))
-            return {
-                name: field.name,
-                submissions: submissions
-            }
-        }));
 
-        return res.send(transcript);
+                }));
+                data = data.concat(grade);
+                return data;
+            }
+        ));
+
+        return res.send({
+            fields: fields,
+            data: data
+        });
     }
 }
+
+
+// exports.getSubjectTranscript = async(req, res) => {
+//     let subject = req.subject;
+//     let fields = await subject.timelines.reduce(
+//         async(preField, currentTimeline) => {
+//             let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+//                 let exists = [];
+//                 let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+//                     let exist = exists.find(value => value.idStudent == submission.idStudent);
+//                     if (exist) {
+//                         let existSubmission = prePromise[exist.index];
+//                         prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+//                         return prePromise;
+//                     } else {
+//                         exists = exists.concat({
+//                             idStudent: submission.idStudent,
+//                             grade: submission.grade,
+//                             index: prePromise.length
+//                         })
+//                         return prePromise.concat({
+//                             // _id: submission._id,
+//                             idStudent: submission.idStudent,
+//                             grade: submission.grade
+//                         })
+//                     }
+//                 }, []);
+//                 return {
+//                     // idSubject: subject._id,
+//                     // idTimeline: currentTimeline._id,
+//                     // _id: exam._id,
+//                     name: exam.name,
+//                     submissions: submissions,
+//                     // type: 'exam'
+//                 }
+//             }));
+//             let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+//                 let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
+//                     return {
+//                         // _id: submission._id,
+//                         idStudent: submission.idStudent,
+//                         grade: submission.feedBack ? submission.feedBack.grade : 0
+//                     }
+//                 }));
+
+//                 return {
+//                     // idSubject: subject._id,
+//                     // idTimeline: currentTimeline._id,
+//                     // _id: assignment._id,
+//                     name: assignment.name,
+//                     submissions: submissions,
+//                     // type: 'assignment'
+//                 }
+//             }));
+
+//             let currentFields = exams.concat(assignments);
+//             let result = await preField;
+//             return result.concat(currentFields);
+//         }, []);
+
+//     if (req.user.idPrivilege === 'student') {
+//         let transcript = await Promise.all(fields.map(async(field) => {
+//             let submission = await field.submissions.find(value => value.idStudent == req.user._id);
+//             let grade = 0;
+//             if (submission) {
+//                 grade = submission.grade;
+//             }
+//             return {
+//                 name: field.name,
+//                 grade: null
+//             }
+//         }))
+//         return res.send(transcript);
+//     } else {
+//         let nameExam = []
+//         let transcript = await Promise.all(fields.map(async(field) => {
+//             nameExam = nameExam.concat(field.name);
+//             let submissions = await Promise.all(subject.studentIds.map(
+//                 async(value) => {
+//                     let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
+//                         .then(value => { return value });
+
+//                     let submission = field.submissions.find(value => value.idStudent == student._id);
+//                     if (!submission) {
+//                         return {
+//                             student: student,
+//                             grade: 0
+//                         }
+//                     } else {
+//                         return submission
+//                     }
+//                 }))
+//             return {
+//                 name: field.name,
+//                 submissions: submissions
+//             }
+//         }));
+//         console.log(nameExam);
+//         return res.send(transcript);
+//     }
+// }
