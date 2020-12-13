@@ -54,6 +54,7 @@ exports.find = async(req, res) => {
     const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -66,6 +67,7 @@ exports.find = async(req, res) => {
     }
     if (!assignment) {
         return res.status(404).send({
+            success: false,
             message: "Not found assignment",
         });
     }
@@ -141,6 +143,7 @@ exports.findAll = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -160,20 +163,27 @@ exports.update = async(req, res) => {
     let data = req.body.data;
 
     if (!(data.name && data.content && data.setting)) {
-        return res.status(400).send({ message: 'Thiếu dữ liệu' });
+        return res.status(400).send({
+            success: false,
+            message: 'Lack of data'
+        });
     }
 
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
 
     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
-        return res.status(404).send({ message: 'Not found assignment' });
+        return res.status(404).send({
+            success: false,
+            message: 'Not found assignment'
+        });
     }
 
     assignment.name = data.name;
@@ -197,10 +207,19 @@ exports.update = async(req, res) => {
             });
         })
         .catch((err) => {
-            const key = Object.keys(err.errors)[0];
-            res.status(500).send({
-                message: err.errors[key].message,
-            });
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
         });
 };
 
@@ -209,6 +228,7 @@ exports.delete = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -217,6 +237,7 @@ exports.delete = (req, res) => {
     // const indexAssignment = timeline.assignments.indexOf(assignment);
     if (!assignment) {
         return res.status(404).send({
+            success: false,
             message: "Not found assignment",
         });
     }
@@ -230,6 +251,7 @@ exports.delete = (req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });
@@ -254,10 +276,10 @@ var storage = multer.diskStorage({
 
 exports.submit = (req, res) => {
     let data = req.subject;
-    console.log(req.body);
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -265,6 +287,7 @@ exports.submit = (req, res) => {
     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
+            success: false,
             message: "Not found assignment",
         });
     }
@@ -281,7 +304,15 @@ exports.submit = (req, res) => {
         }).single('file');
         upload(req, res, function(err) {
             if (err) {
-                return res.status(500).send({ message: "Error uploading file." });
+                return res.status(500).send({
+                    success: false,
+                    message: "Error uploading file."
+                });
+            } else if (!req.file) {
+                return res.status(400).send({
+                    success: false,
+                    message: "No file submit!"
+                });
             }
             console.log(req.file);
             console.log(req.idStudent);
@@ -292,18 +323,20 @@ exports.submit = (req, res) => {
                 uploadDay: Date.now()
             }
             var index = 0;
-            var submitted = assignment.submissions.find(value => value.idStudent === req.idStudent);
+            var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
             if (submitted) {
                 index = assignment.submissions.indexOf(submitted);
                 submitted.submitTime = today;
+                console.log(submitted.file.path);
                 fs.unlink(submitted.file.path, function(err) {
                     if (err) {
-                        console.log('Delete previous file');
+                        console.log('Delete previous file failure');
                         console.log(err);
+                    } else {
+                        console.log('Delete previous file successfully');
                     }
                 })
                 submitted.file = file;
-                console.log(submitted);
             } else {
                 var submission = {
                     idStudent: req.idStudent,
@@ -317,10 +350,18 @@ exports.submit = (req, res) => {
                     res.send(assignment.submissions[index]);
                 })
                 .catch((err) => {
-                    const key = Object.keys(err.errors)[0];
-                    res.status(500).send({
-                        message: err.errors[key].message,
-                    });
+                    if (err.name === 'ValidationError') {
+                        const key = Object.keys(err.errors)[0];
+                        res.status(400).send({
+                            success: false,
+                            message: err.errors[key].message,
+                        });
+                    } else {
+                        res.status(500).send({
+                            success: false,
+                            message: err.message,
+                        });
+                    }
                 });
         });
 
@@ -331,7 +372,10 @@ exports.submit = (req, res) => {
         } else {
             message = "Đã quá thời hạn nộp bài!"
         }
-        res.status(500).send({ message: message });
+        res.status(500).send({
+            success: false,
+            message: message
+        });
     }
 };
 
@@ -340,6 +384,7 @@ exports.download = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -347,23 +392,26 @@ exports.download = (req, res) => {
     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
+            success: false,
             message: "Not found assignment",
         });
     }
     console.log(req.user.idPrivilege);
     if (req.user.idPrivilege === 'student') {
         console.log(req.user._id);
-        var submission = assignment.submissions.find(value => value.idStudent == req.user._id);
-        if (!submission) {
+        var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
+        if (!submission || submission.idStudent != req.user._id) {
             return res.status(404).send({
+                success: false,
                 message: "Not found submission",
             });
         }
         res.download(submission.file.path);
     } else {
-        var submission = assignment.submissions.find(value => value._id == req.query.idSubmission);
+        var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
         if (!submission) {
             return res.status(404).send({
+                success: false,
                 message: "Not found submission",
             });
         }
@@ -377,6 +425,7 @@ exports.gradeSubmission = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -384,6 +433,7 @@ exports.gradeSubmission = (req, res) => {
     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
+            success: false,
             message: "Not found assignment",
         });
     }
@@ -401,12 +451,23 @@ exports.gradeSubmission = (req, res) => {
                 res.send(submitted);
             })
             .catch((err) => {
-                const key = Object.keys(err.errors)[0];
-                res.status(400).send({
-                    message: err.errors[key].message,
-                });
+                if (err.name === 'ValidationError') {
+                    const key = Object.keys(err.errors)[0];
+                    res.status(400).send({
+                        success: false,
+                        message: err.errors[key].message,
+                    });
+                } else {
+                    res.status(500).send({
+                        success: false,
+                        message: err.message,
+                    });
+                }
             });
     } else {
-        res.status(404).send("Not found submission!")
+        res.status(404).send({
+            success: false,
+            message: "Not found submission!"
+        });
     }
 }
