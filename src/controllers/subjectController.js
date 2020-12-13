@@ -313,6 +313,7 @@ exports.getListStudent = async(req, res) => {
 
 exports.getSubjectTranscript = async(req, res) => {
     let subject = req.subject;
+    let today = Date.now();
     let fields = await subject.timelines.reduce(
         async(preField, currentTimeline) => {
             let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
@@ -336,13 +337,15 @@ exports.getSubjectTranscript = async(req, res) => {
                         })
                     }
                 }, []);
+                let isRemain = today <= exam.expireTime;
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
                     _id: exam._id,
                     name: exam.name,
+                    isRemain: isRemain,
                     submissions: submissions,
-                    // type: 'exam'
+                    type: 'exam'
                 }
             }));
             let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
@@ -350,17 +353,19 @@ exports.getSubjectTranscript = async(req, res) => {
                     return {
                         // _id: submission._id,
                         idStudent: submission.idStudent,
-                        grade: submission.feedBack ? submission.feedBack.grade : 0
+                        grade: submission.feedBack ? submission.feedBack.grade : 0,
+                        isGrade: submission.feedBack ? true : false
                     }
                 }));
-
+                let isRemain = today <= assignment.setting.expireTime;
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
                     _id: assignment._id,
                     name: assignment.name,
+                    isRemain: isRemain,
                     submissions: submissions,
-                    // type: 'assignment'
+                    type: 'assignment'
                 }
             }));
 
@@ -375,9 +380,12 @@ exports.getSubjectTranscript = async(req, res) => {
             let grade = 0;
             if (submission) {
                 grade = submission.grade;
+            } else if (field.isRemain) {
+                grade = null;
+            } else {
+                grade = 0;
             }
             return {
-                _id: field._id,
                 name: field.name,
                 grade: grade
             }
@@ -391,13 +399,43 @@ exports.getSubjectTranscript = async(req, res) => {
                         .then(value => { return value });
 
                     let submission = field.submissions.find(value => value.idStudent == student._id);
-                    if (!submission) {
+                    let isRemain = field.isRemain;
+
+                    if (submission) {
+                        if (field.type === 'exam') {
+                            return {
+                                student: student,
+                                grade: submission.grade,
+                                status: 'completed'
+                            }
+                        } else if (field.type === 'assignment') {
+                            if (submission.isGrade) {
+                                return {
+                                    student: student,
+                                    grade: submission.grade,
+                                    status: 'completed'
+                                }
+                            } else {
+                                return {
+                                    student: student,
+                                    grade: null,
+                                    status: 'notGrade'
+                                }
+                            }
+                        }
+
+                    } else if (isRemain) {
                         return {
-                            idStudent: student._id,
-                            grade: 0
+                            student: student,
+                            grade: null,
+                            status: 'notSubmit'
                         }
                     } else {
-                        return submission
+                        return {
+                            student: student,
+                            grade: 0,
+                            status: 'completed'
+                        }
                     }
                 }))
             return {
@@ -408,5 +446,122 @@ exports.getSubjectTranscript = async(req, res) => {
         }));
 
         return res.send(transcript);
+    }
+}
+
+exports.getSubjectTranscriptTotal = async(req, res) => {
+    let subject = req.subject;
+    let today = Date.now();
+    let assignmentOrExam = await subject.timelines.reduce(
+        async(preField, currentTimeline) => {
+            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+                let exists = [];
+                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                    let exist = exists.find(value => value.idStudent == submission.idStudent);
+                    if (exist) {
+                        let existSubmission = prePromise[exist.index];
+                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                        return prePromise;
+                    } else {
+                        exists = exists.concat({
+                            idStudent: submission.idStudent,
+                            grade: submission.grade,
+                            index: prePromise.length
+                        })
+                        return prePromise.concat({
+                            // _id: submission._id,
+                            idStudent: submission.idStudent,
+                            grade: submission.grade
+                        })
+                    }
+                }, []);
+                let isRemain = today <= exam.expireTime;
+                return {
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    // _id: exam._id,
+                    name: exam.name,
+                    isRemain: isRemain,
+                    submissions: submissions,
+                    type: 'exam',
+                }
+            }));
+            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+                let submissions = await Promise.all(assignment.submission.map(async(submission) => {
+
+                    return {
+                        // _id: submission._id,
+                        idStudent: submission.idStudent,
+                        grade: submission.feedBack ? submission.feedBack.grade : 0,
+                        isGrade: submission.feedBack ? true : false,
+                    }
+                }));
+
+                let isRemain = today <= assignment.setting.expireTime;
+
+                return {
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    // _id: assignment._id,
+                    name: assignment.name,
+                    isRemain: isRemain,
+                    submissions: submissions,
+                    type: 'assignment'
+                }
+            }));
+
+            let currentFields = exams.concat(assignments);
+            let result = await preField;
+            return result.concat(currentFields);
+        }, []);
+
+    if (req.user.idPrivilege === 'student') {
+        let transcript = await Promise.all(assignmentOrExam.map(async(field) => {
+            let submission = await field.submissions.find(value => value.idStudent == req.user._id);
+            let grade = null;
+            if (submission) {
+                grade = submission.grade;
+            } else if (field.isRemain) {
+                grade = null;
+            } else {
+                grade = 0;
+            }
+            return {
+                name: field.name,
+                grade: grade
+            }
+        }))
+        return res.send(transcript);
+    } else {
+        let fields = ['MSSV', 'Họ', 'Tên'];
+
+        assignmentOrExam.forEach(value => { fields = fields.concat(value.name) });
+
+        let data = await Promise.all(subject.studentIds.map(
+            async(value) => {
+
+                let student = await userDb.findOne({ _id: value }, 'firstName surName urlAvatar')
+                    .then(value => { return value });
+                let data = [student._id, student.surName, student.firstName];
+                let grade = await Promise.all(assignmentOrExam.map(async(value) => {
+                    let submission = value.submissions.find(value => value.idStudent == student._id);
+                    if (submission) {
+                        return submission.grade;
+                    } else if (value.isRemain) {
+                        return null;
+                    } else {
+                        return 0;
+                    }
+
+                }));
+                data = data.concat(grade);
+                return data;
+            }
+        ));
+
+        return res.send({
+            fields: fields,
+            data: data
+        });
     }
 }
