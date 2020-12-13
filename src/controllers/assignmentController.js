@@ -2,12 +2,12 @@ const User = require('../models/user');
 const multer = require('multer');
 const fs = require('fs');
 const moment = require('moment');
-
 exports.create = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -32,10 +32,19 @@ exports.create = async(req, res) => {
             res.send(timeline.assignments[length - 1]);
         })
         .catch((err) => {
-            const key = Object.keys(err.errors)[0];
-            res.status(400).send({
-                message: err.errors[key].message,
-            });
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
         });
 
 };

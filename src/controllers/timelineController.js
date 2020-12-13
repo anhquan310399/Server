@@ -16,11 +16,19 @@ exports.create = (req, res) => {
             res.send(data.timelines[length - 1]);
         })
         .catch((err) => {
-            const key = Object.keys(err.errors)[0];
-            console.log(err.errors[key])
-            res.status(400).send({
-                message: err.errors[key].message,
-            });
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
         });
 };
 
@@ -75,9 +83,19 @@ exports.update = (req, res) => {
             });
         })
         .catch((err) => {
-            res.status(500).send({
-                message: err.message,
-            });
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
         });
 };
 
