@@ -10,6 +10,7 @@ exports.authStudent = (req, res, next) => {
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
+                        success: false,
                         message: "Please login"
                     });
                 }
@@ -25,22 +26,26 @@ exports.authStudent = (req, res, next) => {
                             next();
                         } else {
                             return res.status(404).send({
+                                success: false,
                                 message: "Not found subject that you enroll"
                             });
                         }
                     }).catch((err) => {
                         return res.status(500).send({
+                            success: false,
                             message: err.message
                         });
                     });
             })
             .catch((err) => {
                 return res.status(500).send({
+                    success: false,
                     message: err.message || "Error when get user",
                 });
             });
     } catch (error) {
         return res.status(401).send({
+            success: false,
             message: "Not authorized to access this resource"
         });
     }
@@ -54,6 +59,7 @@ exports.authLecture = (req, res, next) => {
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
+                        success: false,
                         message: "Please login"
                     });
                 }
@@ -69,17 +75,20 @@ exports.authLecture = (req, res, next) => {
                             next();
                         } else {
                             return res.status(404).send({
+                                success: false,
                                 message: "Not found this subject"
                             });
                         }
                     }).catch((err) => {
                         return res.status(500).send({
+                            success: false,
                             message: err.message
                         });
                     });
             })
             .catch((err) => {
                 return res.status(500).send({
+                    success: false,
                     message: err.message
                 });
             });
@@ -96,6 +105,7 @@ exports.authInSubject = (req, res, next) => {
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
+                        success: false,
                         message: "Please login"
                     });
                 }
@@ -110,11 +120,13 @@ exports.authInSubject = (req, res, next) => {
                                 next();
                             } else {
                                 return res.status(404).send({
+                                    success: false,
                                     message: "Not found Subject"
                                 });
                             }
                         }).catch((err) => {
                             return res.status(500).send({
+                                success: false,
                                 message: err.message
                             });
                         });
@@ -127,11 +139,13 @@ exports.authInSubject = (req, res, next) => {
                                 next();
                             } else {
                                 return res.status(404).send({
+                                    success: false,
                                     message: "Not found Subject"
                                 });
                             }
                         }).catch((err) => {
                             return res.status(500).send({
+                                success: false,
                                 message: err.message
                             });
                         });
@@ -155,20 +169,26 @@ exports.authLogin = (req, res, next) => {
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
+                        success: false,
                         message: "Please login"
                     });
                 }
                 req.idUser = user._id;
                 req.code = user.code;
                 req.idPrivilege = user.idPrivilege;
+                req.user = user;
                 next();
             })
             .catch((err) => {
                 return res.status(500).send({
+                    success: false,
                     message: err.message,
                 });
             });
     } catch (error) {
-        res.status(401).send({ message: 'Not authorized to access this resource' })
+        res.status(401).send({
+            success: false,
+            message: 'Not authorized to access this resource'
+        })
     }
 }

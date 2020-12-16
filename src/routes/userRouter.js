@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var Oauth = require('../middleware/OauthSocial');
-
+var { authLogin } = require('../middleware/auth');
 /* ROUTER FOR USER */
 const userController = require("../controllers/userController.js")
+
+router.get('/info', authLogin, userController.getInfo);
 
 router.get('/:id', userController.findUser);
 

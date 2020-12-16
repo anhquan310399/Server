@@ -16,6 +16,7 @@ exports.create = (req, res) => {
         .catch((err) => {
             if (err.code === 11000) {
                 return res.status(400).send({
+                    success: false,
                     message: `Duplicate ${Object.keys(err.keyValue).toString()}`,
                 });
             }
@@ -42,6 +43,7 @@ exports.findAll = (req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message || "Some error occurred while retrieving users.",
             });
         });
@@ -52,7 +54,8 @@ exports.findUser = (req, res) => {
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
-                    message: "Not found",
+                    success: false,
+                    message: "Not found user",
                 });
             }
             var re = {
@@ -68,10 +71,12 @@ exports.findUser = (req, res) => {
         .catch((err) => {
             if (err.kind === "ObjectId") {
                 return res.status(404).send({
+                    success: false,
                     message: "Cast to ObjectId failed",
                 });
             }
             return res.status(500).send({
+                success: false,
                 message: "Error retrieving user",
             });
         });
@@ -88,7 +93,8 @@ exports.update = (req, res) => {
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
-                    message: "Not found",
+                    success: false,
+                    message: "Not found user",
                 });
             }
             res.send(user);
@@ -96,10 +102,12 @@ exports.update = (req, res) => {
         .catch((err) => {
             if (err.kind === "ObjectId") {
                 return res.status(404).send({
-                    message: "Not found",
+                    success: false,
+                    message: "Not found user",
                 });
             }
             return res.status(500).send({
+                success: false,
                 message: "Error updating user",
             });
         });
@@ -110,18 +118,24 @@ exports.delete = (req, res) => {
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
-                    message: "Not found",
+                    success: false,
+                    message: "Not found user",
                 });
             }
-            res.send({ message: "Delete successfully!" });
+            res.send({
+                success: true,
+                message: "Delete successfully!"
+            });
         })
         .catch((err) => {
             if (err.kind === "ObjectId" || err.name === "NotFound") {
                 return res.status(404).send({
-                    message: "Not found",
+                    success: false,
+                    message: "Not found user",
                 });
             }
             return res.status(500).send({
+                success: false,
                 message: "Could not delete user",
             });
         });
@@ -149,6 +163,7 @@ exports.authenticate = (req, res) => {
                     res.json({
                         success: true,
                         message: 'Login successfully!',
+                        idPrivilege: user.idPrivilege,
                         token: token
                     })
                 }
@@ -160,6 +175,19 @@ exports.authenticate = (req, res) => {
                 message: err.message
             })
         })
+}
+
+exports.getInfo = (req, res) => {
+    var user = req.user;
+    var info = {
+        _id: user._id,
+        code: user.code,
+        emailAddress: user.emailAddress,
+        firstName: user.firstName,
+        surName: user.surName,
+        urlAvatar: user.urlAvatar
+    }
+    res.send(info);
 }
 
 exports.authenticateByGoogle = (req, res) => {
