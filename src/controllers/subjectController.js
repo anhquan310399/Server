@@ -401,7 +401,7 @@ exports.getSubjectTranscript = async(req, res) => {
             let grade = null;
             if (submission) {
                 grade = submission.grade;
-            } else if (isRemain) {
+            } else if (field.isRemain) {
                 grade = null;
             } else {
                 grade = 0;
