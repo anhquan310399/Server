@@ -415,7 +415,7 @@ exports.getSubjectTranscript = async(req, res) => {
         let transcript = await Promise.all(fields.map(async(field) => {
             let submissions = await Promise.all(subject.studentIds.map(
                 async(value) => {
-                    let student = await userDb.findOne({ code: value }, 'firstName surName urlAvatar')
+                    let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                         .then(value => { return value });
 
                     let submission = field.submissions.find(value => value.idStudent == student._id);
@@ -563,9 +563,9 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
         let data = await Promise.all(subject.studentIds.map(
             async(value) => {
 
-                let student = await userDb.findOne({ code: value }, 'firstName surName urlAvatar')
+                let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                     .then(value => { return value });
-                let data = { 'c0': student._id, 'c1': student.surName, 'c2': student.firstName };
+                let data = { 'c0': student.code, 'c1': student.surName, 'c2': student.firstName };
                 let count = 3;
                 let grade = await Promise.all(assignmentOrExam.map(async(value) => {
                     let submission = value.submissions.find(value => value.idStudent == student._id);
