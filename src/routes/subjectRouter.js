@@ -23,6 +23,7 @@ router.post('/:idSubject/index', authLecture, subjectController.adjustOrderOfTim
 
 
 router.get('/:idSubject/score', authInSubject, subjectController.getSubjectTranscript);
+router.get('/:idSubject/transcript', authInSubject, subjectController.getSubjectTranscriptTotal);
 
 
 module.exports = router;

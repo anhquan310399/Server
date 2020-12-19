@@ -146,21 +146,21 @@ exports.authenticate = (req, res) => {
         .then(user => {
             console.log(user);
             if (!user) {
-                return res.json({
+                return res.status(404).send({
                     success: false,
                     message: 'Authentication failed. User not found'
                 });
             } else {
                 var validPassword = user.comparePassword(req.body.password);
                 if (!validPassword) {
-                    return res.json({
+                    return res.status(400).send({
                         success: false,
                         message: 'Authentication failed. Wrong password!'
                     });
                 } else {
                     let token = user.generateAuthToken();
                     console.log(token);
-                    res.json({
+                    res.send({
                         success: true,
                         message: 'Login successfully!',
                         idPrivilege: user.idPrivilege,
@@ -170,7 +170,7 @@ exports.authenticate = (req, res) => {
             }
         })
         .catch(err => {
-            res.json({
+            res.status(500).send({
                 success: false,
                 message: err.message
             })
@@ -216,4 +216,25 @@ exports.authenticateByGoogle = (req, res) => {
                 message: err.message
             })
         })
+}
+const { verify } = require('../authenticate/authGoogle');
+
+exports.authenticateGoogleToken = async(req, res) => {
+    const userToken = req.params.token
+    var result = verify(userToken).then(function(result) {
+        var userName = result.given_name
+        var userSurname = result.family_name
+        var userEmail = result.email
+        res.json({
+            success: true,
+            message: 'Login successfully!',
+            userEmail: userEmail,
+            token: token
+        })
+    }).catch(function(err) {
+        res.json({
+            success: false,
+            message: err.message
+        })
+    })
 }

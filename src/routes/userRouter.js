@@ -19,6 +19,9 @@ router.delete('/:id', userController.delete);
 
 router.post('/authenticate', userController.authenticate);
 
+router.get('/auth/google/:token', userController.authenticateGoogleToken);
+
+
 router.get('/auth/google',
     Oauth.authenticate('google', {
         scope: ['email', 'profile']
@@ -30,5 +33,7 @@ router.get('/auth/google/callback',
     }),
     userController.authenticateByGoogle
 );
+
+
 
 module.exports = router;

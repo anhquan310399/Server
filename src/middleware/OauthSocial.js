@@ -21,7 +21,7 @@ passport.use(
             passReqToCallback: true
         },
         function(request, accessToken, refreshToken, profile, done) {
-            console.log(profile);
+            console.log(accessToken);
             User.findOne({ emailAddress: profile.email }, function(err, user) {
                 if (user) {
                     return done(null, user);
