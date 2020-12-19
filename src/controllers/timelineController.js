@@ -123,76 +123,110 @@ exports.delete = (req, res) => {
             });
         });
 };
-var storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        let subject = req.query.idSubject;
-        let timeline = req.params.idTimeline;
-        let path = `${appRoot}/uploads/${subject}/${timeline}/files/`;
-        if (!fs.existsSync(path)) {
-            fs.mkdirSync(path, { recursive: true });
-        }
-        cb(null, path)
-    },
-    filename: function(req, file, cb) {
-        let name = Date.now() + '-' + file.originalname;
-        cb(null, name)
-    }
-});
+// var storage = multer.diskStorage({
+//     destination: function(req, file, cb) {
+//         let subject = req.query.idSubject;
+//         let timeline = req.params.idTimeline;
+//         let path = `${appRoot}/uploads/${subject}/${timeline}/files/`;
+//         if (!fs.existsSync(path)) {
+//             fs.mkdirSync(path, { recursive: true });
+//         }
+//         cb(null, path)
+//     },
+//     filename: function(req, file, cb) {
+//         let name = Date.now() + '-' + file.originalname;
+//         cb(null, name)
+//     }
+// });
+
+// exports.uploadFile = (req, res) => {
+
+//     let subject = req.subject;
+//     const timeline = subject.timelines.find(function(value) {
+//         return (value._id == req.params.idTimeline)
+//     });
+//     if (!timeline) {
+//         return res.status(404).send({
+//             message: "Not found timeline"
+//         })
+//     }
+
+//     var upload = multer({
+//         storage: storage,
+//         limits: {
+//             fileSize: 30 * 1020 * 1024
+//         },
+//         fileFilter: (req, file, cb) => {
+//             let extName = path.extname(file.originalname);
+//             console.log('extname : ' + extName);
+//             if (extName == ".doc" || extName == ".docx" || extName == ".pdf" || extName == ".xls" || extName == ".xlsx") {
+//                 cb(null, true);
+//             } else {
+//                 return cb(new Error('Only .doc/.docx, .pdf and .xls/.xlsx format allowed!'));
+//             }
+//         }
+//     }).single('file');
+
+//     upload(req, res, function(err) {
+//         if (err) {
+//             return res.status(500).send({ message: err.message });
+//         }
+//         console.log(req.file);
+//         let file = {
+//             name: req.file.originalname,
+//             path: req.file.path,
+//             type: req.file.path.split('.').pop(),
+//             uploadDay: Date.now()
+//         }
+//         let index = timeline.files.push(file);
+//         console.log(timeline.files[index - 1]);
+
+//         subject.save()
+//             .then(() => {
+//                 res.send(timeline.files[index - 1]);
+//             })
+//             .catch(err => {
+//                 res.status(500).send({
+//                     message: err.message
+//                 })
+//             })
+//     })
+// }
 
 exports.uploadFile = (req, res) => {
 
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
-        return (value._id == req.params.idTimeline)
+        return (value._id == req.body.idTimeline)
     });
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
 
-    var upload = multer({
-        storage: storage,
-        limits: {
-            fileSize: 30 * 1020 * 1024
-        },
-        fileFilter: (req, file, cb) => {
-            let extName = path.extname(file.originalname);
-            console.log('extname : ' + extName);
-            if (extName == ".doc" || extName == ".docx" || extName == ".pdf" || extName == ".xls" || extName == ".xlsx") {
-                cb(null, true);
-            } else {
-                return cb(new Error('Only .doc/.docx, .pdf and .xls/.xlsx format allowed!'));
-            }
-        }
-    }).single('file');
+    let file = {
+        name: req.body.data.name,
+        path: req.body.data.path,
+        type: req.body.data.type,
+        uploadDay: Date.now()
+    }
+    let index = timeline.files.push(file);
+    console.log(timeline.files[index - 1]);
 
-    upload(req, res, function(err) {
-        if (err) {
-            return res.status(500).send({ message: err.message });
-        }
-        console.log(req.file);
-        let file = {
-            name: req.file.originalname,
-            path: req.file.path,
-            type: req.file.path.split('.').pop(),
-            uploadDay: Date.now()
-        }
-        let index = timeline.files.push(file);
-        console.log(timeline.files[index - 1]);
+    subject.save()
+        .then(() => {
+            res.send(timeline.files[index - 1]);
+        })
+        .catch(err => {
+            res.status(500).send({
+                success: false,
+                message: err.message
+            })
+        })
 
-        subject.save()
-            .then(() => {
-                res.send(timeline.files[index - 1]);
-            })
-            .catch(err => {
-                res.status(500).send({
-                    message: err.message
-                })
-            })
-    })
 }
-
 
 exports.downloadFile = (req, res) => {
 
@@ -234,22 +268,33 @@ exports.removeFile = (req, res) => {
         })
     }
     let index = timeline.files.indexOf(file);
-    fs.unlink(file.path, function(err) {
-        if (err) {
-            return res.status(404).send({
+    timeline.files.splice(index, 1);
+    // fs.unlink(file.path, function(err) {
+    //     if (err) {
+    //         return res.status(404).send({
+    //             message: err.message
+    //         })
+    //     }
+    //     timeline.files.splice(index, 1);
+
+    //     subject.save()
+    //         .then(() => {
+    //             res.send({ message: "Delete file successfully!" });
+    //         })
+    //         .catch(err => {
+    //             res.status(500).send({
+    //                 message: err.message
+    //             })
+    //         })
+    // })
+
+    subject.save()
+        .then(() => {
+            res.send({ message: "Delete file successfully!" });
+        })
+        .catch(err => {
+            res.status(500).send({
                 message: err.message
             })
-        }
-        timeline.files.splice(index, 1);
-
-        subject.save()
-            .then(() => {
-                res.send({ message: "Delete file successfully!" });
-            })
-            .catch(err => {
-                res.status(500).send({
-                    message: err.message
-                })
-            })
-    })
+        })
 }
