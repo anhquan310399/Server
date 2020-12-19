@@ -471,3 +471,49 @@ exports.gradeSubmission = (req, res) => {
         });
     }
 }
+
+exports.commentFeedback = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    if (!assignment) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found assignment",
+        });
+    }
+
+    var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
+    if (submitted) {
+        if (typeof submitted.feedBack == 'undefined') {
+            return res.status(401).send({
+                success: false,
+                message: "Chưa chấm điểm không thể comment!"
+            });
+        }
+        submitted.feedBack.comment = req.body.data.comment;
+
+        data.save()
+            .then(() => {
+                res.send(submitted);
+            })
+            .catch((err) => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            });
+    } else {
+        res.status(404).send({
+            success: false,
+            message: "Not found submission!"
+        });
+    }
+}

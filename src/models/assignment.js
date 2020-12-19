@@ -16,7 +16,8 @@ const feedBack = new mongoose.Schema({
     gradeBy: {
         type: String,
         required: true
-    }
+    },
+    comment: String
 }, { _id: false });
 
 const submission = new mongoose.Schema({
@@ -84,6 +85,9 @@ const assignment = new mongoose.Schema({
         type: String,
         required: [true, "Chưa nhập mô tả cho bài tập"]
     },
+    attachments: {
+        type: [file]
+    },
     setting: {
         type: setting,
         required: true
@@ -94,5 +98,19 @@ const assignment = new mongoose.Schema({
         default: false
     }
 }, { timestamps: true });
+
+
+assignment.pre('save', async function(next) {
+    let currentAssignment = this;
+    if (currentAssignment.isNew) {
+        console.log("Create new assignment!");
+        let timeline = currentAssignment.parent();
+        let subject = timeline.parent();
+        if (!subject.transcript) {
+            subject.transcript = [];
+        }
+        subject.transcript = subject.transcript.concat({ idField: currentAssignment._id });
+    }
+});
 
 module.exports = assignment

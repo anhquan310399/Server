@@ -499,7 +499,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
-                    // _id: exam._id,
+                    _id: exam._id,
                     name: exam.name,
                     isRemain: isRemain,
                     submissions: submissions,
@@ -522,7 +522,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
                 return {
                     // idSubject: subject._id,
                     // idTimeline: currentTimeline._id,
-                    // _id: assignment._id,
+                    _id: assignment._id,
                     name: assignment.name,
                     isRemain: isRemain,
                     submissions: submissions,
@@ -535,60 +535,82 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
             return result.concat(currentFields);
         }, []);
 
-    if (req.user.idPrivilege === 'student') {
-        let transcript = await Promise.all(assignmentOrExam.map(async(field) => {
-            let submission = await field.submissions.find(value => value.idStudent == req.user.code);
-            let grade = null;
-            if (submission) {
-                grade = submission.grade;
-            } else if (field.isRemain) {
-                grade = null;
-            } else {
-                grade = 0;
-            }
-            return {
-                name: field.name,
-                grade: grade
-            }
-        }))
-        return res.send(transcript);
-    } else {
-        let fields = { 'c0': 'MSSV', 'c1': 'Họ', 'c2': 'Tên' }
-        let count = 3;
-        assignmentOrExam.forEach(value => {
-            let key = 'c' + count++;
-            fields[key] = value.name;
-        });
 
-        let data = await Promise.all(subject.studentIds.map(
-            async(value) => {
+    let fields = { 'c0': 'MSSV', 'c1': 'Họ', 'c2': 'Tên' }
+    let ratios = { 'c0': null, 'c1': null, 'c2': null }
+    let count = 3;
+    let totalRatio = 0;
+    assignmentOrExam.forEach(value => {
+        let key = 'c' + count++;
+        fields[key] = value.name;
+        let transcript = subject.transcript.find(ratio => ratio.idField == value._id);
+        ratios[key] = {
+            _id: transcript._id,
+            ratio: transcript.ratio
+        };
+        totalRatio += transcript.ratio;
+    });
 
-                let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
-                    .then(value => { return value });
-                let data = { 'c0': student.code, 'c1': student.surName, 'c2': student.firstName };
-                let count = 3;
-                let grade = await Promise.all(assignmentOrExam.map(async(value) => {
-                    let submission = value.submissions.find(value => value.idStudent == student._id);
-                    if (submission) {
-                        return submission.grade;
-                    } else if (value.isRemain) {
-                        return null;
-                    } else {
-                        return 0;
-                    }
+    let data = await Promise.all(subject.studentIds.map(
+        async(value) => {
+            let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
+                .then(value => { return value });
+            let data = { 'c0': student.code, 'c1': student.surName, 'c2': student.firstName };
+            let count = 3;
+            let grade = await Promise.all(assignmentOrExam.map(async(value) => {
+                let submission = value.submissions.find(value => value.idStudent == student._id);
+                if (submission) {
+                    return submission.grade;
+                } else if (value.isRemain) {
+                    return null;
+                } else {
+                    return 0;
+                }
 
-                }));
-                grade.forEach(value => {
-                    let key = 'c' + count++;
-                    data[key] = value;
-                });
-                return data;
-            }
-        ));
+            }));
+            let total = 0;
+            grade.forEach(value => {
+                let key = 'c' + count++;
+                data[key] = value;
+                total += (data[key] * ratios[key].ratio);
+            });
+            let key = 'c' + count;
+            data[key] = (total / totalRatio);
+            ratios[key] = null;
+            fields[key] = 'Trung bình';
+            return data;
+        }
+    ));
 
-        return res.send({
-            fields: fields,
-            data: data
-        });
-    }
+    return res.send({
+        fields: fields,
+        ratio: ratios,
+        data: data
+    });
+
+}
+
+exports.updateRatioTranscript = async(req, res) => {
+    let subject = req.subject;
+    let adjust = req.body.data;
+    await adjust.forEach(async(value) => {
+        let transcript = await subject.transcript.find(ratio => ratio._id == value._id);
+        if (transcript) {
+            transcript.ratio = value.ratio;
+        }
+    });
+
+    await subject.save()
+        .then(data => {
+            res.send({
+                success: true,
+                message: 'Update ratio transcript successfully!'
+            });
+        }).catch(err => {
+            console.log("adjust ratio transcript" + err.message);
+            res.status(500).send({
+                success: false,
+                message: 'Update ratio transcript failure!'
+            });
+        })
 }

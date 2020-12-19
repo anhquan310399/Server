@@ -24,7 +24,6 @@ exports.create = (req, res) => {
     }
 
     let setting = req.body.data.setting;
-    console.log(setting);
 
     const model = {
         name: req.body.data.name,

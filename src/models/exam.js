@@ -43,8 +43,25 @@ const exam = new mongoose.Schema({
     setting: {
         type: setting,
         required: [true, "Setting of exam is required"]
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
+
+exam.pre('save', async function(next) {
+    let currentExam = this;
+    if (currentExam.isNew) {
+        console.log("Create new exam!");
+        let timeline = currentExam.parent();
+        let subject = timeline.parent();
+        if (!subject.transcript) {
+            subject.transcript = [];
+        }
+        subject.transcript = subject.transcript.concat({ idField: currentExam._id });
+    }
+})
 
 
 module.exports = exam

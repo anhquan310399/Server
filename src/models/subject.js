@@ -12,6 +12,17 @@ const chapter = new mongoose.Schema({
     questions: [questionModel]
 });
 
+const ratio = new mongoose.Schema({
+    idField: {
+        type: String,
+        required: true
+    },
+    ratio: {
+        type: Number,
+        default: 1
+    }
+})
+
 const Schema = mongoose.Schema({
     name: {
         type: String,
@@ -40,6 +51,10 @@ const Schema = mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    transcript: {
+        type: [ratio],
+        default: []
     }
 }, {
     timestamps: true
