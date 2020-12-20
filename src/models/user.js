@@ -101,12 +101,14 @@ UserSchema.methods.generateAuthToken = function() {
     // Generate an auth token for the user
     const user = this
     var superSecret = process.env.JWT_KEY;
-    console.log(superSecret);
     const token = jwt.sign({
         _id: user._id,
         code: user.code,
         idPrivilege: user.privilege,
-        emailAddress: user.emailAddress
+        emailAddress: user.emailAddress,
+        firstName: user.firstName,
+        surName: user.surName,
+        urlAvatar: user.urlAvatar
     }, superSecret, {
         expiresIn: '24h'
     });

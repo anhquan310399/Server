@@ -144,7 +144,6 @@ exports.delete = (req, res) => {
 exports.authenticate = (req, res) => {
     dbUser.findOne({ code: req.body.code })
         .then(user => {
-            console.log(user);
             if (!user) {
                 return res.status(404).send({
                     success: false,
@@ -159,7 +158,6 @@ exports.authenticate = (req, res) => {
                     });
                 } else {
                     let token = user.generateAuthToken();
-                    console.log(token);
                     res.send({
                         success: true,
                         message: 'Login successfully!',
