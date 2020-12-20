@@ -12,6 +12,13 @@ exports.create = async(req, res) => {
         });
     }
     let data = req.body.data;
+    let file = data.file.map(value => {
+        return {
+            name: value.name,
+            path: value.path,
+            type: value.type
+        }
+    });
     const model = {
         name: data.name,
         content: data.content,
@@ -22,7 +29,8 @@ exports.create = async(req, res) => {
             overDueDate: data.setting.overDueDate,
             // fileCount: data.setting.fileCount,
             fileSize: data.setting.fileSize,
-        }
+        },
+        attachments: file
     };
 
     let length = timeline.assignments.push(model);
@@ -276,7 +284,7 @@ var storage = multer.diskStorage({
 
 exports.submit = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -284,7 +292,7 @@ exports.submit = (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    const assignment = timeline.assignments.find(value => value._id == req.body.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -296,74 +304,114 @@ exports.submit = (req, res) => {
     const setting = assignment.setting;
     if ((today >= setting.startTime && today <= setting.expireTime) ||
         (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
-        var upload = multer({
-            storage: storage,
-            limits: {
-                fileSize: setting.fileSize * 1020 * 1024
+        // var upload = multer({
+        //     storage: storage,
+        //     limits: {
+        //         fileSize: setting.fileSize * 1020 * 1024
+        //     }
+        // }).single('file');
+        // upload(req, res, function(err) {
+        //     if (err) {
+        //         return res.status(500).send({
+        //             success: false,
+        //             message: "Error uploading file."
+        //         });
+        //     } else if (!req.file) {
+        //         return res.status(400).send({
+        //             success: false,
+        //             message: "No file submit!"
+        //         });
+        //     }
+        //     console.log(req.file);
+        //     console.log(req.idStudent);
+        //     let file = {
+        //         name: req.file.originalname,
+        //         path: req.file.path,
+        //         type: req.file.path.split('.').pop(),
+        //         uploadDay: Date.now()
+        //     }
+        //     var index = 0;
+        //     var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
+        //     if (submitted) {
+        //         index = assignment.submissions.indexOf(submitted);
+        //         submitted.submitTime = today;
+        //         console.log(submitted.file.path);
+        //         fs.unlink(submitted.file.path, function(err) {
+        //             if (err) {
+        //                 console.log('Delete previous file failure');
+        //                 console.log(err);
+        //             } else {
+        //                 console.log('Delete previous file successfully');
+        //             }
+        //         })
+        //         submitted.file = file;
+        //     } else {
+        //         var submission = {
+        //             idStudent: req.idStudent,
+        //             submitTime: today,
+        //             file: file
+        //         }
+        //         index = assignment.submissions.push(submission) - 1;
+        //     }
+        //     data.save()
+        //         .then(() => {
+        //             res.send(assignment.submissions[index]);
+        //         })
+        //         .catch((err) => {
+        //             if (err.name === 'ValidationError') {
+        //                 const key = Object.keys(err.errors)[0];
+        //                 res.status(400).send({
+        //                     success: false,
+        //                     message: err.errors[key].message,
+        //                 });
+        //             } else {
+        //                 res.status(500).send({
+        //                     success: false,
+        //                     message: err.message,
+        //                 });
+        //             }
+        //         });
+        // });
+
+        let file = {
+            name: req.body.data.name,
+            path: req.body.data.path,
+            type: req.body.data.type,
+            uploadDay: Date.now()
+        }
+        console.log(file);
+        var index = 0;
+        var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
+        if (submitted) {
+            index = assignment.submissions.indexOf(submitted);
+            submitted.submitTime = today;
+            submitted.file = file;
+        } else {
+            var submission = {
+                idStudent: req.idStudent,
+                submitTime: today,
+                file: file
             }
-        }).single('file');
-        upload(req, res, function(err) {
-            if (err) {
-                return res.status(500).send({
-                    success: false,
-                    message: "Error uploading file."
-                });
-            } else if (!req.file) {
-                return res.status(400).send({
-                    success: false,
-                    message: "No file submit!"
-                });
-            }
-            console.log(req.file);
-            console.log(req.idStudent);
-            let file = {
-                name: req.file.originalname,
-                path: req.file.path,
-                type: req.file.path.split('.').pop(),
-                uploadDay: Date.now()
-            }
-            var index = 0;
-            var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
-            if (submitted) {
-                index = assignment.submissions.indexOf(submitted);
-                submitted.submitTime = today;
-                console.log(submitted.file.path);
-                fs.unlink(submitted.file.path, function(err) {
-                    if (err) {
-                        console.log('Delete previous file failure');
-                        console.log(err);
-                    } else {
-                        console.log('Delete previous file successfully');
-                    }
-                })
-                submitted.file = file;
-            } else {
-                var submission = {
-                    idStudent: req.idStudent,
-                    submitTime: today,
-                    file: file
+            index = assignment.submissions.push(submission) - 1;
+        }
+        data.save()
+            .then(() => {
+                res.send(assignment.submissions[index]);
+            })
+            .catch((err) => {
+                if (err.name === 'ValidationError') {
+                    const key = Object.keys(err.errors)[0];
+                    res.status(400).send({
+                        success: false,
+                        message: err.errors[key].message,
+                    });
+                } else {
+                    res.status(500).send({
+                        success: false,
+                        message: err.message,
+                    });
                 }
-                index = assignment.submissions.push(submission) - 1;
-            }
-            data.save()
-                .then(() => {
-                    res.send(assignment.submissions[index]);
-                })
-                .catch((err) => {
-                    if (err.name === 'ValidationError') {
-                        const key = Object.keys(err.errors)[0];
-                        res.status(400).send({
-                            success: false,
-                            message: err.errors[key].message,
-                        });
-                    } else {
-                        res.status(500).send({
-                            success: false,
-                            message: err.message,
-                        });
-                    }
-                });
-        });
+            });
 
     } else {
         let message = "";

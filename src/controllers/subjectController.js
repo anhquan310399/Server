@@ -44,6 +44,7 @@ exports.findAll = async(req, res) => {
             })
             .catch((err) => {
                 res.status(500).send({
+                    success: false,
                     message: err.message || "Some error occurred while listing subject.",
                 });
             });
@@ -61,6 +62,7 @@ exports.findAll = async(req, res) => {
             })
             .catch((err) => {
                 res.status(500).send({
+                    success: false,
                     message: err.message || "Some error occurred while listing subject.",
                 });
             });
@@ -99,6 +101,7 @@ exports.find = async(req, res) => {
 exports.update = async(req, res) => {
     if (!req.body || !(req.body.name && req.body.idLecture)) {
         return res.status(400).send({
+            success: false,
             message: "Lack of information",
         });
     };
@@ -111,6 +114,7 @@ exports.update = async(req, res) => {
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
+                    success: false,
                     message: "Not found Subject",
                 });
             }
@@ -143,6 +147,7 @@ exports.delete = async(req, res) => {
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
+                    success: false,
                     message: "Not found Subject",
                 });
             }
@@ -151,6 +156,7 @@ exports.delete = async(req, res) => {
         .catch((err) => {
             console.log("Delete subject" + err.message);
             return res.status(500).send({
+                success: false,
                 message: "Delete Failure"
             });
         });
@@ -162,6 +168,7 @@ exports.addAllStudents = (req, res) => {
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
+                    success: false,
                     message: "Not found subject",
                 });
             }
@@ -176,12 +183,14 @@ exports.addAllStudents = (req, res) => {
                 .catch((err) => {
                     console.log("Add student" + err.message);
                     res.status(500).send({
+                        success: false,
                         message: "Add student failure"
                     });
                 });
         })
         .catch((err) => {
             return res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });
@@ -205,11 +214,15 @@ exports.addStudent = (req, res) => {
             subject.save()
                 .then((data) => {
                     // res.send(data);
-                    res.send({ message: "Add Student Successfully!" });
+                    res.send({
+                        success: true,
+                        message: "Add Student Successfully!"
+                    });
                 })
                 .catch((err) => {
                     console.log("Add student" + err.message);
                     res.status(500).send({
+                        success: false,
                         message: "Add student failure"
                     });
                 });
@@ -222,7 +235,10 @@ exports.removeStudent = (req, res) => {
 
     let index = subject.studentIds.indexOf(req.body.idStudent);
     if (index === -1) {
-        return res.send({ message: 'Not found this student with id: ' + req.body.idStudent });
+        return res.send({
+            success: false,
+            message: 'Not found this student with id: ' + req.body.idStudent
+        });
     }
     subject.studentIds.splice(index, 1);
     subject.save()
@@ -233,6 +249,7 @@ exports.removeStudent = (req, res) => {
         .catch((err) => {
             console.log("Remove student" + err.message);
             res.status(500).send({
+                success: false,
                 message: "Remove student failure"
             });
         });
@@ -245,20 +262,28 @@ exports.adjustOrderOfTimeline = async(req, res) => {
         var timeline = subject.timelines.find(x => x._id == element._id);
         console.log(timeline);
         timeline.index = element.index;
+        timeline.name = element.name;
     });
     await subject.save()
         .then(data => {
-            let result = {
-                _id: data._id,
-                name: data.name,
-                timelines: _.sortBy(data.timelines.map((value) => {
-                    return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
-                }), ['index']),
-            };
-            res.send(result);
+            // let result = {
+            //     _id: data._id,
+            //     name: data.name,
+            //     timelines: _.sortBy(data.timelines.map((value) => {
+            //         return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
+            //     }), ['index']),
+            // };
+            // res.send(result);
+            res.send({
+                success: true,
+                message: 'Adjust index of timeline successfully!'
+            })
         }).catch(err => {
             console.log("adjust index timeline" + err.message);
-            res.status(500).send({ message: "Đã có lỗi xảy ra" });
+            res.status(500).send({
+                success: false,
+                message: "Đã có lỗi xảy ra"
+            });
         })
 }
 
@@ -273,7 +298,6 @@ exports.getOrderOfTimeLine = async(req, res) => {
     };
     res.send(result);
 }
-
 
 exports.getDeadline = async(req, res) => {
     db.find({ 'studentIds': req.code, isDeleted: false })
@@ -313,6 +337,7 @@ exports.getDeadline = async(req, res) => {
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message || "Some error occurred while listing subject.",
             });
         });
@@ -534,7 +559,6 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
             let result = await preField;
             return result.concat(currentFields);
         }, []);
-
 
     let fields = { 'c0': 'MSSV', 'c1': 'Họ', 'c2': 'Tên' }
     let ratios = { 'c0': null, 'c1': null, 'c2': null }

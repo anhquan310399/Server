@@ -102,7 +102,6 @@ exports.deleteChapter = async(req, res) => {
         });
 };
 
-
 exports.pushQuestion = async(req, res) => {
     let data = req.subject;
     var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
@@ -156,7 +155,6 @@ exports.getQuestionById = async(req, res) => {
 
     res.send(question);
 };
-
 
 exports.updateQuestionById = async(req, res) => {
     let subject = req.subject;
