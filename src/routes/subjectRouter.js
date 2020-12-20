@@ -25,9 +25,7 @@ router.post('/:idSubject/index', authLecture, subjectController.adjustOrderOfTim
 router.get('/:idSubject/score', authInSubject, subjectController.getSubjectTranscript);
 router.get('/:idSubject/transcript', authLecture, subjectController.getSubjectTranscriptTotal);
 
-
 router.put('/:idSubject/ratio', authLecture, subjectController.updateRatioTranscript);
-
 
 
 module.exports = router;

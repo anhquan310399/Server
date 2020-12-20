@@ -2,6 +2,7 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
+const { response } = require("express");
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
@@ -118,7 +119,10 @@ exports.update = async(req, res) => {
                     message: "Not found Subject",
                 });
             }
-            res.send("Update Successfully");
+            res.send({
+                success: true,
+                message: "Update Subject Successfully"
+            });
         })
         .catch((err) => {
             console.log("Update subject: " + err.message);
@@ -151,7 +155,10 @@ exports.delete = async(req, res) => {
                     message: "Not found Subject",
                 });
             }
-            res.send("Delete Successfully");
+            res.send({
+                success: true,
+                message: "Delete Subject Successfully"
+            });
         })
         .catch((err) => {
             console.log("Delete subject" + err.message);
@@ -202,13 +209,19 @@ exports.addStudent = (req, res) => {
 
     let idStudent = subject.studentIds.find(value => { return value === req.body.idStudent });
     if (idStudent) {
-        return res.send({ message: 'This student has already in subject' });
+        return res.send({
+            success: false,
+            message: 'This student has already in subject'
+        });
     }
 
-    userDb.findOne({ code: req.body.idStudent })
+    userDb.findOne({ code: req.body.idStudent, idPrivilege: 'student' }, 'code firstName surName urlAvatar')
         .then(user => {
             if (!user) {
-                return res.status(404).send({ message: "Not found student with id: " + req.body.idStudent });
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found student with id: " + req.body.idStudent
+                });
             }
             subject.studentIds.push(req.body.idStudent);
             subject.save()
@@ -216,7 +229,8 @@ exports.addStudent = (req, res) => {
                     // res.send(data);
                     res.send({
                         success: true,
-                        message: "Add Student Successfully!"
+                        message: "Add Student Successfully!",
+                        student: user
                     });
                 })
                 .catch((err) => {
@@ -244,7 +258,10 @@ exports.removeStudent = (req, res) => {
     subject.save()
         .then((data) => {
             // res.send(data);
-            res.send({ message: "Remove Student Successfully!" });
+            res.send({
+                success: true,
+                message: "Remove Student Successfully!"
+            });
         })
         .catch((err) => {
             console.log("Remove student" + err.message);
@@ -359,65 +376,7 @@ exports.getListStudent = async(req, res) => {
 exports.getSubjectTranscript = async(req, res) => {
     let subject = req.subject;
     let today = Date.now();
-    let fields = await subject.timelines.reduce(
-        async(preField, currentTimeline) => {
-            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
-                let exists = [];
-                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
-                    let exist = exists.find(value => value.idStudent == submission.idStudent);
-                    if (exist) {
-                        let existSubmission = prePromise[exist.index];
-                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
-                        return prePromise;
-                    } else {
-                        exists = exists.concat({
-                            idStudent: submission.idStudent,
-                            grade: submission.grade,
-                            index: prePromise.length
-                        })
-                        return prePromise.concat({
-                            // _id: submission._id,
-                            idStudent: submission.idStudent,
-                            grade: submission.grade
-                        })
-                    }
-                }, []);
-                let isRemain = today <= exam.expireTime;
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: exam._id,
-                    name: exam.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'exam'
-                }
-            }));
-            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
-                let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
-                    return {
-                        // _id: submission._id,
-                        idStudent: submission.idStudent,
-                        grade: submission.feedBack ? submission.feedBack.grade : 0,
-                        isGrade: submission.feedBack ? true : false
-                    }
-                }));
-                let isRemain = today <= assignment.setting.expireTime;
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: assignment._id,
-                    name: assignment.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'assignment'
-                }
-            }));
-
-            let currentFields = exams.concat(assignments);
-            let result = await preField;
-            return result.concat(currentFields);
-        }, []);
+    let fields = await getListAssignmentExam(subject, today);
 
     if (req.user.idPrivilege === 'student') {
         let transcript = await Promise.all(fields.map(async(field) => {
@@ -497,68 +456,7 @@ exports.getSubjectTranscript = async(req, res) => {
 exports.getSubjectTranscriptTotal = async(req, res) => {
     let subject = req.subject;
     let today = Date.now();
-    let assignmentOrExam = await subject.timelines.reduce(
-        async(preField, currentTimeline) => {
-            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
-                let exists = [];
-                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
-                    let exist = exists.find(value => value.idStudent == submission.idStudent);
-                    if (exist) {
-                        let existSubmission = prePromise[exist.index];
-                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
-                        return prePromise;
-                    } else {
-                        exists = exists.concat({
-                            idStudent: submission.idStudent,
-                            grade: submission.grade,
-                            index: prePromise.length
-                        })
-                        return prePromise.concat({
-                            // _id: submission._id,
-                            idStudent: submission.idStudent,
-                            grade: submission.grade
-                        })
-                    }
-                }, []);
-                let isRemain = today <= exam.expireTime;
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: exam._id,
-                    name: exam.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'exam',
-                }
-            }));
-            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
-                let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
-
-                    return {
-                        // _id: submission._id,
-                        idStudent: submission.idStudent,
-                        grade: submission.feedBack ? submission.feedBack.grade : 0,
-                        isGrade: submission.feedBack ? true : false,
-                    }
-                }));
-
-                let isRemain = today <= assignment.setting.expireTime;
-
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: assignment._id,
-                    name: assignment.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'assignment'
-                }
-            }));
-
-            let currentFields = exams.concat(assignments);
-            let result = await preField;
-            return result.concat(currentFields);
-        }, []);
+    let assignmentOrExam = await getListAssignmentExam(subject, today);
 
     let fields = { 'c0': 'MSSV', 'c1': 'Họ', 'c2': 'Tên' }
     let ratios = { 'c0': null, 'c1': null, 'c2': null }
@@ -637,4 +535,82 @@ exports.updateRatioTranscript = async(req, res) => {
                 message: 'Update ratio transcript failure!'
             });
         })
+}
+
+//Function
+
+const getListAssignmentExam = async(subject, today) => {
+    let assignmentOrExam = await subject.timelines.reduce(
+        async(preField, currentTimeline) => {
+            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+                if (exam.isDeleted) {
+                    return null;
+                }
+                let exists = [];
+                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                    let exist = exists.find(value => value.idStudent == submission.idStudent);
+                    if (exist) {
+                        let existSubmission = prePromise[exist.index];
+                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                        return prePromise;
+                    } else {
+                        exists = exists.concat({
+                            idStudent: submission.idStudent,
+                            grade: submission.grade,
+                            index: prePromise.length
+                        })
+                        return prePromise.concat({
+                            // _id: submission._id,
+                            idStudent: submission.idStudent,
+                            grade: submission.grade
+                        })
+                    }
+                }, []);
+                let isRemain = today <= exam.expireTime;
+                return {
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    _id: exam._id,
+                    name: exam.name,
+                    isRemain: isRemain,
+                    submissions: submissions,
+                    type: 'exam',
+                }
+            }));
+            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+                if (assignment.isDeleted) {
+                    return null;
+                }
+
+                let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
+                    return {
+                        // _id: submission._id,
+                        idStudent: submission.idStudent,
+                        grade: submission.feedBack ? submission.feedBack.grade : 0,
+                        isGrade: submission.feedBack ? true : false,
+                    }
+                }));
+
+                let isRemain = today <= assignment.setting.expireTime;
+
+                return {
+                    // idSubject: subject._id,
+                    // idTimeline: currentTimeline._id,
+                    _id: assignment._id,
+                    name: assignment.name,
+                    isRemain: isRemain,
+                    submissions: submissions,
+                    type: 'assignment'
+                }
+            }));
+
+            let currentFields = exams.concat(assignments);
+            let result = await preField;
+            return result.concat(currentFields);
+        }, []);
+    assignmentOrExam = await (assignmentOrExam.filter((value) => {
+        return (value !== null);
+    }));
+
+    return assignmentOrExam;
 }
