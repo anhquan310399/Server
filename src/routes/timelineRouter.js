@@ -8,7 +8,7 @@ router.post('/', authLecture, timelineController.create);
 router.get('/', authLecture, timelineController.findAll);
 router.get('/:idTimeline', authLecture, timelineController.find);
 router.put('/:idTimeline/', authLecture, timelineController.update);
-router.delete('/:idTimeline/', authLecture, timelineController.delete);
+router.put('/:idTimeline/hide', authLecture, timelineController.hideOrUnHide);
 
 
 // router.post('/:idTimeline/upload', authLecture, timelineController.uploadFile);

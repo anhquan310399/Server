@@ -2,7 +2,6 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
-const { response } = require("express");
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
@@ -497,7 +496,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
                 total += (data[key] * ratios[key].ratio);
             });
             let key = 'c' + count;
-            data[key] = (total / totalRatio);
+            data[key] = (total / totalRatio).toFixed(2);
             ratios[key] = null;
             fields[key] = 'Trung bình';
             return data;

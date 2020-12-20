@@ -1,6 +1,6 @@
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+// const multer = require('multer');
+// const fs = require('fs');
+// const path = require('path');
 exports.create = (req, res) => {
     let subject = req.subject;
 
@@ -13,7 +13,11 @@ exports.create = (req, res) => {
     var length = subject.timelines.push(model);
     subject.save()
         .then((data) => {
-            res.send(data.timelines[length - 1]);
+            res.send({
+                success: true,
+                message: "Create timeline successfully!",
+                timeline: data.timelines[length - 1]
+            });
         })
         .catch((err) => {
             console.log(err.name);
@@ -66,6 +70,7 @@ exports.update = (req, res) => {
     });
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
@@ -75,12 +80,17 @@ exports.update = (req, res) => {
 
     subject.save()
         .then((data) => {
+            // res.send({
+            //     _id: timeline._id,
+            //     name: timeline.name,
+            //     description: timeline.description,
+            //     isDeleted: timeline.isDeleted
+            // });
+
             res.send({
-                _id: timeline._id,
-                name: timeline.name,
-                description: timeline.description,
-                isDeleted: timeline.isDeleted
-            });
+                success: true,
+                message: 'Update timeline successfully!'
+            })
         })
         .catch((err) => {
             console.log(err.name);
@@ -99,7 +109,7 @@ exports.update = (req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
+exports.hideOrUnHide = (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.params.idTimeline);
     if (!timeline) {
@@ -108,13 +118,20 @@ exports.delete = (req, res) => {
             message: "Not found timeline"
         })
     }
-    timeline.isDeleted = true;
+    timeline.isDeleted = !timeline.isDeleted;
     subject.save()
-        .then((data) => {
-            res.send({
-                success: true,
-                message: 'Delete timeline successfully!'
-            });
+        .then(() => {
+            if (timeline.isDeleted) {
+                res.send({
+                    success: true,
+                    message: 'Hide timeline successfully!'
+                });
+            } else {
+                res.send({
+                    success: true,
+                    message: 'Unhide timeline successfully!'
+                });
+            }
         })
         .catch((err) => {
             res.status(500).send({
@@ -194,7 +211,6 @@ exports.delete = (req, res) => {
 // }
 
 exports.uploadFile = (req, res) => {
-
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
         return (value._id == req.body.idTimeline)
@@ -217,7 +233,11 @@ exports.uploadFile = (req, res) => {
 
     subject.save()
         .then(() => {
-            res.send(timeline.files[index - 1]);
+            res.send({
+                success: true,
+                message: 'Upload file successfully!',
+                file: timeline.files[index - 1]
+            });
         })
         .catch(err => {
             res.status(500).send({
@@ -236,6 +256,7 @@ exports.downloadFile = (req, res) => {
     });
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
@@ -243,6 +264,7 @@ exports.downloadFile = (req, res) => {
     const file = timeline.files.find(value => value._id == req.params.idFile);
     if (!file) {
         return res.status(404).send({
+            success: false,
             message: "Not found file"
         })
     }
@@ -257,6 +279,7 @@ exports.removeFile = (req, res) => {
     });
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
@@ -264,6 +287,7 @@ exports.removeFile = (req, res) => {
     const file = timeline.files.find(value => value._id == req.params.idFile);
     if (!file) {
         return res.status(404).send({
+            success: false,
             message: "Not found file"
         })
     }
@@ -290,10 +314,14 @@ exports.removeFile = (req, res) => {
 
     subject.save()
         .then(() => {
-            res.send({ message: "Delete file successfully!" });
+            res.send({
+                success: true,
+                message: "Delete file successfully!"
+            });
         })
         .catch(err => {
             res.status(500).send({
+                success: false,
                 message: err.message
             })
         })
