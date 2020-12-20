@@ -5,6 +5,7 @@ exports.create = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -20,20 +21,15 @@ exports.create = (req, res) => {
         .then(() => {
             let information = timeline.information[length - 1];
             res.send({
-                _id: information._id,
-                name: information.name,
-                content: information.content,
-                time: information.createdAt,
-                isNew: true
-                    // success: true,
-                    // message: 'Create new information successfully!',
-                    // information: {
-                    //     _id: information._id,
-                    //     name: information.name,
-                    //     content: information.content,
-                    //     time: information.createdAt,
-                    //     isNew: true
-                    // }
+                success: true,
+                message: 'Create new information successfully!',
+                information: {
+                    _id: information._id,
+                    name: information.name,
+                    content: information.content,
+                    time: information.createdAt,
+                    isNew: true
+                }
             });
         })
         .catch((err) => {
@@ -58,6 +54,7 @@ exports.find = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -74,6 +71,7 @@ exports.find = (req, res) => {
         });
     } else {
         return res.status(404).send({
+            success: false,
             message: "Not found information",
         });
     }
@@ -86,6 +84,7 @@ exports.findAll = async(req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -98,7 +97,7 @@ exports.findAll = async(req, res) => {
             isNew: isToday(value.updatedAt)
         };
     }));
-    res.send(information);
+    res.send({ information });
 };
 
 exports.update = (req, res) => {
@@ -106,6 +105,7 @@ exports.update = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -114,6 +114,7 @@ exports.update = (req, res) => {
     });
     if (!information) {
         return res.status(404).send({
+            success: false,
             message: "Not found information",
         });
     }
@@ -123,11 +124,13 @@ exports.update = (req, res) => {
     data.save()
         .then(() => {
             res.send({
-                _id: information._id,
-                name: information.name,
-                content: information.content,
-                time: information.createdAt,
-                isNew: isToday(information.updatedAt)
+                // _id: information._id,
+                // name: information.name,
+                // content: information.content,
+                // time: information.createdAt,
+                // isNew: isToday(information.updatedAt)
+                success: true,
+                message: 'Update announcement successfully!'
             });
         })
         .catch((err) => {
@@ -153,6 +156,7 @@ exports.delete = (req, res) => {
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -160,6 +164,7 @@ exports.delete = (req, res) => {
     const indexInfo = timeline.information.indexOf(information);
     if (indexInfo === -1) {
         return res.status(404).send({
+            success: false,
             message: "Not found information",
         });
     }
