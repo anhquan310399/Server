@@ -17,8 +17,12 @@ exports.create = (req, res) => {
     const length = timeline.forums.push(model);
 
     data.save()
-        .then((data) => {
-            res.send(timeline.forums[length - 1]);
+        .then(() => {
+            res.send({
+                success: true,
+                message: 'Create new forum successfully!',
+                forum: timeline.forums[length - 1]
+            });
         })
         .catch((err) => {
             console.log(err.name);
@@ -123,23 +127,22 @@ exports.update = (req, res) => {
         });
     }
 
-    const forum = timeline.forums.find(function(value, index, arr) {
-        if (value._id == req.params.idForum) {
-            arr[index].name = req.body.data.name;
-            arr[index].description = req.body.data.description;
-            return true;
-        } else {
-            return false;
-        }
-    });
+    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+
+    forum.name = req.body.data.name;
+    if (req.body.data.description) {
+        forum.description = req.body.data.description;
+    }
 
     data.save()
-        .then((data) => {
+        .then(() => {
             res.send({
-                _id: forum._id,
-                name: forum.name,
-                description: forum.description,
-                isDeleted: forum.isDeleted
+                // _id: forum._id,
+                // name: forum.name,
+                // description: forum.description,
+                // isDeleted: forum.isDeleted
+                success: true,
+                message: 'Update forum successfully!'
             });
         })
         .catch((err) => {
@@ -159,11 +162,12 @@ exports.update = (req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
+exports.hideOrUnhide = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline",
         });
     }
@@ -171,17 +175,61 @@ exports.delete = (req, res) => {
     const forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
+            success: false,
             message: "Not found forum",
         });
     }
-    forum.isDeleted = true;
+    forum.isDeleted = !forum.isDeleted;
 
 
     data.save()
         .then((data) => {
+            let message;
+            if (forum.isDeleted) {
+                message = "Hide forum successfully!";
+            } else {
+                message = "Unhide forum successfully!";
+            }
             res.send({
+                success: true,
+                message: message
+            });
+        })
+        .catch((err) => {
+            console.log("Delete forum: " + err.message);
+            res.status(500).send({
                 success: false,
-                message: "Delete Successfully!"
+                message: "Delete Failure!"
+            });
+        });
+
+};
+
+exports.delete = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    if (!forum) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found forum",
+        });
+    }
+    let index = timeline.forums.indexOf(forum);
+
+    timeline.forums.splice(index, 1);
+    data.save()
+        .then((data) => {
+            res.send({
+                success: true,
+                message: "Delete forum successfully!"
             });
         })
         .catch((err) => {

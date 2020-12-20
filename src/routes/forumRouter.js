@@ -9,6 +9,8 @@ router.get('/', authInSubject, forumController.findAll);
 router.post('/', authLecture, forumController.create);
 router.get('/:idForum', authInSubject, forumController.find);
 router.put('/:idForum', authLecture, forumController.update);
-router.delete('/:idForum', authLecture, forumController.delete);
+router.put('/:idForum/hide', authLecture, forumController.hideOrUnhide);
+
+// router.delete('/:idForum/', authLecture, forumController.delete);
 
 module.exports = router;
