@@ -11,7 +11,10 @@ router.put('/:idTimeline/', authLecture, timelineController.update);
 router.delete('/:idTimeline/', authLecture, timelineController.delete);
 
 
-router.post('/:idTimeline/upload', authLecture, timelineController.uploadFile);
+// router.post('/:idTimeline/upload', authLecture, timelineController.uploadFile);
+
+router.post('/upload', authLecture, timelineController.uploadFile);
+
 router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
 router.delete('/:idTimeline/remove/:idFile', authLecture, timelineController.removeFile);
 
