@@ -12,7 +12,10 @@ router.post('/:idAssignment/submit', authStudent, assignmentController.submit);
 router.post('/:idAssignment/grade/:idSubmission', authLecture, assignmentController.gradeSubmission);
 router.post('/:idAssignment/comment/', authStudent, assignmentController.commentFeedback);
 router.put('/:idAssignment', authLecture, assignmentController.update);
-router.delete('/:idAssignment', authLecture, assignmentController.delete);
+// router.delete('/:idAssignment', authLecture, assignmentController.delete);
+
+router.put('/:idAssignment/hide', authLecture, assignmentController.hideOrUnhide);
+
 router.get('/:idAssignment/download/:idSubmission', authInSubject, assignmentController.download);
 
 // router.post('/upload', assignmentController.uploadFile);

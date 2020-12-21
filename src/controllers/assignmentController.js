@@ -1,6 +1,6 @@
 const User = require('../models/user');
-const multer = require('multer');
-const fs = require('fs');
+// const multer = require('multer');
+// const fs = require('fs');
 const moment = require('moment');
 exports.create = async(req, res) => {
     let subject = req.subject;
@@ -37,7 +37,20 @@ exports.create = async(req, res) => {
 
     await subject.save()
         .then(() => {
-            res.send(timeline.assignments[length - 1]);
+            let assignment = timeline.assignments[length - 1]
+            assignment = {
+                _id: assignment._id,
+                name: assignment.name,
+                content: assignment.content,
+                setting: assignment.setting,
+                assignments: assignment.attachments,
+                submissionCount: 0,
+                submission: []
+            }
+            res.send({
+                success: true,
+                assignment
+            });
         })
         .catch((err) => {
             console.log(err.name);
@@ -94,31 +107,25 @@ exports.find = async(req, res) => {
                 isCanSubmit = true;
             }
         }
-        if (submission) {
-            res.send({
-                _id: assignment._id,
-                name: assignment.name,
-                content: assignment.content,
-                submissionStatus: true,
-                gradeStatus: submission.feedBack ? true : false,
-                setting: assignment.setting,
-                isCanSubmit: isCanSubmit,
-                timingRemain: timingRemain,
-                submission: submission
-            })
-        } else {
-            res.send({
-                _id: assignment._id,
-                name: assignment.name,
-                content: assignment.content,
-                submissionStatus: false,
-                gradeStatus: false,
-                setting: assignment.setting,
-                isCanSubmit: isCanSubmit,
-                timingRemain: timingRemain,
-                submission: null
-            });
+        let gradeStatus = false;
+        if (submission && submission.feedBack) {
+            gradeStatus = true;
         }
+        res.send({
+            success: true,
+            assignment: {
+                _id: assignment._id,
+                name: assignment.name,
+                content: assignment.content,
+                attachments: assignment.attachments,
+                submissionStatus: submission ? true : false,
+                gradeStatus: gradeStatus,
+                setting: assignment.setting,
+                isCanSubmit: isCanSubmit,
+                timingRemain: timingRemain,
+                submission: submission || null
+            }
+        })
     } else {
         let submissions = await Promise.all(assignment.submissions
             .map(async function(submit) {
@@ -131,17 +138,21 @@ exports.find = async(req, res) => {
                     student: student,
                     submitTime: submit.submitTime,
                     file: submit.file,
-                    feedBack: submit.feedBack
+                    feedBack: submit.feedBack || null
                 };
             }));
 
         res.send({
-            _id: assignment._id,
-            name: assignment.name,
-            content: assignment.content,
-            setting: assignment.setting,
-            submissionCount: assignment.submissions.length,
-            submission: submissions
+            success: true,
+            assignment: {
+                _id: assignment._id,
+                name: assignment.name,
+                content: assignment.content,
+                attachments: assignment.attachments || null,
+                setting: assignment.setting,
+                submissionCount: assignment.submissions.length,
+                submission: submissions
+            }
         });
     }
 };
@@ -156,7 +167,7 @@ exports.findAll = async(req, res) => {
         });
     }
 
-    res.send(timeline.assignments.map((value) => {
+    let assignments = timeline.assignments.map((value) => {
         return {
             _id: value._id,
             name: value.name,
@@ -164,7 +175,11 @@ exports.findAll = async(req, res) => {
             startTime: value.setting.startTime,
             expireTime: value.setting.expireTime
         }
-    }));
+    });
+    res.send({
+        success: true,
+        assignments
+    })
 };
 
 exports.update = async(req, res) => {
@@ -207,12 +222,18 @@ exports.update = async(req, res) => {
 
     await subject.save()
         .then(() => {
-            res.send({
-                _id: assignment._id,
-                name: assignment.name,
-                content: assignment.content,
-                setting: assignment.setting
-            });
+            res.send(
+                //     {
+                //     _id: assignment._id,
+                //     name: assignment.name,
+                //     content: assignment.content,
+                //     setting: assignment.setting
+                // }
+                {
+                    success: true,
+                    message: 'Update assignment successfully!'
+                }
+            );
         })
         .catch((err) => {
             console.log(err.name);
@@ -242,20 +263,22 @@ exports.delete = (req, res) => {
     }
 
     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
-    // const indexAssignment = timeline.assignments.indexOf(assignment);
+
     if (!assignment) {
         return res.status(404).send({
             success: false,
             message: "Not found assignment",
         });
     }
-    assignment.isDeleted = true;
-
-    // timeline.assignments.splice(indexAssignment, 1);
+    const indexAssignment = timeline.assignments.indexOf(assignment);
+    timeline.assignments.splice(indexAssignment, 1);
 
     data.save()
         .then(() => {
-            res.send({ message: "Delete Assignment Successfully!" });
+            res.send({
+                success: true,
+                message: "Delete Assignment Successfully!"
+            });
         })
         .catch((err) => {
             res.status(500).send({
@@ -265,22 +288,62 @@ exports.delete = (req, res) => {
         });
 };
 
-var storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        let subject = req.query.idSubject;
-        let timeline = req.query.idTimeline;
-        let assignment = req.params.idAssignment;
-        let path = `${appRoot}/uploads/${subject}/${timeline}/${assignment}/`;
-        if (!fs.existsSync(path)) {
-            fs.mkdirSync(path, { recursive: true });
-        }
-        cb(null, path)
-    },
-    filename: function(req, file, cb) {
-        let name = Date.now() + '-' + file.originalname;
-        cb(null, name)
+exports.hideOrUnhide = (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
     }
-});
+
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    if (!assignment) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found assignment",
+        });
+    }
+    assignment.isDeleted = !assignment.isDeleted;
+
+    data.save()
+        .then(() => {
+            let message;
+            if (assignment.isDeleted) {
+                message = "Hide Assignment Successfully!"
+            } else {
+                message = "Unhide Assignment Successfully!"
+            }
+            res.send({
+                success: true,
+                message
+            });
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message,
+            });
+        });
+};
+
+// var storage = multer.diskStorage({
+//     destination: function(req, file, cb) {
+//         let subject = req.query.idSubject;
+//         let timeline = req.query.idTimeline;
+//         let assignment = req.params.idAssignment;
+//         let path = `${appRoot}/uploads/${subject}/${timeline}/${assignment}/`;
+//         if (!fs.existsSync(path)) {
+//             fs.mkdirSync(path, { recursive: true });
+//         }
+//         cb(null, path)
+//     },
+//     filename: function(req, file, cb) {
+//         let name = Date.now() + '-' + file.originalname;
+//         cb(null, name)
+//     }
+// });
 
 exports.submit = (req, res) => {
     let data = req.subject;
@@ -292,7 +355,7 @@ exports.submit = (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.body.idAssignment);
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -374,9 +437,9 @@ exports.submit = (req, res) => {
         // });
 
         let file = {
-            name: req.body.data.name,
-            path: req.body.data.path,
-            type: req.body.data.type,
+            name: req.body.file.name,
+            path: req.body.file.path,
+            type: req.body.file.type,
             uploadDay: Date.now()
         }
         console.log(file);
@@ -396,7 +459,10 @@ exports.submit = (req, res) => {
         }
         data.save()
             .then(() => {
-                res.send(assignment.submissions[index]);
+                res.send({
+                    success: true,
+                    submission: assignment.submissions[index]
+                });
             })
             .catch((err) => {
                 if (err.name === 'ValidationError') {
@@ -495,8 +561,12 @@ exports.gradeSubmission = (req, res) => {
         }
 
         data.save()
-            .then(() => {
-                res.send(submitted);
+            .then(async() => {
+                let student = await User.findById(submitted.idStudent, 'code firstName surName');
+                res.send({
+                    success: true,
+                    message: `Grade submission of student with code: ${student.code} successfully!`
+                });
             })
             .catch((err) => {
                 if (err.name === 'ValidationError') {
@@ -546,11 +616,14 @@ exports.commentFeedback = (req, res) => {
                 message: "Chưa chấm điểm không thể comment!"
             });
         }
-        submitted.feedBack.comment = req.body.data.comment;
+        submitted.feedBack.comment = req.body.comment;
 
         data.save()
             .then(() => {
-                res.send(submitted);
+                res.send({
+                    success: true,
+                    message: 'Comment feedback of submission successfully!'
+                });
             })
             .catch((err) => {
                 res.status(500).send({
