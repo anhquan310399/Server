@@ -82,27 +82,64 @@ exports.findAll = async(req, res) => {
 exports.find = async(req, res) => {
     let subject = req.subject;
     let timelines = req.subject.timelines;
-    if (req.idPrivilege === 'student') {
-        timelines.filter((value) => { if (value.isDeleted === false) return true });
-    }
-    let teacher = await userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
+    console.log(req.user.idPrivilege);
+    let teacher = userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
         .then(value => { return value });
 
+    if (req.user.idPrivilege === 'student') {
+        timelines = await timelines.filter((value) => {
+            if (value.isDeleted === false) {
+                return true
+            } else {
+                return false;
+            }
+        });
+        timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
+            let forums = value.forums.reduce((preForums, currentForum) => {
+                if (currentForum.isDeleted) {
+                    return preForums;
+                }
+                let forum = { _id: currentForum.id, name: currentForum.name, description: currentForum.description, time: currentForum.createdAt, isNew: isToday(currentForum.updatedAt) }
+                return (preForums.concat(forum));
+            }, []);
+            let exams = value.exams.reduce((preExams, currentExam) => {
+                if (currentExam.isDeleted) {
+                    return preExams;
+                }
+
+                let exam = { _id: currentExam._id, name: currentExam.name, description: currentExam.description, time: currentExam.createdAt, isNew: isToday(currentExam.createdAt) }
+                return (preExams.concat(exam));
+            }, []);
+            let information = value.information.map((info) => {
+                return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) }
+            });
+            let assignments = value.assignments.reduce((preAssignments, currentAssignment) => {
+                if (currentAssignment.isDeleted) {
+                    return preAssignments;
+                }
+
+                let assignment = { _id: currentAssignment._id, name: currentAssignment.name, description: currentAssignment.description, time: currentAssignment.createdAt, isNew: isToday(currentAssignment.createdAt) }
+                return (preAssignments.concat(assignment));
+            }, []);
+
+            return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
+        })), ['index']);
+    } else {
+        timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
+            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt), isDeleted: forum.isDeleted } });
+            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt), isDeleted: exam.isDeleted } });
+            let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
+            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt), isDeleted: assign.isDeleted } });
+
+            return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
+
+        })), ['index']);
+    }
     let result = {
         _id: subject._id,
         name: subject.name,
         lecture: teacher,
-        timelines: _.sortBy(timelines.map((value) => {
-            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt) } });
-            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt) } });
-            let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
-            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt) } });
-            if (req.idPrivilege === 'student') {
-                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
-            } else {
-                return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
-            }
-        }), ['index']),
+        timelines: timelines
     };
     res.send({
         success: true,
@@ -585,71 +622,75 @@ exports.updateRatioTranscript = async(req, res) => {
 const getListAssignmentExam = async(subject, today) => {
     let assignmentOrExam = await subject.timelines.reduce(
         async(preField, currentTimeline) => {
-            let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
-                if (exam.isDeleted) {
-                    return null;
-                }
-                let exists = [];
-                let submissions = await exam.submissions.reduce(function(prePromise, submission) {
-                    let exist = exists.find(value => value.idStudent == submission.idStudent);
-                    if (exist) {
-                        let existSubmission = prePromise[exist.index];
-                        prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
-                        return prePromise;
-                    } else {
-                        exists = exists.concat({
-                            idStudent: submission.idStudent,
-                            grade: submission.grade,
-                            index: prePromise.length
-                        })
-                        return prePromise.concat({
-                            // _id: submission._id,
-                            idStudent: submission.idStudent,
-                            grade: submission.grade
-                        })
+            if (currentTimeline.isDeleted) {
+                let result = await preField;
+                return result;
+            } else {
+                let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+                    if (exam.isDeleted) {
+                        return null;
                     }
-                }, []);
-                let isRemain = today <= exam.expireTime;
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: exam._id,
-                    name: exam.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'exam',
-                }
-            }));
-            let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
-                if (assignment.isDeleted) {
-                    return null;
-                }
-
-                let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
+                    let exists = [];
+                    let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                        let exist = exists.find(value => value.idStudent == submission.idStudent);
+                        if (exist) {
+                            let existSubmission = prePromise[exist.index];
+                            prePromise[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
+                            return prePromise;
+                        } else {
+                            exists = exists.concat({
+                                idStudent: submission.idStudent,
+                                grade: submission.grade,
+                                index: prePromise.length
+                            })
+                            return prePromise.concat({
+                                // _id: submission._id,
+                                idStudent: submission.idStudent,
+                                grade: submission.grade
+                            })
+                        }
+                    }, []);
+                    let isRemain = today <= exam.expireTime;
                     return {
-                        // _id: submission._id,
-                        idStudent: submission.idStudent,
-                        grade: submission.feedBack ? submission.feedBack.grade : 0,
-                        isGrade: submission.feedBack ? true : false,
+                        // idSubject: subject._id,
+                        // idTimeline: currentTimeline._id,
+                        _id: exam._id,
+                        name: exam.name,
+                        isRemain: isRemain,
+                        submissions: submissions,
+                        type: 'exam',
                     }
                 }));
+                let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+                    if (assignment.isDeleted) {
+                        return null;
+                    }
 
-                let isRemain = today <= assignment.setting.expireTime;
+                    let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
+                        return {
+                            // _id: submission._id,
+                            idStudent: submission.idStudent,
+                            grade: submission.feedBack ? submission.feedBack.grade : 0,
+                            isGrade: submission.feedBack ? true : false,
+                        }
+                    }));
 
-                return {
-                    // idSubject: subject._id,
-                    // idTimeline: currentTimeline._id,
-                    _id: assignment._id,
-                    name: assignment.name,
-                    isRemain: isRemain,
-                    submissions: submissions,
-                    type: 'assignment'
-                }
-            }));
+                    let isRemain = today <= assignment.setting.expireTime;
 
-            let currentFields = exams.concat(assignments);
-            let result = await preField;
-            return result.concat(currentFields);
+                    return {
+                        // idSubject: subject._id,
+                        // idTimeline: currentTimeline._id,
+                        _id: assignment._id,
+                        name: assignment.name,
+                        isRemain: isRemain,
+                        submissions: submissions,
+                        type: 'assignment'
+                    }
+                }));
+                let currentFields = exams.concat(assignments);
+                let result = await preField;
+                return result.concat(currentFields);
+            }
         }, []);
     assignmentOrExam = await (assignmentOrExam.filter((value) => {
         return (value !== null);

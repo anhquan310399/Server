@@ -17,6 +17,6 @@ router.post('/upload', authLecture, timelineController.uploadFile);
 
 router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
 router.delete('/:idTimeline/remove/:idFile', authLecture, timelineController.removeFile);
-router.get('/:idTimeline/file/:idFile', authLecture, timelineController.getFile);
+router.get('/:idTimeline/file/:idFile', authInSubject, timelineController.getFile);
 
 module.exports = router;

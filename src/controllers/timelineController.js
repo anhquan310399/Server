@@ -1,6 +1,7 @@
 // const multer = require('multer');
 // const fs = require('fs');
 // const path = require('path');
+const isToday = require('../common/isToday');
 exports.create = (req, res) => {
     let subject = req.subject;
 
@@ -47,7 +48,10 @@ exports.findAll = async(req, res) => {
             isDeleted: value.isDeleted
         };
     }))
-    res.send(timelines);
+    res.send({
+        success: true,
+        timelines
+    });
 };
 
 exports.find = (req, res) => {
@@ -57,10 +61,21 @@ exports.find = (req, res) => {
     });
     if (!timeline) {
         return res.status(404).send({
+            success: false,
             message: "Not found timeline"
         })
     }
-    res.send(timeline);
+
+    let forums = timeline.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt), isDeleted: forum.isDeleted } });
+    let exams = timeline.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt), isDeleted: exam.isDeleted } });
+    let information = timeline.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
+    let assignments = timeline.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt), isDeleted: assign.isDeleted } });
+
+    let result = { _id: timeline._id, name: timeline.name, description: timeline.description, forums: forums, exams: exams, information: information, assignments: assignments, files: timeline.files, index: timeline.index, isDeleted: timeline.isDeleted };
+    res.send({
+        success: true,
+        timeline: result
+    });
 };
 
 exports.update = (req, res) => {
@@ -296,7 +311,6 @@ exports.getFile = (req, res) => {
         file: file
     });
 }
-
 
 exports.removeFile = (req, res) => {
     let subject = req.subject;

@@ -35,35 +35,35 @@ const timeline = new mongoose.Schema({
     timestamps: true,
 });
 
-timeline.pre('save', async function(next) {
-    let currentTimeline = this;
-    if (!currentTimeline.isModified('isDeleted')) {
-        return next();
-    }
+// timeline.pre('save', async function(next) {
+//     let currentTimeline = this;
+//     if (!currentTimeline.isModified('isDeleted')) {
+//         return next();
+//     }
 
-    if (currentTimeline.isDeleted === true) {
-        currentTimeline.exams.forEach(element => {
-            element.isDeleted = true;
-        });
-        currentTimeline.assignments.forEach(element => {
-            element.isDeleted = true;
-        });
-        currentTimeline.forums.forEach(element => {
-            element.isDeleted = true;
-        });
-    } else {
-        currentTimeline.exams.forEach(element => {
-            element.isDeleted = false;
-        });
-        currentTimeline.assignments.forEach(element => {
-            element.isDeleted = false;
-        });
-        currentTimeline.forums.forEach(element => {
-            element.isDeleted = false;
-        });
-    }
+//     if (currentTimeline.isDeleted === true) {
+//         currentTimeline.exams.forEach(element => {
+//             element.isDeleted = true;
+//         });
+//         currentTimeline.assignments.forEach(element => {
+//             element.isDeleted = true;
+//         });
+//         currentTimeline.forums.forEach(element => {
+//             element.isDeleted = true;
+//         });
+//     } else {
+//         currentTimeline.exams.forEach(element => {
+//             element.isDeleted = false;
+//         });
+//         currentTimeline.assignments.forEach(element => {
+//             element.isDeleted = false;
+//         });
+//         currentTimeline.forums.forEach(element => {
+//             element.isDeleted = false;
+//         });
+//     }
 
-})
+// })
 
 
 
