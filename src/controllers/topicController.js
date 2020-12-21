@@ -25,22 +25,26 @@ exports.create = async(req, res) => {
     };
 
     var length = forum.topics.push(model);
-    console.log(forum.topics);
+    // console.log(forum.topics);
 
     data.save()
-        .then(async function(data) {
+        .then(async function() {
             let topic = forum.topics[length - 1];
             let creator = await User.findById(topic.idUser, 'code firstName surName urlAvatar')
                 .then(value => {
                     return value;
                 })
             res.send({
-                _id: topic._id,
-                name: topic.name,
-                content: topic.content,
-                create: creator,
-                createdAt: topic.createdAt,
-                discussions: topic.discussions
+                success: true,
+                message: 'Create new topic successfully!',
+                topic: {
+                    _id: topic._id,
+                    name: topic.name,
+                    content: topic.content,
+                    create: creator,
+                    createdAt: topic.createdAt,
+                    discussions: topic.discussions
+                }
             });
         })
         .catch((err) => {
@@ -109,18 +113,21 @@ exports.find = async(req, res) => {
         });
 
     res.send({
-        _id: topic._id,
-        name: topic.name,
-        content: topic.content,
-        create: creator,
-        discussions: discussions,
-        time: topic.createdAt
+        success: true,
+        topic: {
+            _id: topic._id,
+            name: topic.name,
+            content: topic.content,
+            create: creator,
+            discussions: discussions,
+            time: topic.createdAt
+        }
     });
 };
 
 exports.findAll = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -128,7 +135,7 @@ exports.findAll = async(req, res) => {
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.body.idForum);
+    const forum = timeline.forums.find(value => value._id == req.query.idForum);
     if (!forum) {
         return res.status(404).send({
             success: false,
@@ -198,14 +205,20 @@ exports.update = (req, res) => {
                     .then(value => {
                         return value;
                     })
-                res.send({
-                    _id: topic.id,
-                    name: topic.name,
-                    content: topic.content,
-                    create: creator,
-                    time: topic.updatedAt,
-                    relies: topic.discussions.length
-                });
+                res.send(
+                    //     {
+                    //     _id: topic.id,
+                    //     name: topic.name,
+                    //     content: topic.content,
+                    //     create: creator,
+                    //     time: topic.updatedAt,
+                    //     relies: topic.discussions.length
+                    // }
+                    {
+                        success: true,
+                        message: 'Update topic successfully!'
+                    }
+                );
             })
             .catch((err) => {
                 console.log("Update topic: ");
