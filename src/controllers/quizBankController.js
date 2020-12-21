@@ -6,7 +6,10 @@ exports.createChapter = async(req, res) => {
     let length = data.quizBank.push(model);
     await data.save()
         .then(() => {
-            res.send(data.quizBank[length - 1]);
+            res.send({
+                success: true,
+                chapter: data.quizBank[length - 1]
+            });
         })
         .catch((err) => {
             console.log(err.name);
@@ -34,13 +37,19 @@ exports.findAllChapter = async(req, res) => {
             questions: value.questions.length
         }
     }));
-    res.send(quizBank);
+    res.send({
+        success: true,
+        quizBank
+    });
 };
 
 exports.findChapter = async(req, res) => {
     let data = req.subject;
     const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
-    res.send(chapter);
+    res.send({
+        success: true,
+        chapter
+    });
 };
 
 exports.updateChapter = async(req, res) => {
@@ -51,6 +60,7 @@ exports.updateChapter = async(req, res) => {
 
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found question collection"
         })
     }
@@ -59,8 +69,10 @@ exports.updateChapter = async(req, res) => {
     await data.save()
         .then(() => {
             res.send({
-                _id: chapter._id,
-                name: chapter.name
+                // _id: chapter._id,
+                // name: chapter.name
+                success: true,
+                message: 'Update chapter successfully!'
             });
         })
         .catch((err) => {
@@ -85,6 +97,7 @@ exports.deleteChapter = async(req, res) => {
     const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
@@ -92,11 +105,15 @@ exports.deleteChapter = async(req, res) => {
     const index = data.quizBank.indexOf(chapter);
     data.quizBank.splice(index, 1);
     await data.save()
-        .then((data) => {
-            res.send({ message: "Delete Successfully!" });
+        .then(() => {
+            res.send({
+                success: true,
+                message: "Delete Successfully!"
+            });
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });
@@ -107,6 +124,7 @@ exports.pushQuestion = async(req, res) => {
     var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
@@ -116,10 +134,15 @@ exports.pushQuestion = async(req, res) => {
     });
     await data.save()
         .then(() => {
-            res.send(chapter);
+            // res.send(chapter);
+            res.send({
+                success: true,
+                message: `Add question to chapter ${chapter.name} successfully!`
+            })
         })
         .catch((err) => {
             res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });
@@ -130,11 +153,15 @@ exports.getAllQuestion = async(req, res) => {
     var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
 
-    res.send(chapter.questions);
+    res.send({
+        success: true,
+        questions: chapter.questions
+    });
 };
 
 exports.getQuestionById = async(req, res) => {
@@ -142,6 +169,7 @@ exports.getQuestionById = async(req, res) => {
     var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
@@ -149,11 +177,15 @@ exports.getQuestionById = async(req, res) => {
 
     if (!question) {
         return res.status(404).send({
+            success: false,
             message: "Not found question",
         });
     }
 
-    res.send(question);
+    res.send({
+        success: false,
+        question
+    });
 };
 
 exports.updateQuestionById = async(req, res) => {
@@ -161,6 +193,7 @@ exports.updateQuestionById = async(req, res) => {
     var chapter = subject.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
@@ -168,6 +201,7 @@ exports.updateQuestionById = async(req, res) => {
 
     if (!question) {
         return res.status(404).send({
+            success: false,
             message: "Not found question",
         });
     }
@@ -183,10 +217,14 @@ exports.updateQuestionById = async(req, res) => {
     }
     await subject.save()
         .then(() => {
-            return res.send(question);
+            return res.send({
+                success: true,
+                message: 'Update question successfully!'
+            });
         })
         .catch((err) => {
             return res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });
@@ -197,6 +235,7 @@ exports.deleteQuestionById = async(req, res) => {
     var chapter = subject.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
+            success: false,
             message: "Not found chapter",
         });
     }
@@ -204,6 +243,7 @@ exports.deleteQuestionById = async(req, res) => {
 
     if (!question) {
         return res.status(404).send({
+            success: false,
             message: "Not found question",
         });
     }
@@ -214,11 +254,13 @@ exports.deleteQuestionById = async(req, res) => {
     await subject.save()
         .then(() => {
             return res.send({
+                success: true,
                 message: "Delete question successfully!"
             });
         })
         .catch((err) => {
             return res.status(500).send({
+                success: false,
                 message: err.message,
             });
         });

@@ -63,11 +63,14 @@ exports.find = (req, res) => {
 
     if (information) {
         return res.send({
-            _id: information._id,
-            name: information.name,
-            content: information.content,
-            time: information.createdAt,
-            isNew: isToday(information.updatedAt)
+            success: true,
+            information: {
+                _id: information._id,
+                name: information.name,
+                content: information.content,
+                time: information.createdAt,
+                isNew: isToday(information.updatedAt)
+            }
         });
     } else {
         return res.status(404).send({
@@ -97,7 +100,10 @@ exports.findAll = async(req, res) => {
             isNew: isToday(value.updatedAt)
         };
     }));
-    res.send({ information });
+    res.send({
+        success: true,
+        information
+    });
 };
 
 exports.update = (req, res) => {
@@ -175,14 +181,14 @@ exports.delete = (req, res) => {
         .then(() => {
             res.send({
                 success: true,
-                message: "Delete successfully!"
+                message: "Delete information successfully!"
             });
         })
         .catch((err) => {
             console.log("Delete information: " + err.message);
             res.status(500).send({
                 success: false,
-                message: "Delete failure!"
+                message: "Delete information failure!"
             });
         });
 };
