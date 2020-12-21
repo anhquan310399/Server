@@ -33,7 +33,7 @@ const studentAnswerSheet = new mongoose.Schema({
 
 studentAnswerSheet.pre('save', async function(next) {
     let answerSheet = this;
-    if (answerSheet.isModified('answers')) {
+    if (!answerSheet.isNew && answerSheet.isModified('answers')) {
         let exam = answerSheet.parent();
         let quizBank = answerSheet.parent().parent().parent().quizBank
             .find(value => {

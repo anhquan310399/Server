@@ -139,12 +139,12 @@ exports.hideOrUnHide = (req, res) => {
             if (timeline.isDeleted) {
                 res.send({
                     success: true,
-                    message: 'Hide timeline successfully!'
+                    message: `Hide timeline ${timeline.name} successfully!`
                 });
             } else {
                 res.send({
                     success: true,
-                    message: 'Unhide timeline successfully!'
+                    message: `Unhide timeline ${timeline.name} successfully!`
                 });
             }
         })

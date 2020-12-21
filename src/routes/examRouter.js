@@ -10,6 +10,7 @@ router.post('/', authLecture, examController.create);
 router.get('/:idExam', authInSubject, examController.find);
 router.put('/:idExam', authLecture, examController.update);
 // router.delete('/:idExam', authLecture, examController.delete);
+router.put('/:idExam/hide', authLecture, examController.hideOrUnhide);
 router.get('/:idExam/attempt', authStudent, examController.doExam);
-router.put('/:idExam/submit', authStudent, examController.submitExam);
+router.post('/:idExam/submit', authStudent, examController.submitExam);
 module.exports = router;

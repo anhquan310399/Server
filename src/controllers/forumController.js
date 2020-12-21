@@ -186,9 +186,9 @@ exports.hideOrUnhide = (req, res) => {
         .then((data) => {
             let message;
             if (forum.isDeleted) {
-                message = "Hide forum successfully!";
+                message = `Hide forum ${forum.name} successfully!`;
             } else {
-                message = "Unhide forum successfully!";
+                message = `Unhide forum ${forum.name} successfully!`;
             }
             res.send({
                 success: true,

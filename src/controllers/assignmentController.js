@@ -311,9 +311,9 @@ exports.hideOrUnhide = (req, res) => {
         .then(() => {
             let message;
             if (assignment.isDeleted) {
-                message = "Hide Assignment Successfully!"
+                message = `Hide assignment ${assignment.name} successfully!`
             } else {
-                message = "Unhide Assignment Successfully!"
+                message = `Unhide assignment  ${assignment.name} successfully!`
             }
             res.send({
                 success: true,
@@ -355,7 +355,7 @@ exports.submit = (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -600,7 +600,7 @@ exports.commentFeedback = (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
     if (!assignment) {
         return res.status(404).send({
             success: false,
