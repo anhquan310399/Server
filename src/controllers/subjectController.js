@@ -138,7 +138,7 @@ exports.find = async(req, res) => {
     let result = {
         _id: subject._id,
         name: subject.name,
-        lecture: teacher,
+        lecture: await teacher,
         timelines: timelines
     };
     res.send({
