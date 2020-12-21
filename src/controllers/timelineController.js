@@ -271,6 +271,32 @@ exports.downloadFile = (req, res) => {
     res.download(file.path);
 }
 
+exports.getFile = (req, res) => {
+
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function(value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline"
+        })
+    }
+
+    const file = timeline.files.find(value => value._id == req.params.idFile);
+    if (!file) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found file"
+        })
+    }
+    res.send({
+        success: true,
+        file: file
+    });
+}
+
 
 exports.removeFile = (req, res) => {
     let subject = req.subject;
