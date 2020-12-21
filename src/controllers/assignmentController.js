@@ -148,6 +148,7 @@ exports.find = async(req, res) => {
                 _id: assignment._id,
                 name: assignment.name,
                 content: assignment.content,
+                isDeleted: assignment.isDeleted,
                 attachments: assignment.attachments || null,
                 setting: assignment.setting,
                 submissionCount: assignment.submissions.length,

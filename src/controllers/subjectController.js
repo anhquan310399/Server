@@ -2,6 +2,7 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
+const exam = require("../models/exam");
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
@@ -376,35 +377,48 @@ exports.getDeadline = async(req, res) => {
             let deadline = [];
             const today = Date.now();
             listSubject.forEach(subject => {
-                subject.timelines.forEach(timeline => {
-                    let exams = timeline.exams.map(exam => {
-                        var submission = exam.submissions.find(value => value.idStudent == req.idUser)
-                        return {
+                subject.timelines.forEach((timeline) => {
+                    let exams = timeline.exams.reduce((preExams, currentExam) => {
+                        if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
+                            return preExams;
+                        }
+                        var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
+                        let exam = {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
-                            _id: exam._id,
-                            name: exam.name,
-                            expireTime: exam.expireTime,
+                            _id: currentExam._id,
+                            name: currentExam.name,
+                            expireTime: currentExam.expireTime,
+                            timeRemain: (new Date(currentExam.expireTime - today)).getTime(),
                             isSubmit: submission ? true : false,
                             type: 'exam'
                         }
-                    }).filter(exam => { return exam.expireTime > today });
-                    let assignments = timeline.assignments.map(assignment => {
-                        let submission = assignment.submissions.find(value => value.idStudent == req.idUser);
+                        return (preExams.concat(exam));
+                    }, []);
+                    let assignments = timeline.assignments.reduce((preAssignments, currentAssignment) => {
+                        if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
+                            return preAssignments;
+                        }
+                        let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
                         return {
                             idSubject: subject._id,
                             idTimeline: timeline._id,
-                            _id: assignment._id,
-                            name: assignment.name,
-                            expireTime: assignment.setting.expireTime,
+                            _id: currentAssignment._id,
+                            name: currentAssignment.name,
+                            expireTime: currentAssignment.setting.expireTime,
+                            timeRemain: (new Date(currentAssignment.setting.expireTime - today)).getTime(),
                             isSubmit: submission ? true : false,
                             type: 'assignment'
                         }
-                    }).filter(assignment => { return assignment.expireTime > today });
+                    }, []);
                     deadline = deadline.concat(exams, assignments);
                 });
             });
-            res.send(deadline);
+
+            res.send({
+                success: true,
+                deadline
+            });
         })
         .catch((err) => {
             res.status(500).send({
