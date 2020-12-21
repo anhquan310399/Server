@@ -21,6 +21,7 @@ var assignmentRouter = require('./src/routes/assignmentRouter');
 var examRouter = require('./src/routes/examRouter');
 var topicRouter = require('./src/routes/topicRouter');
 var quizBankRouter = require('./src/routes/quizBankRouter');
+var surveyRouter = require('./src/routes/surveyRouter');
 
 /** Config database */
 const dbConfig = process.env.MONGODB_URL;
@@ -63,7 +64,7 @@ app.use('/assignment', assignmentRouter);
 app.use('/exam', examRouter);
 app.use('/topic', topicRouter);
 app.use('/quiz', quizBankRouter);
-
+app.use('/survey', surveyRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));

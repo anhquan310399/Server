@@ -9,6 +9,7 @@ const assignmentSchema = require("./assignment");
 const examSchema = require("./exam");
 
 const fileSchema = require('./file');
+const survey = require("./survey");
 
 const timeline = new mongoose.Schema({
     name: {
@@ -16,6 +17,7 @@ const timeline = new mongoose.Schema({
         required: [true, 'Vui lòng nhập tiều đề']
     },
     description: String,
+    surveys: [survey],
     forums: [forumSchema],
     exams: [examSchema],
     information: [informationSchema],

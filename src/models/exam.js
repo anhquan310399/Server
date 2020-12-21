@@ -5,15 +5,15 @@ const studentAnswerSheetSchema = require("./studentAnswerSheet")
 const setting = new mongoose.Schema({
     questionCount: {
         type: Number,
-        require: [true, "Amount questions of quiz is required"]
+        required: [true, "Amount questions of quiz is required"]
     },
     timeToDo: {
         type: Number,
-        require: [true, "Time of quiz is required"]
+        required: [true, "Time of quiz is required"]
     },
     code: {
         type: String,
-        require: [true, "Code of chapter is required"]
+        required: [true, "Code of chapter is required"]
     },
     attemptCount: {
         type: Number,

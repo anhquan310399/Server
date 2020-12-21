@@ -22,7 +22,8 @@ const question = new mongoose.Schema({
     },
     typeQuestion: {
         type: String,
-        required: [true, 'Vui lòng chọn loại câu hỏi']
+        required: [true, 'Vui lòng chọn loại câu hỏi'],
+        enum: ['choice', 'multiple']
     },
     explain: String
 })

@@ -8,11 +8,11 @@ const file = new mongoose.Schema({
     },
     type: {
         type: String,
-        require: [true, 'type of file is required!']
+        required: [true, 'type of file is required!']
     },
     path: {
         type: String,
-        require: [true, 'path of file is required']
+        required: [true, 'path of file is required']
     },
     uploadDay: {
         type: Date,
