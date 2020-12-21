@@ -38,11 +38,14 @@ exports.create = async(req, res) => {
             let discussion = topic.discussions[length - 1];
             let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
             res.send({
-                id: discussion._id,
-                content: discussion.content,
-                create: creator,
-                time: discussion.updatedAt,
-                isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
+                success: true,
+                discussion: {
+                    id: discussion._id,
+                    content: discussion.content,
+                    create: creator,
+                    time: discussion.updatedAt,
+                    isChanged: false
+                }
             });
         })
         .catch((err) => {
@@ -101,11 +104,14 @@ exports.find = async(req, res) => {
     let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
 
     res.send({
-        id: discussion._id,
-        content: discussion.content,
-        create: creator,
-        time: discussion.updatedAt,
-        isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
+        success: true,
+        discussion: {
+            id: discussion._id,
+            content: discussion.content,
+            create: creator,
+            time: discussion.updatedAt,
+            isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
+        }
     });
 };
 
@@ -199,13 +205,19 @@ exports.update = async(req, res) => {
         await data.save()
             .then(async() => {
                 let creator = await User.findById(discussion.idUser, 'code firstName surName urlAvatar').then(value => { return value });
-                res.send({
-                    id: discussion._id,
-                    content: discussion.content,
-                    create: creator,
-                    time: discussion.updatedAt,
-                    isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
-                });
+                res.send(
+                    //     {
+                    //     id: discussion._id,
+                    //     content: discussion.content,
+                    //     create: creator,
+                    //     time: discussion.updatedAt,
+                    //     isChanged: discussion.createdAt.getTime() === discussion.updatedAt.getTime() ? false : true
+                    // }
+                    {
+                        success: true,
+                        message: "Update discussion successfully!"
+                    }
+                );
             })
             .catch((err) => {
                 console.log("Update discussion: ");

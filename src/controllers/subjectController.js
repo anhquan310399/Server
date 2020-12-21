@@ -13,7 +13,10 @@ exports.create = async(req, res) => {
 
     await data.save()
         .then((data) => {
-            res.send(data);
+            res.send({
+                success: true,
+                subject: data
+            });
         })
         .catch((err) => {
             console.log(err.name);
@@ -40,7 +43,10 @@ exports.findAll = async(req, res) => {
                 var info = data.map(function(value) {
                     return { _id: value._id, name: value.name };
                 });
-                res.send(info);
+                res.send({
+                    success: true,
+                    allSubject: info
+                });
             })
             .catch((err) => {
                 res.status(500).send({
@@ -58,7 +64,10 @@ exports.findAll = async(req, res) => {
                         });
                     return { _id: value._id, name: value.name, lecture: teacher };
                 }));
-                res.send(info);
+                res.send({
+                    success: true,
+                    allSubject: info
+                });
             })
             .catch((err) => {
                 res.status(500).send({
@@ -95,7 +104,10 @@ exports.find = async(req, res) => {
             }
         }), ['index']),
     };
-    res.send(result);
+    res.send({
+        success: true,
+        subject: result
+    });
 };
 
 exports.update = async(req, res) => {
@@ -184,7 +196,10 @@ exports.addAllStudents = (req, res) => {
             data.save()
                 .then((data) => {
                     // res.send(data);
-                    res.send("Add Student Successfully!")
+                    res.send({
+                        success: true,
+                        message: "Add Student Successfully!"
+                    })
                 })
                 .catch((err) => {
                     console.log("Add student" + err.message);
@@ -312,7 +327,10 @@ exports.getOrderOfTimeLine = async(req, res) => {
             return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
         }), ['index']),
     };
-    res.send(result);
+    res.send({
+        success: true,
+        orderTimeline: result
+    });
 }
 
 exports.getDeadline = async(req, res) => {
@@ -369,7 +387,10 @@ exports.getListStudent = async(req, res) => {
             });
         return student;
     }));
-    res.send(info);
+    res.send({
+        success: true,
+        students: info
+    });
 }
 
 exports.getSubjectTranscript = async(req, res) => {
@@ -381,16 +402,39 @@ exports.getSubjectTranscript = async(req, res) => {
         let transcript = await Promise.all(fields.map(async(field) => {
             let submission = await field.submissions.find(value => value.idStudent == req.user._id);
             let grade = 0;
-            if (submission) {
-                grade = submission.grade;
-            } else if (field.isRemain) {
-                grade = null;
+            let status;
+            if (field.type === 'exam') {
+                if (submission) {
+                    grade = submission.grade;
+                    status = 'completed';
+                } else if (field.isRemain) {
+                    grade = null;
+                    status = 'notSubmit';
+                } else {
+                    grade = 0;
+                    status = 'completed'
+                }
             } else {
-                grade = 0;
+                if (submission) {
+                    if (submission.isGrade) {
+                        grade = submission.grade;
+                        status = 'completed';
+                    } else {
+                        grade = null;
+                        status = 'notGrade';
+                    }
+                } else if (field.isRemain) {
+                    grade = null;
+                    status = 'notSubmit';
+                } else {
+                    grade = 0;
+                    status = 'completed'
+                }
             }
             return {
                 name: field.name,
-                grade: grade
+                grade: grade,
+                status: status
             }
         }))
         return res.send(transcript);
