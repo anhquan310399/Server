@@ -11,4 +11,9 @@ router.put('/:idSurvey', authLecture, surveyController.update);
 router.put('/:idSurvey/hide', authLecture, surveyController.hideOrUnhide);
 router.delete('/:idSurvey/', authLecture, surveyController.delete);
 
+router.get('/:idSurvey/attempt', authStudent, surveyController.attemptSurvey);
+router.post('/:idSurvey/submit', authStudent, surveyController.replySurvey);
+router.get('/:idSurvey/view', authStudent, surveyController.viewResponse);
+router.get('/:idSurvey/responses', authInSubject, surveyController.viewAllResponse);
+
 module.exports = router

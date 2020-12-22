@@ -52,22 +52,49 @@ exports.find = (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    let survey;
+    if (req.user.idPrivilege === 'student') {
+        survey = timeline.surveys.find(value => value._id == req.params.idSurvey && value.isDeleted === false)
+    } else {
+        survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    }
     if (!survey) {
         return res.status(404).send({
             success: false,
             message: "Not found survey",
         });
     }
-    res.send({
-        success: true,
-        survey: {
-            _id: survey._id,
-            name: survey.name,
-            description: survey.description,
-            expiredTime: survey.expiredTime
-        }
-    })
+    let today = Date.now();
+    let isRemain = today > survey.expiredTime ? false : true;
+    let timeRemain = survey.expiredTime.getTime() - today;
+    if (req.user.idPrivilege === 'student') {
+        let reply = survey.responses.find(value => value.idStudent == req.user._id);
+        res.send({
+            success: true,
+            survey: {
+                _id: survey._id,
+                name: survey.name,
+                description: survey.description,
+                expiredTime: survey.expiredTime,
+                isRemain: isRemain,
+                timeRemain: timeRemain,
+                canAttempt: reply ? false : true
+            }
+        })
+    } else {
+        res.send({
+            success: true,
+            survey: {
+                _id: survey._id,
+                name: survey.name,
+                description: survey.description,
+                expiredTime: survey.expiredTime,
+                isRemain: isRemain,
+                timeRemain: timeRemain,
+                responses: survey.responses.length
+            }
+        })
+    }
 
 }
 
@@ -222,6 +249,43 @@ exports.delete = (req, res) => {
         });
 }
 
+exports.attemptSurvey = (req, res) => {
+    let subject = req.subject;
+
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    if (!survey) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found survey",
+        });
+    }
+
+    let reply = survey.responses.find(value => value.idStudent == req.idStudent);
+    if (reply) {
+        return res.status(409).send({
+            success: false,
+            message: `You have already reply survey ${survey.name}`
+        });
+    }
+
+    res.send({
+        success: true,
+        survey: {
+            _id: survey._id,
+            name: survey.name
+        },
+        questionnaire: survey.questionnaire
+    })
+}
+
 exports.replySurvey = (req, res) => {
     let subject = req.subject;
 
@@ -241,5 +305,173 @@ exports.replySurvey = (req, res) => {
         });
     }
 
+    let reply = survey.responses.find(value => value.idStudent == req.idStudent);
+    if (reply) {
+        return res.status(409).send({
+            success: false,
+            message: `You have already reply survey ${survey.name}`
+        });
+    }
 
+    let data = req.body.data;
+
+    reply = {
+        idStudent: req.idStudent,
+        answerSheet: data
+    }
+    survey.responses.push(reply);
+
+    subject.save()
+        .then(() => {
+            res.send({
+                success: true,
+                message: `Reply survey ${survey.name} successfully!`,
+            });
+        }).catch((err) => {
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
+        });
+}
+
+exports.viewResponse = (req, res) => {
+    let subject = req.subject;
+
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    if (!survey) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found survey",
+        });
+    }
+
+    const reply = survey.responses.find(value => value.idStudent == req.idStudent);
+    if (!reply) {
+        return res.status(404).send({
+            success: false,
+            message: `You have not already reply survey ${survey.name}`
+        });
+    }
+
+    res.send({
+        success: true,
+        survey: {
+            _id: survey._id,
+            name: survey.name
+        },
+        questionnaire: survey.questionnaire,
+        response: reply
+    })
+}
+
+exports.viewAllResponse = async(req, res) => {
+    let subject = req.subject;
+
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    if (!survey) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found survey",
+        });
+    }
+
+    let result = await Promise.all(survey.questionnaire.map(async(question) => {
+        let answer;
+        if (question.typeQuestion === 'choice') {
+            answer = await Promise.all(question.answer.map(async(answer) => {
+                let count = 0;
+                survey.responses.forEach(reply => {
+                    reply.answerSheet.forEach(answerSheet => {
+                        if (question._id != answerSheet.idQuestion) {
+                            return;
+                        }
+                        if (answerSheet.answer == answer._id) {
+                            count++;
+                        }
+                    })
+                });
+                let percent = ((count / survey.responses.length) * 100).toFixed(0) + "%";
+                return {
+                    _id: answer._id,
+                    content: answer.content,
+                    total: count,
+                    percent: percent
+                }
+            }))
+        } else if (question.typeQuestion === 'multiple') {
+            answer = await Promise.all(question.answer.map(async(answer) => {
+                let count = 0;
+                survey.responses.forEach(reply => {
+                    reply.answerSheet.forEach(answerSheet => {
+                        if (question._id != answerSheet.idQuestion) {
+                            return;
+                        }
+                        answerSheet.answer.forEach(idAnswer => {
+                            if (idAnswer == answer._id) {
+                                count++;
+                            }
+                        });
+                    })
+                });
+                let percent = ((count / survey.responses.length) * 100).toFixed(0) + "%";
+                return {
+                    _id: answer._id,
+                    content: answer.content,
+                    total: count,
+                    percent: percent
+                }
+            }))
+        } else {
+            answer = [];
+            survey.responses.forEach(reply => {
+                reply.answerSheet.forEach(answerSheet => {
+                    if (question._id != answerSheet.idQuestion) {
+                        return;
+                    }
+                    answer = answer.concat(answerSheet.answer);
+                })
+            })
+        }
+
+        return {
+            question: question.question,
+            typeQuestion: question.typeQuestion,
+            answer: answer
+        };
+    }))
+    res.send({
+        success: true,
+        survey: {
+            _id: survey._id,
+            name: survey.name
+        },
+        totalResponses: survey.responses.length,
+        questionnaire: result
+    });
 }
