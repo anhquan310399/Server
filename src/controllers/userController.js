@@ -188,49 +188,28 @@ exports.getInfo = (req, res) => {
     res.send(info);
 }
 
-exports.authenticateByGoogle = (req, res) => {
-    dbUser.findById(req.user._id)
-        .then(user => {
-            console.log(user);
-            if (!user) {
-                return res.json({
-                    success: false,
-                    message: 'Authentication failed. User not found'
-                });
-            } else if (user) {
-                let token = user.generateAuthToken();
-                console.log(token);
-                res.json({
-                    success: true,
-                    message: 'Login successfully!',
-                    token: token
-                })
-
-            }
-        })
-        .catch(err => {
-            res.json({
-                success: false,
-                message: err.message
-            })
-        })
-}
 const { verify } = require('../authenticate/authGoogle');
 
 exports.authenticateGoogleToken = async(req, res) => {
-    const userToken = req.params.token
-    var result = verify(userToken).then(function(result) {
-        var userName = result.given_name
-        var userSurname = result.family_name
+    const userToken = req.body.token
+    verify(userToken).then(async function(result) {
         var userEmail = result.email
-        res.json({
+        let user = await dbUser.findOne({ emailAddress: userEmail })
+            .then(user => { return user });
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: `Not found user ${userEmail}`
+            })
+        }
+        const token = user.generateAuthToken();
+        res.send({
             success: true,
             message: 'Login successfully!',
-            userEmail: userEmail,
             token: token
         })
     }).catch(function(err) {
-        res.json({
+        res.status(500).send({
             success: false,
             message: err.message
         })

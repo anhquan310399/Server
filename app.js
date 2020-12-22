@@ -4,8 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
-var passport = require('passport');
-var cookieSession = require('cookie-session');
+// var passport = require('passport');
+// var cookieSession = require('cookie-session');
 global.appRoot = path.resolve(__dirname);
 
 /** Import router */
@@ -35,13 +35,13 @@ app.set('views', path.join(__dirname, 'src/views'));
 app.set('view engine', 'jade');
 
 //Config passport
-app.use(cookieSession({
-    // milliseconds of a day
-    maxAge: 24 * 60 * 60 * 1000,
-    keys: [process.env.HCMUTEUnversityHCMC]
-}));
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(cookieSession({
+//     // milliseconds of a day
+//     maxAge: 24 * 60 * 60 * 1000,
+//     keys: [process.env.HCMUTEUnversityHCMC]
+// }));
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 //Config server
 app.use(cors());
