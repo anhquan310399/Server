@@ -108,7 +108,8 @@ UserSchema.methods.generateAuthToken = function() {
         emailAddress: user.emailAddress,
         firstName: user.firstName,
         surName: user.surName,
-        urlAvatar: user.urlAvatar
+        urlAvatar: user.urlAvatar,
+        facebookId: user.facebookId
     }, superSecret, {
         expiresIn: '24h'
     });

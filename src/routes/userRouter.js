@@ -22,4 +22,8 @@ router.post('/auth/google/', userController.authenticateGoogleToken);
 
 router.post('/auth/facebook/', userController.authenticateFacebookToken);
 
+router.put('/auth/facebook/link', authLogin, userController.linkFacebookAccount);
+
+router.put('/auth/facebook/unlink', authLogin, userController.unlinkFacebookAccount);
+
 module.exports = router;

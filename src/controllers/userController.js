@@ -162,6 +162,7 @@ exports.authenticate = (req, res) => {
                         success: true,
                         message: 'Login successfully!',
                         idPrivilege: user.idPrivilege,
+                        type: 'authenticate',
                         token: token
                     })
                 }
@@ -194,7 +195,7 @@ exports.authenticateGoogleToken = async(req, res) => {
     const userToken = req.body.token
     verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
-        let user = await dbUser.findOne({ emailAddress: userEmail })
+        const user = await dbUser.findOne({ emailAddress: userEmail })
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -206,6 +207,8 @@ exports.authenticateGoogleToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
+            idPrivilege: user.idPrivilege,
+            type: 'google',
             token: token
         })
     }).catch(function(err) {
@@ -227,8 +230,8 @@ exports.authenticateFacebookToken = async(req, res) => {
                 message: 'Error while verify facebook access token'
             })
         }
-        var facebookId = result.id;
-        let user = await dbUser.findOne({ facebookId: facebookId })
+        let facebookId = result.id;
+        const user = await dbUser.findOne({ facebookId: facebookId })
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -240,6 +243,8 @@ exports.authenticateFacebookToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
+            idPrivilege: user.idPrivilege,
+            type: 'facebook',
             token: token
         })
     }).catch(function(err) {
@@ -248,4 +253,70 @@ exports.authenticateFacebookToken = async(req, res) => {
             message: err.message
         })
     })
+}
+
+exports.linkFacebookAccount = async(req, res) => {
+    const userToken = req.body.token
+    if (req.user.facebookId) {
+        res.status(409).send({
+            success: false,
+            message: 'Your account has already linked facebook account!'
+        })
+    }
+    verifyFacebook(userToken).then(async function(result) {
+        if (!result) {
+            res.status(500).send({
+                success: false,
+                message: 'Error while verify facebook access token'
+            })
+        }
+        var facebookId = result.id;
+        let fbUser = await dbUser.findOne({ facebookId: facebookId })
+            .then(user => { return user });
+        if (fbUser) {
+            res.status(409).send({
+                success: false,
+                message: 'This facebook account is linked with another account!'
+            })
+        }
+
+        let user = req.user
+        user.facebookId = facebookId;
+        user.save()
+            .then(() => {
+                res.send({
+                    success: true,
+                    message: `Link to facebook ${result.name} successfully!`
+                })
+            })
+
+    }).catch(function(err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    })
+}
+
+exports.unlinkFacebookAccount = async(req, res) => {
+    let user = req.user;
+    if (!user.facebookId) {
+        res.status(409).send({
+            success: false,
+            message: `Your account hasn't already linked facebook!`
+        })
+    }
+    user.facebookId = null;
+    user.save()
+        .then(() => {
+            res.send({
+                success: true,
+                message: `UnLink to facebook successfully!`
+            })
+        }).catch(function(err) {
+            res.status(500).send({
+                success: false,
+                message: err.message
+            })
+        })
 }
