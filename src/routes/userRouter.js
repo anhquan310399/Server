@@ -20,4 +20,6 @@ router.post('/authenticate', userController.authenticate);
 
 router.post('/auth/google/', userController.authenticateGoogleToken);
 
+router.post('/auth/facebook/', userController.authenticateFacebookToken);
+
 module.exports = router;

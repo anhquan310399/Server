@@ -188,11 +188,11 @@ exports.getInfo = (req, res) => {
     res.send(info);
 }
 
-const { verify } = require('../authenticate/authGoogle');
+const { verifyGoogle } = require('../authenticate/authGoogle');
 
 exports.authenticateGoogleToken = async(req, res) => {
     const userToken = req.body.token
-    verify(userToken).then(async function(result) {
+    verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
         let user = await dbUser.findOne({ emailAddress: userEmail })
             .then(user => { return user });
@@ -200,6 +200,40 @@ exports.authenticateGoogleToken = async(req, res) => {
             return res.status(404).send({
                 success: false,
                 message: `Not found user ${userEmail}`
+            })
+        }
+        const token = user.generateAuthToken();
+        res.send({
+            success: true,
+            message: 'Login successfully!',
+            token: token
+        })
+    }).catch(function(err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    })
+}
+
+const { verifyFacebook } = require('../authenticate/authFacebook');
+
+exports.authenticateFacebookToken = async(req, res) => {
+    const userToken = req.body.token
+    verifyFacebook(userToken).then(async function(result) {
+        if (!result) {
+            res.status(500).send({
+                success: false,
+                message: 'Error while verify facebook access token'
+            })
+        }
+        var facebookId = result.id;
+        let user = await dbUser.findOne({ facebookId: facebookId })
+            .then(user => { return user });
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: `Not found user with this facebook`
             })
         }
         const token = user.generateAuthToken();
