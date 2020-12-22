@@ -60,9 +60,9 @@ const survey = new mongoose.Schema({
         type: [reply],
         default: []
     },
-    expiredTime: {
+    expireTime: {
         type: Date,
-        required: [true, 'Expired time of survey is required']
+        required: [true, 'Expire time of survey is required']
     },
     isDeleted: {
         type: Boolean,

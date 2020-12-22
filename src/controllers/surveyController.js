@@ -12,7 +12,7 @@ exports.create = (req, res) => {
         name: req.body.data.name,
         description: req.body.data.description,
         questionnaire: req.body.data.questionnaire,
-        expiredTime: new Date(req.body.data.expiredTime)
+        expireTime: new Date(req.body.data.expireTime)
     };
 
     var length = timeline.surveys.push(model);
@@ -65,8 +65,8 @@ exports.find = (req, res) => {
         });
     }
     let today = Date.now();
-    let isRemain = today > survey.expiredTime ? false : true;
-    let timeRemain = survey.expiredTime.getTime() - today;
+    let isRemain = today > survey.expireTime ? false : true;
+    let timeRemain = survey.expireTime.getTime() - today;
     if (req.user.idPrivilege === 'student') {
         let reply = survey.responses.find(value => value.idStudent == req.user._id);
         res.send({
@@ -75,7 +75,7 @@ exports.find = (req, res) => {
                 _id: survey._id,
                 name: survey.name,
                 description: survey.description,
-                expiredTime: survey.expiredTime,
+                expireTime: survey.expireTime,
                 isRemain: isRemain,
                 timeRemain: timeRemain,
                 canAttempt: reply ? false : true
@@ -88,7 +88,7 @@ exports.find = (req, res) => {
                 _id: survey._id,
                 name: survey.name,
                 description: survey.description,
-                expiredTime: survey.expiredTime,
+                expireTime: survey.expireTime,
                 isRemain: isRemain,
                 timeRemain: timeRemain,
                 responses: survey.responses.length
@@ -142,6 +142,7 @@ exports.update = (req, res) => {
     }
     if (req.body.data.name) { survey.name = req.body.data.name; }
     if (req.body.data.description) { survey.description = req.body.data.description; }
+    if (req.body.data.expireTime) { survey.expireTime = req.body.data.expireTime; }
     if (req.body.data.questionnaire) { survey.questionnaire = req.body.data.questionnaire; }
 
     subject.save()

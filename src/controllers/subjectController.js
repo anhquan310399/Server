@@ -122,8 +122,16 @@ exports.find = async(req, res) => {
                 let assignment = { _id: currentAssignment._id, name: currentAssignment.name, description: currentAssignment.description, time: currentAssignment.createdAt, isNew: isToday(currentAssignment.createdAt) }
                 return (preAssignments.concat(assignment));
             }, []);
+            let surveys = value.surveys.reduce((preSurveys, currentSurvey) => {
+                if (currentSurvey.isDeleted) {
+                    return preSurveys;
+                }
 
-            return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
+                let survey = { _id: currentSurvey._id, name: currentSurvey.name, description: currentSurvey.description, time: currentSurvey.createdAt, isNew: isToday(currentSurvey.createdAt) }
+                return (preSurveys.concat(survey));
+            }, []);
+
+            return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
         })), ['index']);
     } else {
         timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
@@ -131,8 +139,9 @@ exports.find = async(req, res) => {
             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt), isDeleted: exam.isDeleted } });
             let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
             let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt), isDeleted: assign.isDeleted } });
+            let surveys = value.surveys.map((survey) => { return { _id: survey._id, name: survey.name, description: survey.description, time: survey.createdAt, isNew: isToday(survey.createdAt), isDeleted: assign.isDeleted } });
 
-            return { _id: value._id, name: value.name, description: value.description, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
+            return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
 
         })), ['index']);
     }
@@ -411,13 +420,31 @@ exports.getDeadline = async(req, res) => {
                             type: 'assignment'
                         }
                     }, []);
-                    deadline = deadline.concat(exams, assignments);
+
+                    let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
+                        if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
+                            return preSurveys;
+                        }
+                        let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
+                        return {
+                            idSubject: subject._id,
+                            idTimeline: timeline._id,
+                            _id: currentSurvey._id,
+                            name: currentSurvey.name,
+                            expireTime: currentSurvey.expireTime,
+                            timeRemain: (new Date(currentSurvey.expireTime - today)).getTime(),
+                            isSubmit: reply ? true : false,
+                            type: 'survey'
+                        }
+                    }, []);
+
+                    deadline = deadline.concat(exams, assignments, surveys);
                 });
             });
 
             res.send({
                 success: true,
-                deadline
+                deadline: _.sortBy(deadline, ['expireTime'])
             });
         })
         .catch((err) => {
