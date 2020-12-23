@@ -782,7 +782,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
 
 exports.updateRatioTranscript = async(req, res) => {
     let subject = req.subject;
-    let adjust = req.body.data;
+    let adjust = req.body;
     await adjust.forEach(async(value) => {
         let transcript = await subject.transcript.find(ratio => ratio._id == value._id);
         if (transcript) {
@@ -791,11 +791,12 @@ exports.updateRatioTranscript = async(req, res) => {
     });
 
     await subject.save()
-        .then(data => {
-            res.send({
-                success: true,
-                message: 'Update ratio transcript successfully!'
-            });
+        .then(() => {
+            // res.send({
+            //     success: true,
+            //     message: 'Update ratio transcript successfully!'
+            // });
+            return this.getSubjectTranscriptTotal(req, res);
         }).catch(err => {
             console.log("adjust ratio transcript" + err.message);
             res.status(500).send({
