@@ -2,7 +2,6 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
-const exam = require("../models/exam");
 exports.create = async(req, res) => {
     // Validate request
     const data = new db({
@@ -100,7 +99,13 @@ exports.find = async(req, res) => {
                 if (currentForum.isDeleted) {
                     return preForums;
                 }
-                let forum = { _id: currentForum.id, name: currentForum.name, description: currentForum.description, time: currentForum.createdAt, isNew: isToday(currentForum.updatedAt) }
+                let forum = {
+                    _id: currentForum.id,
+                    name: currentForum.name,
+                    description: currentForum.description,
+                    time: currentForum.createdAt,
+                    isNew: isToday(currentForum.updatedAt)
+                }
                 return (preForums.concat(forum));
             }, []);
             let exams = value.exams.reduce((preExams, currentExam) => {
@@ -108,18 +113,36 @@ exports.find = async(req, res) => {
                     return preExams;
                 }
 
-                let exam = { _id: currentExam._id, name: currentExam.name, description: currentExam.description, time: currentExam.createdAt, isNew: isToday(currentExam.createdAt) }
+                let exam = {
+                    _id: currentExam._id,
+                    name: currentExam.name,
+                    description: currentExam.description,
+                    time: currentExam.createdAt,
+                    isNew: isToday(currentExam.createdAt)
+                }
                 return (preExams.concat(exam));
             }, []);
             let information = value.information.map((info) => {
-                return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) }
+                return {
+                    _id: info._id,
+                    name: info.name,
+                    content: info.content,
+                    time: info.createdAt,
+                    isNew: isToday(info.updatedAt)
+                }
             });
             let assignments = value.assignments.reduce((preAssignments, currentAssignment) => {
                 if (currentAssignment.isDeleted) {
                     return preAssignments;
                 }
 
-                let assignment = { _id: currentAssignment._id, name: currentAssignment.name, description: currentAssignment.description, time: currentAssignment.createdAt, isNew: isToday(currentAssignment.createdAt) }
+                let assignment = {
+                    _id: currentAssignment._id,
+                    name: currentAssignment.name,
+                    description: currentAssignment.description,
+                    time: currentAssignment.createdAt,
+                    isNew: isToday(currentAssignment.createdAt)
+                }
                 return (preAssignments.concat(assignment));
             }, []);
             let surveys = value.surveys.reduce((preSurveys, currentSurvey) => {
@@ -127,21 +150,94 @@ exports.find = async(req, res) => {
                     return preSurveys;
                 }
 
-                let survey = { _id: currentSurvey._id, name: currentSurvey.name, description: currentSurvey.description, time: currentSurvey.createdAt, isNew: isToday(currentSurvey.createdAt) }
+                let survey = {
+                    _id: currentSurvey._id,
+                    name: currentSurvey.name,
+                    description: currentSurvey.description,
+                    time: currentSurvey.createdAt,
+                    isNew: isToday(currentSurvey.createdAt)
+                }
                 return (preSurveys.concat(survey));
             }, []);
 
-            return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index };
+            return {
+                _id: value._id,
+                name: value.name,
+                description: value.description,
+                surveys: surveys,
+                forums: forums,
+                exams: exams,
+                information: information,
+                assignments: assignments,
+                files: value.files,
+                index: value.index
+            };
         })), ['index']);
     } else {
         timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
-            let forums = value.forums.map((forum) => { return { _id: forum.id, name: forum.name, description: forum.description, time: forum.createdAt, isNew: isToday(forum.updatedAt), isDeleted: forum.isDeleted } });
-            let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt), isDeleted: exam.isDeleted } });
-            let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
-            let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt), isDeleted: assign.isDeleted } });
-            let surveys = value.surveys.map((survey) => { return { _id: survey._id, name: survey.name, description: survey.description, time: survey.createdAt, isNew: isToday(survey.createdAt), isDeleted: survey.isDeleted } });
+            let forums = value.forums.map((forum) => {
+                return {
+                    _id: forum.id,
+                    name: forum.name,
+                    description: forum.description,
+                    time: forum.createdAt,
+                    isNew: isToday(forum.updatedAt),
+                    isDeleted: forum.isDeleted
+                }
+            });
+            let exams = value.exams.map((exam) => {
+                return {
+                    _id: exam._id,
+                    name: exam.name,
+                    description: exam.description,
+                    time: exam.createdAt,
+                    isNew: isToday(exam.createdAt),
+                    isDeleted: exam.isDeleted
+                }
+            });
+            let information = value.information.map((info) => {
+                return {
+                    _id: info._id,
+                    name: info.name,
+                    content: info.content,
+                    time: info.createdAt,
+                    isNew: isToday(info.updatedAt)
+                }
+            });
+            let assignments = value.assignments.map((assign) => {
+                return {
+                    _id: assign._id,
+                    name: assign.name,
+                    description: assign.description,
+                    time: assign.createdAt,
+                    isNew: isToday(assign.createdAt),
+                    isDeleted: assign.isDeleted
+                }
+            });
+            let surveys = value.surveys.map((survey) => {
+                return {
+                    _id: survey._id,
+                    name: survey.name,
+                    description: survey.description,
+                    time: survey.createdAt,
+                    isNew: isToday(survey.createdAt),
+                    isDeleted: survey.isDeleted
+                }
+            });
 
-            return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
+            return {
+                _id: value._id,
+                name: value.name,
+                description: value.description,
+                surveys: surveys,
+                forums: forums,
+                exams: exams,
+                information: information,
+                assignments: assignments,
+                files: value.files,
+                index: value.index,
+                isDeleted: value.isDeleted
+            };
 
         })), ['index']);
     }
@@ -343,18 +439,65 @@ exports.adjustOrderOfTimeline = async(req, res) => {
         timeline.name = element.name;
     });
     await subject.save()
-        .then(data => {
-            // let result = {
-            //     _id: data._id,
-            //     name: data.name,
-            //     timelines: _.sortBy(data.timelines.map((value) => {
-            //         return { _id: value._id, name: value.name, description: value.description, index: value.index, isDeleted: value.isDeleted };
-            //     }), ['index']),
-            // };
-            // res.send(result);
+        .then(async() => {
+            let timelines = _.sortBy(await Promise.all(subject.timelines.map(async(value) => {
+                let forums = value.forums.map((forum) => {
+                    return {
+                        _id: forum.id,
+                        name: forum.name,
+                        description: forum.description,
+                        time: forum.createdAt,
+                        isNew: isToday(forum.updatedAt),
+                        isDeleted: forum.isDeleted
+                    }
+                });
+                let exams = value.exams.map((exam) => {
+                    return {
+                        _id: exam._id,
+                        name: exam.name,
+                        description: exam.description,
+                        time: exam.createdAt,
+                        isNew: isToday(exam.createdAt),
+                        isDeleted: exam.isDeleted
+                    }
+                });
+                let information = value.information.map((info) => {
+                    return {
+                        _id: info._id,
+                        name: info.name,
+                        content: info.content,
+                        time: info.createdAt,
+                        isNew: isToday(info.updatedAt)
+                    }
+                });
+                let assignments = value.assignments.map((assign) => {
+                    return {
+                        _id: assign._id,
+                        name: assign.name,
+                        description: assign.description,
+                        time: assign.createdAt,
+                        isNew: isToday(assign.createdAt),
+                        isDeleted: assign.isDeleted
+                    }
+                });
+                let surveys = value.surveys.map((survey) => {
+                    return {
+                        _id: survey._id,
+                        name: survey.name,
+                        description: survey.description,
+                        time: survey.createdAt,
+                        isNew: isToday(survey.createdAt),
+                        isDeleted: survey.isDeleted
+                    }
+                });
+
+                return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
+
+            })), ['index']);
             res.send({
                 success: true,
-                message: 'Adjust index of timeline successfully!'
+                message: 'Adjust index of timeline successfully!',
+                timelines: timelines
             })
         }).catch(err => {
             console.log("adjust index timeline" + err.message);
@@ -598,7 +741,11 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
         async(value) => {
             let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                 .then(value => { return value });
-            let data = { 'c0': student.code, 'c1': student.surName, 'c2': student.firstName };
+            let data = {
+                'c0': student.code,
+                'c1': student.surName,
+                'c2': student.firstName
+            };
             let count = 3;
             let grade = await Promise.all(assignmentOrExam.map(async(value) => {
                 let submission = value.submissions.find(value => value.idStudent == student._id);
