@@ -139,7 +139,7 @@ exports.find = async(req, res) => {
             let exams = value.exams.map((exam) => { return { _id: exam._id, name: exam.name, description: exam.description, time: exam.createdAt, isNew: isToday(exam.createdAt), isDeleted: exam.isDeleted } });
             let information = value.information.map((info) => { return { _id: info._id, name: info.name, content: info.content, time: info.createdAt, isNew: isToday(info.updatedAt) } });
             let assignments = value.assignments.map((assign) => { return { _id: assign._id, name: assign.name, description: assign.description, time: assign.createdAt, isNew: isToday(assign.createdAt), isDeleted: assign.isDeleted } });
-            let surveys = value.surveys.map((survey) => { return { _id: survey._id, name: survey.name, description: survey.description, time: survey.createdAt, isNew: isToday(survey.createdAt), isDeleted: assign.isDeleted } });
+            let surveys = value.surveys.map((survey) => { return { _id: survey._id, name: survey.name, description: survey.description, time: survey.createdAt, isNew: isToday(survey.createdAt), isDeleted: survey.isDeleted } });
 
             return { _id: value._id, name: value.name, description: value.description, surveys: surveys, forums: forums, exams: exams, information: information, assignments: assignments, files: value.files, index: value.index, isDeleted: value.isDeleted };
 
