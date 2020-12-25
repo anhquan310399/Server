@@ -50,7 +50,7 @@ exports.create = (req, res) => {
                     _id: exam._id,
                     name: exam.name,
                     content: exam.content,
-                    startTime: exam.expireTime,
+                    startTime: exam.startTime,
                     expireTime: exam.expireTime,
                     setting: exam.setting,
                     isRemain: isRemain,
