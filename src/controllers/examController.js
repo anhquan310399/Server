@@ -12,17 +12,22 @@ exports.create = (req, res) => {
         });
     }
 
-    var code = req.body.data.setting.code;
+    let setting = req.body.data.setting;
 
-    var chapter = subject.quizBank.find(value => value._id == code);
+    var chapter = subject.quizBank.find(value => value._id == setting.code);
     if (!chapter) {
         return res.status(404).send({
             success: false,
             message: "Not found quiz bank",
         });
+    } else {
+        if (chapter.questions.length < setting.questionCount) {
+            return res.status(400).send({
+                success: false,
+                message: "The question count you set is more then question count in quiz",
+            });
+        }
     }
-
-    let setting = req.body.data.setting;
 
     const model = {
         name: req.body.data.name,

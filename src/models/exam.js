@@ -3,22 +3,25 @@ const mongoose = require("mongoose");
 const studentAnswerSheetSchema = require("./studentAnswerSheet")
 
 const setting = new mongoose.Schema({
-    questionCount: {
-        type: Number,
-        required: [true, "Amount questions of quiz is required"]
-    },
-    timeToDo: {
-        type: Number,
-        required: [true, "Time of quiz is required"]
-    },
     code: {
         type: String,
         required: [true, "Code of chapter is required"]
     },
+    questionCount: {
+        type: Number,
+        required: [true, "Amount questions of quiz is required"],
+        min: [1, "Min of amount questions is 1"]
+    },
+    timeToDo: {
+        type: Number,
+        required: [true, "Time of quiz is required"],
+        min: [0, "Min of time to do is 0"]
+    },
     attemptCount: {
         type: Number,
         required: true,
-        default: 1
+        default: 1,
+        min: [0, "Min of attempt count is 0"]
     }
 }, { _id: false });
 
@@ -37,7 +40,10 @@ const exam = new mongoose.Schema({
     },
     expireTime: {
         type: Date,
-        required: [true, "Expire time of exam is required"]
+        required: [true, "Expire time of exam is required"],
+        validate: [function(value) {
+            return value >= this.startTime
+        }, "Expire time must be more than start time"]
     },
     submissions: [studentAnswerSheetSchema],
     setting: {
