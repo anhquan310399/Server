@@ -12,13 +12,16 @@ exports.create = async(req, res) => {
         });
     }
     let data = req.body.data;
-    let file = data.file.map(value => {
-        return {
-            name: value.name,
-            path: value.path,
-            type: value.type
-        }
-    });
+    let file = [];
+    if (data.file) {
+        file = data.file.map(value => {
+            return {
+                name: value.name,
+                path: value.path,
+                type: value.type
+            }
+        });
+    }
     const model = {
         name: data.name,
         content: data.content,

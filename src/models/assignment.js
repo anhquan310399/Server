@@ -45,7 +45,7 @@ const setting = new mongoose.Schema({
         type: Date,
         required: [true, "Chưa nhập thời gian kết thúc!"],
         validate: [function(value) {
-            return value > this.startTime
+            return value >= this.startTime
         }, "Ngày hết hạn phải lớn hơn ngày bắt đầu"]
     },
     isOverDue: {
