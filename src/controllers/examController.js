@@ -230,7 +230,7 @@ exports.find = async(req, res) => {
                 name: exam.name,
                 content: exam.content,
                 isDeleted: exam.isDeleted,
-                startTime: exam.expireTime,
+                startTime: exam.startTime,
                 expireTime: exam.expireTime,
                 setting: exam.setting,
                 isRemain: isRemain,
