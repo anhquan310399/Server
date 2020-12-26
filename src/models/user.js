@@ -38,11 +38,13 @@ const UserSchema = mongoose.Schema({
         required: [true, 'Email address is required'],
         unique: [true, `Email address is existed`],
         lowercase: true,
-        validate: value => {
-            if (!validator.isEmail(value)) {
-                throw new ValidatorError({ message: 'Invalid Email address', type: 'validate', path: 'emailAddress' });
-            } else if (!value.split('@').pop().includes('hcmute.edu.vn')) {
-                throw new ValidatorError({ message: 'Email address not in HCMUTE', type: 'validate', path: 'emailAddress' });
+        validate: function(value) {
+            if (this.idPrivilege !== 'admin') {
+                if (!validator.isEmail(value)) {
+                    throw new ValidatorError({ message: 'Invalid Email address', type: 'validate', path: 'emailAddress' });
+                } else if (!value.split('@').pop().includes('hcmute.edu.vn')) {
+                    throw new ValidatorError({ message: 'Email address not in HCMUTE', type: 'validate', path: 'emailAddress' });
+                }
             }
         }
     },

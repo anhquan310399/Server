@@ -11,7 +11,10 @@ exports.create = (req, res) => {
     user.save()
         .then((data) => {
             // user.generateAuthToken();
-            res.send(data);
+            res.send({
+                success: true,
+                message: 'Create new user successfully!'
+            });
         })
         .catch((err) => {
             if (err.code === 11000) {
@@ -39,7 +42,42 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
     dbUser.find()
         .then((user) => {
-            res.send(user);
+            res.send({
+                success: true,
+                data: user
+            });
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message || "Some error occurred while retrieving users.",
+            });
+        });
+};
+
+exports.findAllStudents = (req, res) => {
+    dbUser.find({ idPrivilege: 'student' }, 'code emailAddress firstName surName urlAvatar')
+        .then((user) => {
+            res.send({
+                success: true,
+                data: user
+            });
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message || "Some error occurred while retrieving users.",
+            });
+        });
+};
+
+exports.findAllTeachers = (req, res) => {
+    dbUser.find({ idPrivilege: 'teacher' }, 'code emailAddress firstName surName urlAvatar')
+        .then((user) => {
+            res.send({
+                success: true,
+                data: user
+            });
         })
         .catch((err) => {
             res.status(500).send({
@@ -50,12 +88,12 @@ exports.findAll = (req, res) => {
 };
 
 exports.findUser = (req, res) => {
-    dbUser.findOne({ code: req.params.id })
+    dbUser.findOne({ code: req.params.code }, 'code emailAddress firstName surName urlAvatar')
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
                     success: false,
-                    message: "Not found user",
+                    message: `Not found user with code: ${req.params.code}`,
                 });
             }
             var re = {
@@ -66,7 +104,10 @@ exports.findUser = (req, res) => {
                 surName: user.surName,
                 urlAvatar: user.urlAvatar
             }
-            res.send(re);
+            res.send({
+                success: true,
+                user: re
+            });
         })
         .catch((err) => {
             if (err.kind === "ObjectId") {
@@ -83,34 +124,53 @@ exports.findUser = (req, res) => {
 };
 
 exports.update = (req, res) => {
-    // Find ads and update it with the request body
-    dbUser.findByIdAndUpdate(
-            req.params.id, {
-                firstName: req.body.firstName,
-                surName: req.body.surName,
-            }
-        )
-        .then((user) => {
-            if (!user) {
-                return res.status(404).send({
-                    success: false,
-                    message: "Not found user",
+    if (req.idPrivilege === 'admin' || req.idUser == req.params.id) {
+        // Find ads and update it with the request body
+        dbUser.findById(req.params.id)
+            .then((user) => {
+                if (!user) {
+                    return res.status(404).send({
+                        success: false,
+                        message: "Not found user",
+                    });
+                }
+
+                user.surName = req.body.surName || user.surName;
+                user.firstName = req.body.firstName || user.firstName;
+                user.urlAvatar = req.body.urlAvatar || user.urlAvatar;
+                res.send({
+                    success: true,
+                    message: `Update info success`,
+                    user: {
+                        _id: user._id,
+                        code: user.code,
+                        emailAddress: user.emailAddress,
+                        firstName: user.firstName,
+                        surName: user.surName,
+                        urlAvatar: user.urlAvatar,
+                    }
                 });
-            }
-            res.send(user);
-        })
-        .catch((err) => {
-            if (err.kind === "ObjectId") {
-                return res.status(404).send({
-                    success: false,
-                    message: "Not found user",
-                });
-            }
-            return res.status(500).send({
-                success: false,
-                message: "Error updating user",
+            })
+            .catch((err) => {
+                if (err.name === 'ValidationError') {
+                    const key = Object.keys(err.errors)[0];
+                    res.status(400).send({
+                        success: false,
+                        message: err.errors[key].message,
+                    });
+                } else {
+                    res.status(500).send({
+                        success: false,
+                        message: err.message,
+                    });
+                }
             });
+    } else {
+        return res.status(401).send({
+            success: false,
+            message: `You can't access this resource!`
         });
+    }
 };
 
 exports.delete = (req, res) => {
@@ -124,7 +184,7 @@ exports.delete = (req, res) => {
             }
             res.send({
                 success: true,
-                message: "Delete successfully!"
+                message: `Delete user with code: ${user.code} successfully!`
             });
         })
         .catch((err) => {

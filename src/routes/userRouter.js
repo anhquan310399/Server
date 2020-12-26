@@ -1,20 +1,22 @@
 var express = require('express');
 var router = express.Router();
-var { authLogin } = require('../middleware/auth');
+var { authLogin, authAdmin } = require('../middleware/auth');
 /* ROUTER FOR USER */
 const userController = require("../controllers/userController.js")
 
 router.get('/info', authLogin, userController.getInfo);
+router.get('/teacher', authAdmin, userController.findAllTeachers);
+router.get('/student', authAdmin, userController.findAllStudents);
 
-router.get('/:id', userController.findUser);
+router.get('/:code', authAdmin, userController.findUser);
 
-router.get('/', userController.findAll);
+router.get('/', authAdmin, userController.findAll);
 
-router.post('/', userController.create);
+router.post('/', authAdmin, userController.create);
 
-router.put('/:id', userController.update);
+router.put('/:id', authLogin, userController.update);
 
-router.delete('/:id', userController.delete);
+router.delete('/:id', authAdmin, userController.delete);
 
 router.post('/authenticate', userController.authenticate);
 
