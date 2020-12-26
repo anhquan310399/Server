@@ -14,10 +14,12 @@ router.get('/', authAdmin, userController.findAll);
 
 router.post('/', authAdmin, userController.create);
 
+router.put('/:id/hide', authAdmin, userController.hideOrUnhide);
+
 router.put('/', authLogin, userController.update);
 
 // router.delete('/:id', authAdmin, userController.delete);
-router.put('/:id/hide', authAdmin, userController.hideOrUnhide);
+
 
 router.post('/authenticate', userController.authenticate);
 
