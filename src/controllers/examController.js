@@ -105,7 +105,7 @@ exports.find = async(req, res) => {
     const today = Date.now();
     const isRemain = (today <= exam.expireTime);
     const timingRemain = moment(exam.expireTime).from(moment(today));
-
+    const setting = exam.setting;
 
     if (req.user.idPrivilege === 'student') {
         let submissions = exam.submissions.filter(value => value.idStudent == req.user._id);
