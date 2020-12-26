@@ -12,9 +12,9 @@ router.get('/:code', authAdmin, userController.findUser);
 
 router.get('/', authAdmin, userController.findAll);
 
-router.post('/', userController.create);
+router.post('/', authAdmin, userController.create);
 
-router.put('/:id', authLogin, userController.update);
+router.put('/', authLogin, userController.update);
 
 // router.delete('/:id', authAdmin, userController.delete);
 router.put('/:id', authAdmin, userController.hideOrUnhide);

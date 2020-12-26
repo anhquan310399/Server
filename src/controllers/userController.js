@@ -124,56 +124,48 @@ exports.findUser = (req, res) => {
 };
 
 exports.update = (req, res) => {
-    if (req.idPrivilege === 'admin' || req.idUser == req.params.id) {
-        // Find ads and update it with the request body
-        dbUser.findById(req.params.id)
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).send({
-                        success: false,
-                        message: "Not found user",
-                    });
-                }
+    // if (req.idPrivilege === 'admin' || req.idUser == req.params.id) {
+    //     // Find ads and update it with the request body
+    let user = req.user;
 
-                user.surName = req.body.surName || user.surName;
-                user.firstName = req.body.firstName || user.firstName;
-                user.urlAvatar = req.body.urlAvatar || user.urlAvatar;
-                user.save()
-                    .then(data => {
-                        res.send({
-                            success: true,
-                            message: `Update info successfully`,
-                            user: {
-                                _id: data._id,
-                                code: data.code,
-                                emailAddress: data.emailAddress,
-                                firstName: data.firstName,
-                                surName: data.surName,
-                                urlAvatar: data.urlAvatar,
-                            }
-                        });
-                    })
-            })
-            .catch((err) => {
-                if (err.name === 'ValidationError') {
-                    const key = Object.keys(err.errors)[0];
-                    res.status(400).send({
-                        success: false,
-                        message: err.errors[key].message,
-                    });
-                } else {
-                    res.status(500).send({
-                        success: false,
-                        message: err.message,
-                    });
+    user.surName = req.body.surName || user.surName;
+    user.firstName = req.body.firstName || user.firstName;
+    user.urlAvatar = req.body.urlAvatar || user.urlAvatar;
+    user.save()
+        .then(data => {
+            res.send({
+                success: true,
+                message: `Update info successfully`,
+                user: {
+                    _id: data._id,
+                    code: data.code,
+                    emailAddress: data.emailAddress,
+                    firstName: data.firstName,
+                    surName: data.surName,
+                    urlAvatar: data.urlAvatar,
                 }
             });
-    } else {
-        return res.status(401).send({
-            success: false,
-            message: `You can't access this resource!`
+        }).catch((err) => {
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
         });
-    }
+
+    // } else {
+    //     return res.status(401).send({
+    //         success: false,
+    //         message: `You can't access this resource!`
+    //     });
+    // }
 };
 
 // exports.delete = (req, res) => {
