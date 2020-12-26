@@ -205,7 +205,7 @@ exports.hideOrUnhide = (req, res) => {
                     message: "Not found user",
                 });
             }
-            user.isDeleted = !isDeleted;
+            user.isDeleted = !user.isDeleted;
             user.save()
                 .then(data => {
                     let message;

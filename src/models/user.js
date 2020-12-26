@@ -61,7 +61,7 @@ const UserSchema = mongoose.Schema({
         default: "http://simpleicon.com/wp-content/uploads/user1.png"
     },
     facebookId: String,
-    isDelete: {
+    isDeleted: {
         type: Boolean,
         default: false
     }
