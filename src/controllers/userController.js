@@ -202,7 +202,7 @@ exports.delete = (req, res) => {
 };
 
 exports.authenticate = (req, res) => {
-    dbUser.findOne({ code: req.body.code })
+    dbUser.findOne({ code: req.body.code }, 'code emailAddress firstName surName urlAvatar')
         .then(user => {
             if (!user) {
                 return res.status(404).send({
@@ -221,7 +221,7 @@ exports.authenticate = (req, res) => {
                     res.send({
                         success: true,
                         message: 'Login successfully!',
-                        idPrivilege: user.idPrivilege,
+                        user: user,
                         type: 'authenticate',
                         token: token
                     })
@@ -255,7 +255,7 @@ exports.authenticateGoogleToken = async(req, res) => {
     const userToken = req.body.token
     verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
-        const user = await dbUser.findOne({ emailAddress: userEmail })
+        const user = await dbUser.findOne({ emailAddress: userEmail }, 'code emailAddress firstName surName urlAvatar')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -267,7 +267,7 @@ exports.authenticateGoogleToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
-            idPrivilege: user.idPrivilege,
+            user: user,
             type: 'google',
             token: token
         })
@@ -291,7 +291,7 @@ exports.authenticateFacebookToken = async(req, res) => {
             })
         }
         let facebookId = result.id;
-        const user = await dbUser.findOne({ facebookId: facebookId })
+        const user = await dbUser.findOne({ facebookId: facebookId }, 'code emailAddress firstName surName urlAvatar')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -303,7 +303,7 @@ exports.authenticateFacebookToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
-            idPrivilege: user.idPrivilege,
+            user: user,
             type: 'facebook',
             token: token
         })
