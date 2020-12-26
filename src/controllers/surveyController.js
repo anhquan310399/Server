@@ -253,7 +253,7 @@ exports.delete = (req, res) => {
 exports.attemptSurvey = (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
