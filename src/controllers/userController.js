@@ -210,9 +210,9 @@ exports.hideOrUnhide = (req, res) => {
                 .then(data => {
                     let message;
                     if (data.isDeleted) {
-                        message = `Hide user with code: ${data.code}`;
+                        message = `Hide user with code: ${data.code} successfully!`;
                     } else {
-                        message = `Unhide user with code: ${data.code}`;
+                        message = `Unhide user with code: ${data.code} successfully!`;
                     }
                     res.send({
                         success: true,

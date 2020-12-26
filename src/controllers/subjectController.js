@@ -75,6 +75,27 @@ exports.findAll = async(req, res) => {
                     message: err.message || "Some error occurred while listing subject.",
                 });
             });
+    } else if (idPrivilege === 'admin') {
+        db.find()
+            .then(async(data) => {
+                var info = await Promise.all(data.map(async function(value) {
+                    var teacher = await userDb.findOne({ code: value.idLecture }, 'code firstName surName urlAvatar')
+                        .then(value => {
+                            return value
+                        });
+                    return { _id: value._id, name: value.name, lecture: teacher, studentCount: value.studentIds.length, isDeleted: value.isDeleted };
+                }));
+                res.send({
+                    success: true,
+                    allSubject: info
+                });
+            })
+            .catch((err) => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message || "Some error occurred while listing subject.",
+                });
+            });
     }
 
 };
@@ -296,32 +317,66 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.delete = async(req, res) => {
-    await db.findByIdAndUpdate(
-            req.params.idSubject, {
-                isDeleted: true
-            }
-        )
-        .then((data) => {
-            if (!data) {
+// exports.delete = async(req, res) => {
+//     await db.findByIdAndUpdate(
+//             req.params.idSubject, {
+//                 isDeleted: true
+//             }
+//         )
+//         .then((data) => {
+//             if (!data) {
+//                 return res.status(404).send({
+//                     success: false,
+//                     message: "Not found Subject",
+//                 });
+//             }
+//             res.send({
+//                 success: true,
+//                 message: "Delete Subject Successfully"
+//             });
+//         })
+//         .catch((err) => {
+//             console.log("Delete subject" + err.message);
+//             return res.status(500).send({
+//                 success: false,
+//                 message: "Delete Failure"
+//             });
+//         });
+// };
+
+exports.hideOrUnhide = (req, res) => {
+    db.findById(req.params.idSubject)
+        .then((subject) => {
+            if (!subject) {
                 return res.status(404).send({
                     success: false,
-                    message: "Not found Subject",
+                    message: "Not found subject",
                 });
             }
-            res.send({
-                success: true,
-                message: "Delete Subject Successfully"
-            });
+            subject.isDeleted = !subject.isDeleted;
+            subject.save()
+                .then(data => {
+                    let message;
+                    if (data.isDeleted) {
+                        message = `Hide subject: ${data.name} successfully!`;
+                    } else {
+                        message = `Unhide subject : ${data.name} successfully!`;
+                    }
+                    res.send({
+                        success: true,
+                        message: message,
+                    });
+                })
+
         })
         .catch((err) => {
-            console.log("Delete subject" + err.message);
-            return res.status(500).send({
+            res.status(500).send({
                 success: false,
-                message: "Delete Failure"
+                message: err.message,
             });
         });
 };
+
 
 exports.addAllStudents = (req, res) => {
     // Validate request

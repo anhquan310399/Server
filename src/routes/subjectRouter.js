@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { authLogin, authInSubject, authLecture } = require("../middleware/auth")
+const { authLogin, authInSubject, authLecture, authAdmin } = require("../middleware/auth")
     /* ROUTER FOR  SUBJECT */
 const subjectController = require("../controllers/subjectController")
 
@@ -10,6 +10,7 @@ router.get('/deadline', authLogin, subjectController.getDeadline);
 router.get('/:idSubject', authInSubject, subjectController.find);
 router.post('/', subjectController.create);
 router.put('/:idSubject/', subjectController.update);
+router.put('/:idSubject/hide', authAdmin, subjectController.hideOrUnhide);
 
 router.get('/:idSubject/students', authInSubject, subjectController.getListStudent);
 router.post('/:idSubject/add-student', authLecture, subjectController.addStudent);
