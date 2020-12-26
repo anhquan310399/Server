@@ -202,7 +202,7 @@ exports.delete = (req, res) => {
 };
 
 exports.authenticate = (req, res) => {
-    dbUser.findOne({ code: req.body.code }, 'code idPrivilege emailAddress firstName surName urlAvatar')
+    dbUser.findOne({ code: req.body.code })
         .then(user => {
             if (!user) {
                 return res.status(404).send({
@@ -221,7 +221,15 @@ exports.authenticate = (req, res) => {
                     res.send({
                         success: true,
                         message: 'Login successfully!',
-                        user: user,
+                        user: {
+                            _id: user._id,
+                            code: user.code,
+                            emailAddress: user.emailAddress,
+                            firstName: user.firstName,
+                            surName: user.surName,
+                            urlAvatar: user.urlAvatar,
+                            idPrivilege: user.idPrivilege
+                        },
                         type: 'authenticate',
                         token: token
                     })
@@ -267,7 +275,15 @@ exports.authenticateGoogleToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
-            user: user,
+            user: {
+                _id: user._id,
+                code: user.code,
+                emailAddress: user.emailAddress,
+                firstName: user.firstName,
+                surName: user.surName,
+                urlAvatar: user.urlAvatar,
+                idPrivilege: user.idPrivilege
+            },
             type: 'google',
             token: token
         })
@@ -303,7 +319,15 @@ exports.authenticateFacebookToken = async(req, res) => {
         res.send({
             success: true,
             message: 'Login successfully!',
-            user: user,
+            user: {
+                _id: user._id,
+                code: user.code,
+                emailAddress: user.emailAddress,
+                firstName: user.firstName,
+                surName: user.surName,
+                urlAvatar: user.urlAvatar,
+                idPrivilege: user.idPrivilege
+            },
             type: 'facebook',
             token: token
         })
