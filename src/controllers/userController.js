@@ -138,18 +138,21 @@ exports.update = (req, res) => {
                 user.surName = req.body.surName || user.surName;
                 user.firstName = req.body.firstName || user.firstName;
                 user.urlAvatar = req.body.urlAvatar || user.urlAvatar;
-                res.send({
-                    success: true,
-                    message: `Update info success`,
-                    user: {
-                        _id: user._id,
-                        code: user.code,
-                        emailAddress: user.emailAddress,
-                        firstName: user.firstName,
-                        surName: user.surName,
-                        urlAvatar: user.urlAvatar,
-                    }
-                });
+                user.save()
+                    .then(data => {
+                        res.send({
+                            success: true,
+                            message: `Update info successfully`,
+                            user: {
+                                _id: data._id,
+                                code: data.code,
+                                emailAddress: data.emailAddress,
+                                firstName: data.firstName,
+                                surName: data.surName,
+                                urlAvatar: data.urlAvatar,
+                            }
+                        });
+                    })
             })
             .catch((err) => {
                 if (err.name === 'ValidationError') {
@@ -173,8 +176,36 @@ exports.update = (req, res) => {
     }
 };
 
-exports.delete = (req, res) => {
-    dbUser.findByIdAndRemove(req.params.id)
+// exports.delete = (req, res) => {
+//     dbUser.findByIdAndRemove(req.params.id)
+//         .then((user) => {
+//             if (!user) {
+//                 return res.status(404).send({
+//                     success: false,
+//                     message: "Not found user",
+//                 });
+//             }
+//             res.send({
+//                 success: true,
+//                 message: `Delete user with code: ${user.code} successfully!`
+//             });
+//         })
+//         .catch((err) => {
+//             if (err.kind === "ObjectId" || err.name === "NotFound") {
+//                 return res.status(404).send({
+//                     success: false,
+//                     message: "Not found user",
+//                 });
+//             }
+//             return res.status(500).send({
+//                 success: false,
+//                 message: "Could not delete user",
+//             });
+//         });
+// };
+
+exports.hideOrUnhide = (req, res) => {
+    dbUser.findById(req.params.id)
         .then((user) => {
             if (!user) {
                 return res.status(404).send({
@@ -182,27 +213,33 @@ exports.delete = (req, res) => {
                     message: "Not found user",
                 });
             }
-            res.send({
-                success: true,
-                message: `Delete user with code: ${user.code} successfully!`
-            });
+            user.isDeleted = !isDeleted;
+            user.save()
+                .then(data => {
+                    let message;
+                    if (data.isDeleted) {
+                        message = `Hide user with code: ${data.code}`;
+                    } else {
+                        message = `Unhide user with code: ${data.code}`;
+                    }
+                    res.send({
+                        success: true,
+                        message: message,
+                    });
+                })
+
         })
         .catch((err) => {
-            if (err.kind === "ObjectId" || err.name === "NotFound") {
-                return res.status(404).send({
-                    success: false,
-                    message: "Not found user",
-                });
-            }
-            return res.status(500).send({
+            res.status(500).send({
                 success: false,
-                message: "Could not delete user",
+                message: err.message,
             });
         });
 };
 
+
 exports.authenticate = (req, res) => {
-    dbUser.findOne({ code: req.body.code })
+    dbUser.findOne({ code: req.body.code, isDeleted: false })
         .then(user => {
             if (!user) {
                 return res.status(404).send({
@@ -263,7 +300,7 @@ exports.authenticateGoogleToken = async(req, res) => {
     const userToken = req.body.token
     verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
-        const user = await dbUser.findOne({ emailAddress: userEmail }, 'code idPrivilege emailAddress firstName surName urlAvatar')
+        const user = await dbUser.findOne({ emailAddress: userEmail, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -307,7 +344,7 @@ exports.authenticateFacebookToken = async(req, res) => {
             })
         }
         let facebookId = result.id;
-        const user = await dbUser.findOne({ facebookId: facebookId }, 'code idPrivilege emailAddress firstName surName urlAvatar')
+        const user = await dbUser.findOne({ facebookId: facebookId, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({

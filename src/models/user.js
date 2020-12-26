@@ -60,14 +60,18 @@ const UserSchema = mongoose.Schema({
         type: String,
         default: "http://simpleicon.com/wp-content/uploads/user1.png"
     },
-    facebookId: String
-        // ,
-        // tokens: [{
-        //     token: {
-        //         type: String,
-        //         required: true
-        //     }
-        // }]
+    facebookId: String,
+    isDelete: {
+        type: Boolean,
+        default: false
+    }
+    // ,
+    // tokens: [{
+    //     token: {
+    //         type: String,
+    //         required: true
+    //     }
+    // }]
 }, {
     timestamps: true,
 });

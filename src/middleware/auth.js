@@ -6,7 +6,7 @@ exports.authStudent = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'student' })
+        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'student', isDeleted: false })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -55,7 +55,7 @@ exports.authLecture = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'teacher' })
+        User.findOne({ _id: data._id, code: data.code, idPrivilege: 'teacher', isDeleted: false })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -101,7 +101,7 @@ exports.authInSubject = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, code: data.code })
+        User.findOne({ _id: data._id, code: data.code, isDeleted: false })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -165,7 +165,7 @@ exports.authLogin = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, code: data.code })
+        User.findOne({ _id: data._id, code: data.code, isDeleted: false })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
@@ -197,7 +197,7 @@ exports.authAdmin = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
-        User.findOne({ _id: data._id, username: data.username, idPrivilege: 'admin' })
+        User.findOne({ _id: data._id, username: data.username, idPrivilege: 'admin', isDeleted: false })
             .then((user) => {
                 if (!user) {
                     return res.status(401).send({
