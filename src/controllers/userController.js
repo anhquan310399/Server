@@ -56,7 +56,7 @@ exports.findAll = (req, res) => {
 };
 
 exports.findAllStudents = (req, res) => {
-    dbUser.find({ idPrivilege: 'student' }, 'code emailAddress firstName surName urlAvatar')
+    dbUser.find({ idPrivilege: 'student' }, 'code emailAddress firstName surName urlAvatar isDeleted')
         .then((user) => {
             res.send({
                 success: true,
@@ -72,7 +72,7 @@ exports.findAllStudents = (req, res) => {
 };
 
 exports.findAllTeachers = (req, res) => {
-    dbUser.find({ idPrivilege: 'teacher' }, 'code emailAddress firstName surName urlAvatar')
+    dbUser.find({ idPrivilege: 'teacher' }, 'code emailAddress firstName surName urlAvatar isDeleted')
         .then((user) => {
             res.send({
                 success: true,
