@@ -12,10 +12,22 @@ exports.create = async(req, res) => {
     });
 
     await data.save()
-        .then((data) => {
+        .then(async(data) => {
+
+            var teacher = await userDb.findOne({ code: data.idLecture }, 'code firstName surName urlAvatar')
+                .then(value => {
+                    return value
+                });
             res.send({
                 success: true,
-                subject: data
+                subject: {
+                    _id: data._id,
+                    name: data.name,
+                    lecture: teacher,
+                    studentCount: data.studentIds.length,
+                    isDeleted: data.isDeleted
+                },
+                message: `Create new subject ${data.name} successfully!`
             });
         })
         .catch((err) => {
@@ -83,7 +95,7 @@ exports.findAll = async(req, res) => {
                         .then(value => {
                             return value
                         });
-                    return { _id: value._id, name: value.name, lecture: teacher, studentCount: value.studentIds.length, isDeleted: value.isDeleted };
+                    return { _id: value._id, name: value.name, lecture: teacher, studentCount: value.studentIds.length, studentIds: value.studentIds, isDeleted: value.isDeleted };
                 }));
                 res.send({
                     success: true,
@@ -274,6 +286,40 @@ exports.find = async(req, res) => {
     });
 };
 
+exports.findByAdmin = async(req, res) => {
+    db.findById(req.params.idSubject)
+        .then(async(subject) => {
+            if (!subject) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found subject",
+                });
+            }
+
+            var teacher = await userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
+                .then(value => {
+                    return value
+                });
+            res.send({
+                success: true,
+                subject: {
+                    _id: subject._id,
+                    name: subject.name,
+                    lecture: teacher,
+                    studentCount: subject.studentIds.length,
+                    isDeleted: subject.isDeleted
+                }
+            });
+
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message,
+            });
+        });
+}
+
 exports.update = async(req, res) => {
     if (!req.body || !(req.body.name && req.body.idLecture)) {
         return res.status(400).send({
@@ -281,19 +327,20 @@ exports.update = async(req, res) => {
             message: "Lack of information",
         });
     };
-    await db.findByIdAndUpdate(
-            req.params.idSubject, {
-                name: req.body.name,
-                idLecture: req.body.idLecture
-            }
-        )
-        .then((data) => {
-            if (!data) {
-                return res.status(404).send({
-                    success: false,
-                    message: "Not found Subject",
-                });
-            }
+    let subject = await db.findById(req.params.idSubject)
+        .then((data) => { return data });
+    if (!subject) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found Subject",
+        });
+    }
+    subject.name = req.body.name || subject.name;
+    subject.idLecture = req.body.idLecture || subject.idLecture;
+    subject.studentIds = req.body.studentIds || subject.studentIds;
+
+    subject.save()
+        .then(() => {
             res.send({
                 success: true,
                 message: "Update Subject Successfully"

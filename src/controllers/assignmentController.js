@@ -105,7 +105,7 @@ exports.find = async(req, res) => {
         if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
             isCanSubmit = true;
 
-        } else if (assignment.setting.isOverDue) {
+        } else if (assignment.setting.isOverDue && today >= assignment.setting.startTime) {
             if (today <= assignment.setting.overDueDate) {
                 isCanSubmit = true;
             }
@@ -490,7 +490,7 @@ exports.submit = (req, res) => {
         } else {
             message = "Đã quá thời hạn nộp bài!"
         }
-        res.status(500).send({
+        res.status(403).send({
             success: false,
             message: message
         });

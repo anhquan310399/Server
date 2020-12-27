@@ -46,7 +46,24 @@ const Schema = mongoose.Schema({
 
     },
     timelines: [timelineSchema],
-    studentIds: [String],
+    studentIds: {
+        type: [String],
+        validate: async function(list) {
+            await Promise.all(list.map(async(idStudent) => {
+                console.log(idStudent);
+                let student = await UserDb.findOne({ code: idStudent }).
+                then(data => data);
+                if (!student) {
+                    throw new ValidatorError({
+                        message: `Not found student with code: ${idStudent}`,
+                        type: 'validate',
+                        path: 'studentIds'
+                    })
+                }
+                return idStudent;
+            }));
+        }
+    },
     quizBank: [chapter],
     isDeleted: {
         type: Boolean,
