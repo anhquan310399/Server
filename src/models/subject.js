@@ -45,6 +45,7 @@ const Schema = mongoose.Schema({
         }
 
     },
+    quizBank: [chapter],
     timelines: [timelineSchema],
     studentIds: {
         type: [String],
@@ -64,7 +65,6 @@ const Schema = mongoose.Schema({
             }));
         }
     },
-    quizBank: [chapter],
     isDeleted: {
         type: Boolean,
         default: false

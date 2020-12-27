@@ -8,7 +8,8 @@ exports.create = async(req, res) => {
         name: req.body.name,
         idLecture: req.body.idLecture,
         studentIds: req.body.studentIds,
-        timelines: req.body.timelines
+        timelines: req.body.timelines,
+        quizBank: req.body.quizBank,
     });
 
     await data.save()
@@ -906,6 +907,116 @@ exports.updateRatioTranscript = async(req, res) => {
                 message: 'Update ratio transcript failure!'
             });
         })
+}
+
+exports.exportSubject = async(req, res) => {
+    await db.findById(req.params.idSubject)
+        .then(async(subject) => {
+            if (!subject) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found subject",
+                });
+            }
+
+            let timelines = subject.timelines;
+            timelines = await Promise.all(timelines.map(async(timeline) => {
+                let surveys = await Promise.all(timeline.surveys.map(async(survey) => {
+
+                    let questionnaire = survey.questionnaire.map((question) => {
+                        if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
+                            let answers = question.answer.map(answer => {
+                                return answer.content;
+                            });
+                            return {
+                                question: question.question,
+                                answer: answers,
+                                typeQuestion: question.typeQuestion
+                            }
+                        } else {
+                            return {
+                                question: question.question,
+                                typeQuestion: question.typeQuestion
+                            }
+                        }
+                    })
+                    return {
+                        name: survey.name,
+                        description: survey.description,
+                        questionnaire: questionnaire,
+                        expireTime: survey.expireTime
+                    }
+                }));
+                let forums = timeline.forums.map(forum => {
+                    return {
+                        name: forum.name,
+                        description: forum.description
+                    }
+                });
+                let exams = timeline.exams.map(exam => {
+                    return {
+                        name: exam.name,
+                        content: exam.content,
+                        startTime: exam.startTime,
+                        expireTime: exam.expireTime,
+                        setting: exam.setting
+                    }
+                });
+                let information = timeline.information.map(info => {
+                    return {
+                        name: info.name,
+                        content: info.content
+                    }
+                });
+                let assignments = timeline.assignments.map(assignment => {
+                    return {
+                        name: assignment.name,
+                        content: assignment.content,
+                        attachments: assignment.attachments,
+                        setting: assignment.setting
+                    }
+                });
+                return {
+                    name: timeline.name,
+                    description: timeline.description,
+                    surveys: surveys,
+                    forums: forums,
+                    exams: exams,
+                    information: information,
+                    assignments: assignments,
+                    files: timeline.files,
+                    index: timeline.index
+                }
+            }));
+
+            subject = {
+                name: subject.name,
+                idLecture: subject.idLecture,
+                timelines: timelines,
+                quizBank: subject.quizBank
+            }
+
+            res.attachment(`${subject.name}.json`)
+            res.type('json')
+            res.send(subject)
+                // res.send({
+                //     success: true,
+                //     subject: {
+                //         _id: subject._id,
+                //         name: subject.name,
+                //         lecture: teacher,
+                //         studentCount: subject.studentIds.length,
+                //         isDeleted: subject.isDeleted
+                //     }
+                // });
+
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message,
+            });
+        });
 }
 
 //Function

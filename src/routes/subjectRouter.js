@@ -9,6 +9,7 @@ router.get('/', authLogin, subjectController.findAll);
 router.get('/deadline', authLogin, subjectController.getDeadline);
 router.get('/:idSubject', authInSubject, subjectController.find);
 router.get('/:idSubject/detail', subjectController.findByAdmin);
+router.get('/:idSubject/export', subjectController.exportSubject);
 router.post('/', subjectController.create);
 router.put('/:idSubject/', subjectController.update);
 router.put('/:idSubject/hide', authAdmin, subjectController.hideOrUnhide);

@@ -257,7 +257,8 @@ exports.authenticate = (req, res) => {
                             firstName: user.firstName,
                             surName: user.surName,
                             urlAvatar: user.urlAvatar,
-                            idPrivilege: user.idPrivilege
+                            idPrivilege: user.idPrivilege,
+                            facebookId: user.facebookId
                         },
                         type: 'authenticate',
                         token: token
@@ -311,7 +312,8 @@ exports.authenticateGoogleToken = async(req, res) => {
                 firstName: user.firstName,
                 surName: user.surName,
                 urlAvatar: user.urlAvatar,
-                idPrivilege: user.idPrivilege
+                idPrivilege: user.idPrivilege,
+                facebookId: user.facebookId
             },
             type: 'google',
             token: token
@@ -355,7 +357,8 @@ exports.authenticateFacebookToken = async(req, res) => {
                 firstName: user.firstName,
                 surName: user.surName,
                 urlAvatar: user.urlAvatar,
-                idPrivilege: user.idPrivilege
+                idPrivilege: user.idPrivilege,
+                facebookId: user.facebookId
             },
             type: 'facebook',
             token: token
