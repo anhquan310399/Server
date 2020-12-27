@@ -373,6 +373,8 @@ exports.authenticateFacebookToken = async(req, res) => {
 
 exports.linkFacebookAccount = async(req, res) => {
     const userToken = req.body.token
+    console.log(req.user);
+    console.log(req.user.facebookId);
     if (req.user.facebookId) {
         res.status(409).send({
             success: false,
@@ -399,9 +401,19 @@ exports.linkFacebookAccount = async(req, res) => {
         let user = req.user
         user.facebookId = facebookId;
         user.save()
-            .then(() => {
+            .then((data) => {
                 res.send({
                     success: true,
+                    user: {
+                        _id: data._id,
+                        code: data.code,
+                        emailAddress: data.emailAddress,
+                        firstName: data.firstName,
+                        surName: data.surName,
+                        urlAvatar: data.urlAvatar,
+                        idPrivilege: data.idPrivilege,
+                        facebookId: data.facebookId
+                    },
                     message: `Link to facebook ${result.name} successfully!`
                 })
             })
@@ -424,9 +436,18 @@ exports.unlinkFacebookAccount = async(req, res) => {
     }
     user.facebookId = null;
     user.save()
-        .then(() => {
+        .then((data) => {
             res.send({
                 success: true,
+                user: {
+                    _id: data._id,
+                    code: data.code,
+                    emailAddress: data.emailAddress,
+                    firstName: data.firstName,
+                    surName: data.surName,
+                    urlAvatar: data.urlAvatar,
+                    idPrivilege: data.idPrivilege
+                },
                 message: `UnLink to facebook successfully!`
             })
         }).catch(function(err) {
