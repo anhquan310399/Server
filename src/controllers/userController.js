@@ -293,7 +293,7 @@ exports.authenticateGoogleToken = async(req, res) => {
     const userToken = req.body.token
     verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
-        const user = await dbUser.findOne({ emailAddress: userEmail, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar')
+        const user = await dbUser.findOne({ emailAddress: userEmail, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -338,7 +338,7 @@ exports.authenticateFacebookToken = async(req, res) => {
             })
         }
         let facebookId = result.id;
-        const user = await dbUser.findOne({ facebookId: facebookId, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar')
+        const user = await dbUser.findOne({ facebookId: facebookId, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
