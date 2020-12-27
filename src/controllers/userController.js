@@ -434,7 +434,7 @@ exports.unlinkFacebookAccount = async(req, res) => {
             message: `Your account hasn't already linked facebook!`
         })
     }
-    user.facebookId = null;
+    user.facebookId = undefined;
     user.save()
         .then((data) => {
             res.send({
