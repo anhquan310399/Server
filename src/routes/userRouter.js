@@ -17,7 +17,7 @@ router.post('/', authAdmin, userController.create);
 router.put('/:id/hide', authAdmin, userController.hideOrUnhide);
 
 router.put('/', authLogin, userController.update);
-
+router.put('/password', authLogin, userController.updatePassword);
 // router.delete('/:id', authAdmin, userController.delete);
 
 

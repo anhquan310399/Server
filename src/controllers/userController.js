@@ -127,7 +127,6 @@ exports.update = (req, res) => {
     // if (req.idPrivilege === 'admin' || req.idUser == req.params.id) {
     //     // Find ads and update it with the request body
     let user = req.user;
-
     user.surName = req.body.surName || user.surName;
     user.firstName = req.body.firstName || user.firstName;
     user.urlAvatar = req.body.urlAvatar || user.urlAvatar;
@@ -143,6 +142,8 @@ exports.update = (req, res) => {
                     firstName: data.firstName,
                     surName: data.surName,
                     urlAvatar: data.urlAvatar,
+                    facebookId: data.facebookId,
+                    idPrivilege: data.idPrivilege
                 }
             });
         }).catch((err) => {
@@ -166,6 +167,31 @@ exports.update = (req, res) => {
     //         message: `You can't access this resource!`
     //     });
     // }
+};
+exports.updatePassword = (req, res) => {
+    let user = req.user;
+    let isAuth = user.comparePassword(req.body.password);
+    if (!isAuth) {
+        return res.status(401).send({
+            success: false,
+            message: 'Password is not valid',
+        });
+    }
+    user.password = req.body.newPassword;
+    user.save()
+        .then(data => {
+            res.send({
+                success: true,
+                message: `Update password successfully`,
+            });
+        }).catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message
+
+            })
+        })
+
 };
 
 // exports.delete = (req, res) => {
