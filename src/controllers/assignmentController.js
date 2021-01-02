@@ -292,7 +292,7 @@ exports.delete = (req, res) => {
         });
 };
 
-exports.hideOrUnhide = (req, res) => {
+exports.hideOrUnhide = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -349,7 +349,7 @@ exports.hideOrUnhide = (req, res) => {
 //     }
 // });
 
-exports.submit = (req, res) => {
+exports.submit = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -497,48 +497,48 @@ exports.submit = (req, res) => {
     }
 };
 
-exports.download = (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
-    if (!timeline) {
-        return res.status(404).send({
-            success: false,
-            message: "Not found timeline",
-        });
-    }
+// exports.download = async (req, res) => {
+//     let data = req.subject;
+//     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+//     if (!timeline) {
+//         return res.status(404).send({
+//             success: false,
+//             message: "Not found timeline",
+//         });
+//     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
-    if (!assignment) {
-        return res.status(404).send({
-            success: false,
-            message: "Not found assignment",
-        });
-    }
-    console.log(req.user.idPrivilege);
-    if (req.user.idPrivilege === 'student') {
-        console.log(req.user._id);
-        var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
-        if (!submission || submission.idStudent != req.user._id) {
-            return res.status(404).send({
-                success: false,
-                message: "Not found submission",
-            });
-        }
-        res.download(submission.file.path);
-    } else {
-        var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
-        if (!submission) {
-            return res.status(404).send({
-                success: false,
-                message: "Not found submission",
-            });
-        }
-        res.download(submission.file.path);
-    }
+//     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+//     if (!assignment) {
+//         return res.status(404).send({
+//             success: false,
+//             message: "Not found assignment",
+//         });
+//     }
+//     console.log(req.user.idPrivilege);
+//     if (req.user.idPrivilege === 'student') {
+//         console.log(req.user._id);
+//         var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
+//         if (!submission || submission.idStudent != req.user._id) {
+//             return res.status(404).send({
+//                 success: false,
+//                 message: "Not found submission",
+//             });
+//         }
+//         res.download(submission.file.path);
+//     } else {
+//         var submission = assignment.submissions.find(value => value._id == req.params.idSubmission);
+//         if (!submission) {
+//             return res.status(404).send({
+//                 success: false,
+//                 message: "Not found submission",
+//             });
+//         }
+//         res.download(submission.file.path);
+//     }
 
-}
+// }
 
-exports.gradeSubmission = (req, res) => {
+exports.gradeSubmission = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -594,7 +594,7 @@ exports.gradeSubmission = (req, res) => {
     }
 }
 
-exports.commentFeedback = (req, res) => {
+exports.commentFeedback = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {

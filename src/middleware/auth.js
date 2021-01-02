@@ -196,6 +196,7 @@ exports.authLogin = (req, res, next) => {
 exports.authAdmin = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
+        console.log(token);
         const data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, idPrivilege: 'admin' })
             .then((user) => {

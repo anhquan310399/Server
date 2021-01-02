@@ -16,7 +16,7 @@ router.put('/:idAssignment', authLecture, assignmentController.update);
 
 router.put('/:idAssignment/hide', authLecture, assignmentController.hideOrUnhide);
 
-router.get('/:idAssignment/download/:idSubmission', authInSubject, assignmentController.download);
+// router.get('/:idAssignment/download/:idSubmission', authInSubject, assignmentController.download);
 
 // router.post('/upload', assignmentController.uploadFile);
 

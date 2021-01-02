@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const discussionSchema = require("./discussion");
 
-const topic = new mongoose.Schema({
+const topicSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "Name of Topic is required"]
@@ -19,4 +19,4 @@ const topic = new mongoose.Schema({
 }, { timestamps: true });
 
 
-module.exports = topic
+module.exports = topicSchema

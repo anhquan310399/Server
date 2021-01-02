@@ -2,12 +2,13 @@ const mongoose = require("mongoose");
 const file = require('./file');
 
 //Thêm trường comment để khiếu nại điểm
+
 const feedBack = new mongoose.Schema({
     grade: {
         type: Number,
-        required: [true, "Vui lòng nhập số điểm!"],
-        min: [0, "Điểm thấp nhất là 0!"],
-        max: [10, "Điểm cao nhất là 10!"]
+        required: [true, "Grade is required!"],
+        min: [0, "Min grade is 0!"],
+        max: [10, "Max grade is 10!"]
     },
     gradeOn: {
         type: Date,
@@ -39,14 +40,14 @@ const submission = new mongoose.Schema({
 const setting = new mongoose.Schema({
     startTime: {
         type: Date,
-        required: [true, "Chưa nhập thời gian bắt đầu!"]
+        required: [true, "Start time of assignment is required"]
     },
     expireTime: {
         type: Date,
-        required: [true, "Chưa nhập thời gian kết thúc!"],
+        required: [true, "Expire time of assignment is required"],
         validate: [function(value) {
             return value >= this.startTime
-        }, "Ngày hết hạn phải lớn hơn ngày bắt đầu"]
+        }, "Expire time must be more than start time"]
     },
     isOverDue: {
         type: Boolean,
@@ -56,41 +57,35 @@ const setting = new mongoose.Schema({
         type: Date,
         required: [function() {
             return this.isOverDue;
-        }, "Chưa nhập thời gian quá hạn"],
+        }, "Over due date is required"],
         validate: [function(value) {
             return value > this.expireTime
-        }, "Thời gian quá hạn phải hơn thời gian kết thúc"]
+        }, "Over due date must be more than expire time"]
     },
-    // fileCount: {
-    //     type: Number,
-    //     min: [1, "Số lượng file nộp tối thiểu là 1"],
-    //     max: [5, "Số lượng file nộp tối đa là 5"],
-    //     default: 1
-    // },
     fileSize: {
         type: Number,
-        min: [5, "Kích thước file nộp tối thiểu là 5mb"],
-        max: [500, "Kích thước file nộp tối đa là 500mb"],
+        min: [5, "Min size of file is 5mb"],
+        max: [500, "Max size of file is 500mb"],
         default: 5
     }
 
 }, { _id: false });
 
-const assignment = new mongoose.Schema({
+const assignmentSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Chưa nhập tên bài tập"]
+        required: [true, "Title of assignment is required"]
     },
     content: {
         type: String,
-        required: [true, "Chưa nhập mô tả cho bài tập"]
+        required: [true, "Description of assignment is required"]
     },
     attachments: {
         type: [file]
     },
     setting: {
         type: setting,
-        required: true
+        required: [true, "Setting of assignment is required"]
     },
     submissions: [submission],
     isDeleted: {
@@ -100,7 +95,7 @@ const assignment = new mongoose.Schema({
 }, { timestamps: true });
 
 
-assignment.pre('save', async function(next) {
+assignmentSchema.pre('save', async function(next) {
     let currentAssignment = this;
     if (currentAssignment.isNew) {
         console.log("Create new assignment!");
@@ -113,4 +108,4 @@ assignment.pre('save', async function(next) {
     }
 });
 
-module.exports = assignment
+module.exports = assignmentSchema

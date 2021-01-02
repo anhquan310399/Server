@@ -56,7 +56,7 @@ exports.findAll = (req, res) => {
 };
 
 exports.findAllStudents = (req, res) => {
-    dbUser.find({ idPrivilege: 'student' }, 'code emailAddress firstName surName urlAvatar isDeleted')
+    dbUser.find({ idPrivilege: 'student' }, 'code emailAddress idPrivilege firstName surName urlAvatar isDeleted')
         .then((user) => {
             res.send({
                 success: true,
@@ -72,7 +72,7 @@ exports.findAllStudents = (req, res) => {
 };
 
 exports.findAllTeachers = (req, res) => {
-    dbUser.find({ idPrivilege: 'teacher' }, 'code emailAddress firstName surName urlAvatar isDeleted')
+    dbUser.find({ idPrivilege: 'teacher' }, 'code emailAddress idPrivilege firstName surName urlAvatar isDeleted')
         .then((user) => {
             res.send({
                 success: true,
@@ -236,9 +236,9 @@ exports.hideOrUnhide = (req, res) => {
                 .then(data => {
                     let message;
                     if (data.isDeleted) {
-                        message = `Hide user with code: ${data.code} successfully!`;
+                        message = `Lock user with code: ${data.code} successfully!`;
                     } else {
-                        message = `Unhide user with code: ${data.code} successfully!`;
+                        message = `Unlock user with code: ${data.code} successfully!`;
                     }
                     res.send({
                         success: true,

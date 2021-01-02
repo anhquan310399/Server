@@ -164,7 +164,7 @@ exports.findAll = async(req, res) => {
 
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -245,7 +245,7 @@ exports.update = (req, res) => {
     }
 };
 
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
     let data = req.subject
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {

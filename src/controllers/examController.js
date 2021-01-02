@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const User = require('../models/user');
 
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -246,7 +246,7 @@ exports.find = async(req, res) => {
     }
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -269,7 +269,7 @@ exports.findAll = (req, res) => {
     })
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -340,7 +340,7 @@ exports.update = (req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -376,7 +376,7 @@ exports.delete = (req, res) => {
         });
 };
 
-exports.hideOrUnhide = (req, res) => {
+exports.hideOrUnhide = async(req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -416,7 +416,7 @@ exports.hideOrUnhide = (req, res) => {
         });
 };
 
-exports.doExam = (req, res) => {
+exports.doExam = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -541,7 +541,7 @@ exports.doExam = (req, res) => {
 
 }
 
-exports.submitExam = (req, res) => {
+exports.submitExam = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {

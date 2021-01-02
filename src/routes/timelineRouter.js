@@ -15,7 +15,7 @@ router.put('/:idTimeline/hide', authLecture, timelineController.hideOrUnHide);
 
 router.post('/upload', authLecture, timelineController.uploadFile);
 
-router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
+// router.get('/:idTimeline/download/:idFile', authInSubject, timelineController.downloadFile);
 router.delete('/:idTimeline/remove/:idFile', authLecture, timelineController.removeFile);
 router.get('/:idTimeline/file/:idFile', authInSubject, timelineController.getFile);
 

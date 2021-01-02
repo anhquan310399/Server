@@ -1,6 +1,6 @@
 const db = require("../models/privilege");
 
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     const data = new db({
         role: req.body.role,
         name: req.body.name
@@ -33,7 +33,7 @@ exports.create = (req, res) => {
         });
 };
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     db.find()
         .then((data) => {
             if (!data) {
@@ -50,7 +50,7 @@ exports.findAll = (req, res) => {
         });
 };
 
-exports.findPrivilege = (req, res) => {
+exports.findPrivilege = async(req, res) => {
     db.findById(req.params.id)
         .then((data) => {
             if (!data) {
@@ -72,7 +72,7 @@ exports.findPrivilege = (req, res) => {
         });
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     // Find ads and update it with the request body
     db.findByIdAndUpdate(
             req.params.id, {
@@ -100,7 +100,7 @@ exports.update = (req, res) => {
         });
 };
 
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
     db.findByIdAndRemove(req.params.id)
         .then((data) => {
             if (!data) {

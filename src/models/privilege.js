@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema({
+
+const privilegeSchema = mongoose.Schema({
     role: {
         type: String,
         unique: true,
@@ -13,4 +14,4 @@ const schema = mongoose.Schema({
 });
 
 
-module.exports = mongoose.model("privilege", schema);
+module.exports = mongoose.model("privilege", privilegeSchema);

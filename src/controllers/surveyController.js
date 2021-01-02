@@ -1,4 +1,4 @@
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
@@ -41,7 +41,7 @@ exports.create = (req, res) => {
         });
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -98,7 +98,7 @@ exports.find = (req, res) => {
 
 }
 
-exports.findAll = (req, res) => {
+exports.findAll = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -122,7 +122,7 @@ exports.findAll = (req, res) => {
 
 }
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -170,7 +170,7 @@ exports.update = (req, res) => {
 
 }
 
-exports.hideOrUnhide = (req, res) => {
+exports.hideOrUnhide = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -213,7 +213,7 @@ exports.hideOrUnhide = (req, res) => {
         });
 }
 
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -250,7 +250,7 @@ exports.delete = (req, res) => {
         });
 }
 
-exports.attemptSurvey = (req, res) => {
+exports.attemptSurvey = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -287,7 +287,7 @@ exports.attemptSurvey = (req, res) => {
     })
 }
 
-exports.replySurvey = (req, res) => {
+exports.replySurvey = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -345,7 +345,7 @@ exports.replySurvey = (req, res) => {
         });
 }
 
-exports.viewResponse = (req, res) => {
+exports.viewResponse = async(req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const discussion = new mongoose.Schema({
+const discussionSchema = new mongoose.Schema({
     content: {
         type: String,
         required: [true, 'Content of discussion is required!']
@@ -11,4 +11,4 @@ const discussion = new mongoose.Schema({
     }
 }, { timestamps: true })
 
-module.exports = discussion
+module.exports = discussionSchema

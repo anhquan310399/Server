@@ -365,32 +365,30 @@ exports.update = async(req, res) => {
         });
 };
 
-// exports.delete = async(req, res) => {
-//     await db.findByIdAndUpdate(
-//             req.params.idSubject, {
-//                 isDeleted: true
-//             }
-//         )
-//         .then((data) => {
-//             if (!data) {
-//                 return res.status(404).send({
-//                     success: false,
-//                     message: "Not found Subject",
-//                 });
-//             }
-//             res.send({
-//                 success: true,
-//                 message: "Delete Subject Successfully"
-//             });
-//         })
-//         .catch((err) => {
-//             console.log("Delete subject" + err.message);
-//             return res.status(500).send({
-//                 success: false,
-//                 message: "Delete Failure"
-//             });
-//         });
-// };
+exports.delete = async(req, res) => {
+    await db.findByIdAndDelete(
+            req.params.idSubject
+        )
+        .then((data) => {
+            if (!data) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found Subject",
+                });
+            }
+            res.send({
+                success: true,
+                message: `Delete Subject ${data.name} Successfully`
+            });
+        })
+        .catch((err) => {
+            console.log("Delete subject" + err.message);
+            return res.status(500).send({
+                success: false,
+                message: err.message
+            });
+        });
+};
 
 exports.hideOrUnhide = (req, res) => {
     db.findById(req.params.idSubject)
@@ -406,9 +404,9 @@ exports.hideOrUnhide = (req, res) => {
                 .then(data => {
                     let message;
                     if (data.isDeleted) {
-                        message = `Hide subject: ${data.name} successfully!`;
+                        message = `Lock subject: ${data.name} successfully!`;
                     } else {
-                        message = `Unhide subject : ${data.name} successfully!`;
+                        message = `Unlock subject : ${data.name} successfully!`;
                     }
                     res.send({
                         success: true,

@@ -2,7 +2,7 @@
 // const fs = require('fs');
 // const path = require('path');
 const isToday = require('../common/isToday');
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     let subject = req.subject;
 
     const model = {
@@ -54,7 +54,7 @@ exports.findAll = async(req, res) => {
     });
 };
 
-exports.find = (req, res) => {
+exports.find = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
         return (value._id == req.params.idTimeline)
@@ -78,7 +78,7 @@ exports.find = (req, res) => {
     });
 };
 
-exports.update = (req, res) => {
+exports.update = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
         return (value._id == req.params.idTimeline)
@@ -124,7 +124,7 @@ exports.update = (req, res) => {
         });
 };
 
-exports.hideOrUnHide = (req, res) => {
+exports.hideOrUnHide = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.params.idTimeline);
     if (!timeline) {
@@ -225,7 +225,7 @@ exports.hideOrUnHide = (req, res) => {
 //     })
 // }
 
-exports.uploadFile = (req, res) => {
+exports.uploadFile = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
         return (value._id == req.body.idTimeline)
@@ -263,30 +263,30 @@ exports.uploadFile = (req, res) => {
 
 }
 
-exports.downloadFile = (req, res) => {
+// exports.downloadFile = async(req, res) => {
 
-    let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
-        return (value._id == req.params.idTimeline)
-    });
-    if (!timeline) {
-        return res.status(404).send({
-            success: false,
-            message: "Not found timeline"
-        })
-    }
+//     let subject = req.subject;
+//     const timeline = subject.timelines.find(function(value) {
+//         return (value._id == req.params.idTimeline)
+//     });
+//     if (!timeline) {
+//         return res.status(404).send({
+//             success: false,
+//             message: "Not found timeline"
+//         })
+//     }
 
-    const file = timeline.files.find(value => value._id == req.params.idFile);
-    if (!file) {
-        return res.status(404).send({
-            success: false,
-            message: "Not found file"
-        })
-    }
-    res.download(file.path);
-}
+//     const file = timeline.files.find(value => value._id == req.params.idFile);
+//     if (!file) {
+//         return res.status(404).send({
+//             success: false,
+//             message: "Not found file"
+//         })
+//     }
+//     res.download(file.path);
+// }
 
-exports.getFile = (req, res) => {
+exports.getFile = async(req, res) => {
 
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
@@ -312,7 +312,7 @@ exports.getFile = (req, res) => {
     });
 }
 
-exports.removeFile = (req, res) => {
+exports.removeFile = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(function(value) {
         return (value._id == req.params.idTimeline)

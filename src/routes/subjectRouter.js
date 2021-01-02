@@ -18,7 +18,7 @@ router.get('/:idSubject/students', authInSubject, subjectController.getListStude
 router.post('/:idSubject/add-student', authLecture, subjectController.addStudent);
 router.delete('/:idSubject/remove-student/', authLecture, subjectController.removeStudent);
 
-// router.delete('/:idSubject/', subjectController.delete);
+router.delete('/:idSubject/', authAdmin, subjectController.delete);
 // router.post('/:idSubject/add-list-student', subjectController.addAllStudents);
 
 router.get('/:idSubject/index', authLecture, subjectController.getOrderOfTimeLine);

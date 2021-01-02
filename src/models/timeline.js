@@ -9,15 +9,15 @@ const assignmentSchema = require("./assignment");
 const examSchema = require("./exam");
 
 const fileSchema = require('./file');
-const survey = require("./survey");
+const surveySchema = require("./survey");
 
 const timeline = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Vui lòng nhập tiều đề']
+        required: [true, 'Title of timeline is required']
     },
     description: String,
-    surveys: [survey],
+    surveys: [surveySchema],
     forums: [forumSchema],
     exams: [examSchema],
     information: [informationSchema],

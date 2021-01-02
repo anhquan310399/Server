@@ -1,18 +1,18 @@
 const mongoose = require("mongoose");
 const timelineSchema = require("./timeline");
-const questionModel = require('./question');
+const questionSchema = require('./question');
 const UserDb = require('./user');
 var ValidatorError = mongoose.Error.ValidatorError;
 
-const chapter = new mongoose.Schema({
+const chapterSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of chapter is required']
     },
-    questions: [questionModel]
+    questions: [questionSchema]
 });
 
-const ratio = new mongoose.Schema({
+const ratioSchema = new mongoose.Schema({
     idField: {
         type: String,
         required: true
@@ -45,14 +45,18 @@ const Schema = mongoose.Schema({
         }
 
     },
-    quizBank: [chapter],
+    quizBank: [chapterSchema],
     timelines: [timelineSchema],
     studentIds: {
         type: [String],
         validate: async function(list) {
             await Promise.all(list.map(async(idStudent) => {
                 console.log(idStudent);
-                let student = await UserDb.findOne({ code: idStudent }).
+                let student = await UserDb.findOne({
+                    isDeleted: false,
+                    idPrivilege: 'student',
+                    code: idStudent
+                }).
                 then(data => data);
                 if (!student) {
                     throw new ValidatorError({
@@ -70,7 +74,7 @@ const Schema = mongoose.Schema({
         default: false
     },
     transcript: {
-        type: [ratio],
+        type: [ratioSchema],
         default: []
     }
 }, {

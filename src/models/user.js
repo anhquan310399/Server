@@ -41,9 +41,9 @@ const UserSchema = mongoose.Schema({
         validate: function(value) {
             if (this.idPrivilege !== 'admin') {
                 if (!validator.isEmail(value)) {
-                    throw new ValidatorError({ message: 'Invalid Email address', type: 'validate', path: 'emailAddress' });
+                    throw new ValidatorError({ message: 'Invalid Email address' });
                 } else if (!value.split('@').pop().includes('hcmute.edu.vn')) {
-                    throw new ValidatorError({ message: 'Email address not in HCMUTE', type: 'validate', path: 'emailAddress' });
+                    throw new ValidatorError({ message: 'Email address not in HCMUTE' });
                 }
             }
         }
@@ -65,13 +65,6 @@ const UserSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }
-    // ,
-    // tokens: [{
-    //     token: {
-    //         type: String,
-    //         required: true
-    //     }
-    // }]
 }, {
     timestamps: true,
 });
@@ -115,7 +108,7 @@ UserSchema.methods.generateAuthToken = function() {
         firstName: user.firstName,
         surName: user.surName,
     }, superSecret, {
-        expiresIn: '24h'
+        expiresIn: '3m'
     });
     // user.tokens = user.tokens.concat({ token })
     // await user.save()

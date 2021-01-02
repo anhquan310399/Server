@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const questionOption = new mongoose.Schema({
     answer: {
         type: String,
-        required: [true, 'Vui lòng nhập nội dung đáp án']
+        required: [true, 'Content of answer is required']
     },
     isCorrect: {
         type: Boolean,
@@ -11,22 +11,22 @@ const questionOption = new mongoose.Schema({
     }
 })
 
-const question = new mongoose.Schema({
+const questionSchema = new mongoose.Schema({
     question: {
         type: String,
-        required: [true, 'Vui lòng nhập nội dung câu hỏi']
+        required: [true, 'Content of question is required']
     },
     answers: {
         type: [questionOption],
-        required: [true, 'Vui lòng nhập đáp án']
+        required: [true, 'Answers of question is required']
     },
     typeQuestion: {
         type: String,
-        required: [true, 'Vui lòng chọn loại câu hỏi'],
+        required: [true, 'Type of question is required'],
         enum: ['choice', 'multiple']
     },
     explain: String
 })
 
 
-module.exports = question
+module.exports = questionSchema
