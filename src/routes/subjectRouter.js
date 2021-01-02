@@ -8,10 +8,10 @@ const subjectController = require("../controllers/subjectController")
 router.get('/', authLogin, subjectController.findAll);
 router.get('/deadline', authLogin, subjectController.getDeadline);
 router.get('/:idSubject', authInSubject, subjectController.find);
-router.get('/:idSubject/detail', subjectController.findByAdmin);
-router.get('/:idSubject/export', subjectController.exportSubject);
-router.post('/', subjectController.create);
-router.put('/:idSubject/', subjectController.update);
+router.get('/:idSubject/detail', authAdmin, subjectController.findByAdmin);
+router.get('/:idSubject/export', authAdmin, subjectController.exportSubject);
+router.post('/', authAdmin, subjectController.create);
+router.put('/:idSubject/', authAdmin, subjectController.update);
 router.put('/:idSubject/hide', authAdmin, subjectController.hideOrUnhide);
 
 router.get('/:idSubject/students', authInSubject, subjectController.getListStudent);

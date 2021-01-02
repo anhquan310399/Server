@@ -22,7 +22,7 @@ var examRouter = require('./src/routes/examRouter');
 var topicRouter = require('./src/routes/topicRouter');
 var quizBankRouter = require('./src/routes/quizBankRouter');
 var surveyRouter = require('./src/routes/surveyRouter');
-
+var surveyBankRouter = require('./src/routes/surveyBankRouter');
 /** Config database */
 const dbConfig = process.env.MONGODB_URL;
 const mongoose = require("mongoose");
@@ -65,6 +65,7 @@ app.use('/exam', examRouter);
 app.use('/topic', topicRouter);
 app.use('/quiz', quizBankRouter);
 app.use('/survey', surveyRouter);
+app.use('/questionnaire', surveyBankRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));

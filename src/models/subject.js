@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const timelineSchema = require("./timeline");
 const questionSchema = require('./question');
+const surveyQuestionnaire = require('./surveyQuestionnaire');
 const UserDb = require('./user');
 var ValidatorError = mongoose.Error.ValidatorError;
 
@@ -46,6 +47,7 @@ const Schema = mongoose.Schema({
 
     },
     quizBank: [chapterSchema],
+    surveyBank: [surveyQuestionnaire],
     timelines: [timelineSchema],
     studentIds: {
         type: [String],

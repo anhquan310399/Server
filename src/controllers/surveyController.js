@@ -8,10 +8,18 @@ exports.create = async(req, res) => {
             message: "Not found timeline",
         });
     }
+    let code = req.body.data.code;
+    var questionnaire = subject.surveyBank.find(value => value._id == code);
+    if (!questionnaire) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found questionnaire",
+        });
+    }
     const model = {
         name: req.body.data.name,
         description: req.body.data.description,
-        questionnaire: req.body.data.questionnaire,
+        code: code,
         expireTime: new Date(req.body.data.expireTime)
     };
 
@@ -66,7 +74,7 @@ exports.find = async(req, res) => {
     }
     let today = Date.now();
     let isRemain = today > survey.expireTime ? false : true;
-    let timeRemain = survey.expireTime.getTime() - today;
+    let timeRemain = today - survey.expireTime.getTime();
     if (req.user.idPrivilege === 'student') {
         let reply = survey.responses.find(value => value.idStudent == req.user._id);
         res.send({
@@ -143,7 +151,16 @@ exports.update = async(req, res) => {
     if (req.body.data.name) { survey.name = req.body.data.name; }
     if (req.body.data.description) { survey.description = req.body.data.description; }
     if (req.body.data.expireTime) { survey.expireTime = req.body.data.expireTime; }
-    if (req.body.data.questionnaire) { survey.questionnaire = req.body.data.questionnaire; }
+    if (req.body.data.code) {
+        var questionnaire = subject.surveyBank.find(value => value._id == req.body.data.code);
+        if (!questionnaire) {
+            return res.status(404).send({
+                success: false,
+                message: "Not found questionnaire",
+            });
+        }
+        survey.code = req.body.data.code;
+    }
 
     subject.save()
         .then(() => {
@@ -276,6 +293,7 @@ exports.attemptSurvey = async(req, res) => {
             message: `You have already reply survey ${survey.name}`
         });
     }
+    const questionnaire = subject.surveyBank.find(value => value._id == survey.code);
 
     res.send({
         success: true,
@@ -283,7 +301,7 @@ exports.attemptSurvey = async(req, res) => {
             _id: survey._id,
             name: survey.name
         },
-        questionnaire: survey.questionnaire
+        questionnaire: questionnaire
     })
 }
 
@@ -371,6 +389,7 @@ exports.viewResponse = async(req, res) => {
             message: `You have not already reply survey ${survey.name}`
         });
     }
+    const questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
 
     res.send({
         success: true,
@@ -378,7 +397,7 @@ exports.viewResponse = async(req, res) => {
             _id: survey._id,
             name: survey.name
         },
-        questionnaire: survey.questionnaire,
+        questionnaire: questionnaire,
         response: reply
     })
 }
@@ -402,7 +421,10 @@ exports.viewAllResponse = async(req, res) => {
         });
     }
 
-    let result = await Promise.all(survey.questionnaire.map(async(question) => {
+    const questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
+
+
+    let result = await Promise.all(questionnaire.map(async(question) => {
         let answer;
         if (question.typeQuestion === 'choice') {
             answer = await Promise.all(question.answer.map(async(answer) => {
@@ -466,6 +488,8 @@ exports.viewAllResponse = async(req, res) => {
             answer: answer
         };
     }))
+
+
     res.send({
         success: true,
         survey: {
