@@ -108,7 +108,7 @@ UserSchema.methods.generateAuthToken = function() {
         firstName: user.firstName,
         surName: user.surName,
     }, superSecret, {
-        expiresIn: '3m'
+        expiresIn: '24h'
     });
     // user.tokens = user.tokens.concat({ token })
     // await user.save()
