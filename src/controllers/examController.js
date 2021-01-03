@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 const User = require('../models/user');
+const isToday = require('../common/isToday');
 
 exports.create = async(req, res) => {
     let subject = req.subject;
@@ -405,7 +406,15 @@ exports.hideOrUnhide = async(req, res) => {
             }
             res.send({
                 success: true,
-                message
+                message,
+                exam: {
+                    _id: exam._id,
+                    name: exam.name,
+                    description: exam.description,
+                    time: exam.createdAt,
+                    isNew: isToday(exam.createdAt),
+                    isDeleted: exam.isDeleted
+                }
             });
         })
         .catch((err) => {

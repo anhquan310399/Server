@@ -10,6 +10,7 @@ exports.create = async(req, res) => {
         studentIds: req.body.studentIds,
         timelines: req.body.timelines,
         quizBank: req.body.quizBank,
+        surveyBank: req.body.surveyBank
     });
 
     await data.save()
@@ -339,6 +340,9 @@ exports.update = async(req, res) => {
     subject.name = req.body.name || subject.name;
     subject.idLecture = req.body.idLecture || subject.idLecture;
     subject.studentIds = req.body.studentIds || subject.studentIds;
+    subject.timelines = req.body.timelines || subject.timelines;
+    subject.surveyBank = req.body.surveyBank || subject.surveyBank;
+    subject.quizBank = req.body.quizBank || subject.quizBank;
 
     subject.save()
         .then(() => {
@@ -920,28 +924,10 @@ exports.exportSubject = async(req, res) => {
             let timelines = subject.timelines;
             timelines = await Promise.all(timelines.map(async(timeline) => {
                 let surveys = await Promise.all(timeline.surveys.map(async(survey) => {
-
-                    let questionnaire = survey.questionnaire.map((question) => {
-                        if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
-                            let answers = question.answer.map(answer => {
-                                return answer.content;
-                            });
-                            return {
-                                question: question.question,
-                                answer: answers,
-                                typeQuestion: question.typeQuestion
-                            }
-                        } else {
-                            return {
-                                question: question.question,
-                                typeQuestion: question.typeQuestion
-                            }
-                        }
-                    })
                     return {
                         name: survey.name,
                         description: survey.description,
-                        questionnaire: questionnaire,
+                        code: survey.code,
                         expireTime: survey.expireTime
                     }
                 }));
@@ -987,11 +973,39 @@ exports.exportSubject = async(req, res) => {
                 }
             }));
 
+
+
+            let surveyBank = subject.surveyBank.map((questionnaire) => {
+                let questions = questionnaire.questions.map(question => {
+                    if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
+                        let answers = question.answer.map(answer => {
+                            return answer.content;
+                        });
+                        return {
+                            question: question.question,
+                            answer: answers,
+                            typeQuestion: question.typeQuestion
+                        }
+                    } else {
+                        return {
+                            question: question.question,
+                            typeQuestion: question.typeQuestion
+                        }
+                    }
+                });
+                return {
+                    _id: questionnaire._id,
+                    name: questionnaire.name,
+                    questions: questions
+                }
+            })
+
             subject = {
                 name: subject.name,
                 idLecture: subject.idLecture,
                 timelines: timelines,
-                quizBank: subject.quizBank
+                quizBank: subject.quizBank,
+                surveyBank: surveyBank
             }
 
             res.attachment(`${subject.name}.json`)

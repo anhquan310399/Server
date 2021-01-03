@@ -1,3 +1,5 @@
+const isToday = require('../common/isToday');
+
 exports.create = async(req, res) => {
     let subject = req.subject;
 
@@ -218,7 +220,15 @@ exports.hideOrUnhide = async(req, res) => {
             }
             res.send({
                 success: true,
-                message: message
+                message: message,
+                survey: {
+                    _id: survey._id,
+                    name: survey.name,
+                    description: survey.description,
+                    time: survey.createdAt,
+                    isNew: isToday(survey.createdAt),
+                    isDeleted: survey.isDeleted
+                }
             })
 
         }).catch((err) => {

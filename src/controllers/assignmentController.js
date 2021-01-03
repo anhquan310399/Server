@@ -2,6 +2,8 @@ const User = require('../models/user');
 // const multer = require('multer');
 // const fs = require('fs');
 const moment = require('moment');
+const isToday = require('../common/isToday');
+
 exports.create = async(req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
@@ -321,7 +323,15 @@ exports.hideOrUnhide = async(req, res) => {
             }
             res.send({
                 success: true,
-                message
+                message,
+                assignment: {
+                    _id: assignment._id,
+                    name: assignment.name,
+                    description: assignment.description,
+                    time: assignment.createdAt,
+                    isNew: isToday(assignment.createdAt),
+                    isDeleted: assignment.isDeleted
+                }
             });
         })
         .catch((err) => {

@@ -136,17 +136,82 @@ exports.hideOrUnHide = async(req, res) => {
     timeline.isDeleted = !timeline.isDeleted;
     subject.save()
         .then(() => {
+            let message = "";
             if (timeline.isDeleted) {
-                res.send({
-                    success: true,
-                    message: `Hide timeline ${timeline.name} successfully!`
-                });
+                message = `Hide timeline ${timeline.name} successfully!`;
             } else {
-                res.send({
-                    success: true,
-                    message: `Unhide timeline ${timeline.name} successfully!`
-                });
+                message = `Unhide timeline ${timeline.name} successfully!`;
             }
+
+            let forums = timeline.forums.map((forum) => {
+                return {
+                    _id: forum.id,
+                    name: forum.name,
+                    description: forum.description,
+                    time: forum.createdAt,
+                    isNew: isToday(forum.updatedAt),
+                    isDeleted: forum.isDeleted
+                }
+            });
+            let exams = timeline.exams.map((exam) => {
+                return {
+                    _id: exam._id,
+                    name: exam.name,
+                    description: exam.description,
+                    time: exam.createdAt,
+                    isNew: isToday(exam.createdAt),
+                    isDeleted: exam.isDeleted
+                }
+            });
+            let information = timeline.information.map((info) => {
+                return {
+                    _id: info._id,
+                    name: info.name,
+                    content: info.content,
+                    time: info.createdAt,
+                    isNew: isToday(info.updatedAt)
+                }
+            });
+            let assignments = timeline.assignments.map((assign) => {
+                return {
+                    _id: assign._id,
+                    name: assign.name,
+                    description: assign.description,
+                    time: assign.createdAt,
+                    isNew: isToday(assign.createdAt),
+                    isDeleted: assign.isDeleted
+                }
+            });
+            let surveys = timeline.surveys.map((survey) => {
+                return {
+                    _id: survey._id,
+                    name: survey.name,
+                    description: survey.description,
+                    time: survey.createdAt,
+                    isNew: isToday(survey.createdAt),
+                    isDeleted: survey.isDeleted
+                }
+            });
+
+            res.send({
+                success: true,
+                message,
+                timeline: {
+                    _id: timeline._id,
+                    name: timeline.name,
+                    description: timeline.description,
+                    surveys: surveys,
+                    forums: forums,
+                    exams: exams,
+                    information: information,
+                    assignments: assignments,
+                    files: timeline.files,
+                    index: timeline.index,
+                    isDeleted: timeline.isDeleted
+                }
+            });
+
+
         })
         .catch((err) => {
             res.status(500).send({

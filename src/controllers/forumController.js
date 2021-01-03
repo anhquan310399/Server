@@ -1,4 +1,6 @@
 const User = require('../models/user');
+const isToday = require('../common/isToday');
+
 exports.create = (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
@@ -192,7 +194,15 @@ exports.hideOrUnhide = async(req, res) => {
             }
             res.send({
                 success: true,
-                message: message
+                message: message,
+                forum: {
+                    _id: forum.id,
+                    name: forum.name,
+                    description: forum.description,
+                    time: forum.createdAt,
+                    isNew: isToday(forum.updatedAt),
+                    isDeleted: forum.isDeleted
+                }
             });
         })
         .catch((err) => {

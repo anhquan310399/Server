@@ -110,8 +110,6 @@ UserSchema.methods.generateAuthToken = function() {
     }, superSecret, {
         expiresIn: '24h'
     });
-    // user.tokens = user.tokens.concat({ token })
-    // await user.save()
     return token
 }
 

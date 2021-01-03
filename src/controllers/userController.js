@@ -172,7 +172,7 @@ exports.updatePassword = (req, res) => {
     let user = req.user;
     let isAuth = user.comparePassword(req.body.password);
     if (!isAuth) {
-        return res.status(401).send({
+        return res.status(400).send({
             success: false,
             message: 'Password is not valid',
         });
