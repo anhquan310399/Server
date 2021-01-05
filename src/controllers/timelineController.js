@@ -2,6 +2,8 @@
 // const fs = require('fs');
 // const path = require('path');
 const isToday = require('../common/isToday');
+const _ = require('lodash');
+
 exports.create = async(req, res) => {
     let subject = req.subject;
 
@@ -40,14 +42,15 @@ exports.create = async(req, res) => {
 exports.findAll = async(req, res) => {
     let subject = req.subject;
 
-    let timelines = await Promise.all(subject.timelines.map(async(value) => {
+    let timelines = _.sortBy(await Promise.all(subject.timelines.map(async(value) => {
         return {
             _id: value._id,
             name: value.name,
             description: value.description,
-            isDeleted: value.isDeleted
+            isDeleted: value.isDeleted,
+            index: value.index
         };
-    }))
+    })), ['index']);
     res.send({
         success: true,
         timelines
