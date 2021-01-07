@@ -59,7 +59,11 @@ const setting = new mongoose.Schema({
             return this.isOverDue;
         }, "Over due date is required"],
         validate: [function(value) {
-            return value > this.expireTime
+            if (this.isOverDue) {
+                return value > this.expireTime
+            } else {
+                return true
+            }
         }, "Over due date must be more than expire time"]
     },
     fileSize: {

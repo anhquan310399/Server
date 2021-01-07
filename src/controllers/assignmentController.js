@@ -31,7 +31,7 @@ exports.create = async(req, res) => {
             startTime: data.setting.startTime,
             expireTime: data.setting.expireTime,
             isOverDue: data.setting.isOverDue,
-            overDueDate: data.setting.overDueDate,
+            overDueDate: data.setting.isOverDue ? data.setting.overDueDate : null,
             // fileCount: data.setting.fileCount,
             fileSize: data.setting.fileSize,
         },
