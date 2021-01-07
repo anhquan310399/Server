@@ -114,6 +114,8 @@ exports.find = async(req, res) => {
         console.log(submissions);
         let isContinue = false;
         let time = 1;
+
+        let key = 0;
         submissions = await Promise.all(submissions.map(async(submission, index) => {
             if (index = submissions.length) {
                 if (today >= exam.startTime && today < exam.expireTime) {
@@ -128,6 +130,7 @@ exports.find = async(req, res) => {
             }
 
             return {
+                key: key++,
                 _id: submission._id,
                 student: {
                     _id: req.user._id,
@@ -201,7 +204,7 @@ exports.find = async(req, res) => {
         }, []);
 
 
-
+        let key = 0;
         let data = await Promise.all(subject.studentIds.map(
             async(value) => {
 
@@ -210,6 +213,7 @@ exports.find = async(req, res) => {
                 let submission = await submissions.find(value => value.idStudent == student._id);
                 if (submission) {
                     return {
+                        key: key++,
                         _id: submission._id,
                         student: student,
                         grade: submission.grade,
@@ -217,6 +221,7 @@ exports.find = async(req, res) => {
                     }
                 } else if (isRemain) {
                     return {
+                        key: key++,
                         _id: null,
                         student: student,
                         grade: null,
@@ -224,6 +229,7 @@ exports.find = async(req, res) => {
                     }
                 } else {
                     return {
+                        key: key++,
                         _id: null,
                         student: student,
                         grade: 0,
