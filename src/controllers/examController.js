@@ -105,6 +105,7 @@ exports.find = async(req, res) => {
 
     const today = Date.now();
     const isRemain = (today <= exam.expireTime);
+    const isOpen = (today >= exam.startTime && today <= exam.expireTime)
     const timingRemain = moment(exam.expireTime).from(moment(today));
     const setting = exam.setting;
 
@@ -157,6 +158,7 @@ exports.find = async(req, res) => {
                 expireTime: exam.expireTime,
                 setting: exam.setting,
                 isRemain: isRemain,
+                isOpen: isOpen,
                 timingRemain: timingRemain,
                 isAttempt: isAttempt,
                 attemptAvailable: attemptAvailable,
@@ -238,6 +240,7 @@ exports.find = async(req, res) => {
                 isDeleted: exam.isDeleted,
                 startTime: exam.startTime,
                 expireTime: exam.expireTime,
+                isOpen: isOpen,
                 setting: exam.setting,
                 isRemain: isRemain,
                 timingRemain: timingRemain,
