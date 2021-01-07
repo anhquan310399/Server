@@ -113,6 +113,7 @@ exports.find = async(req, res) => {
         let submissions = exam.submissions.filter(value => value.idStudent == req.user._id);
         console.log(submissions);
         let isContinue = false;
+        let time = 1;
         submissions = await Promise.all(submissions.map(async(submission, index) => {
             if (index = submissions.length) {
                 if (today >= exam.startTime && today < exam.expireTime) {
@@ -137,7 +138,8 @@ exports.find = async(req, res) => {
                 },
                 grade: submission.isSubmitted ? submission.grade : null,
                 isSubmitted: submission.isSubmitted,
-                isContinue: isContinue
+                isContinue: isContinue,
+                time: time++,
             }
         }));
         let isAttempt = false;
