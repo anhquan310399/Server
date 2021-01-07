@@ -635,67 +635,69 @@ exports.getDeadline = async(req, res) => {
             const today = Date.now();
             listSubject.forEach(subject => {
                 subject.timelines.forEach((timeline) => {
-                    let exams = timeline.exams.reduce((preExams, currentExam) => {
-                        if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
-                            return preExams;
-                        }
-                        var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
-                        let exam = {
-                            subject: {
-                                _id: subject._id,
-                                name: subject.name
-                            },
-                            idTimeline: timeline._id,
-                            _id: currentExam._id,
-                            name: currentExam.name,
-                            expireTime: currentExam.expireTime,
-                            timeRemain: (new Date(currentExam.expireTime - today)).getTime(),
-                            isSubmit: submission ? true : false,
-                            type: 'exam'
-                        }
-                        return (preExams.concat(exam));
-                    }, []);
-                    let assignments = timeline.assignments.reduce((preAssignments, currentAssignment) => {
-                        if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
-                            return preAssignments;
-                        }
-                        let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
-                        return {
-                            subject: {
-                                _id: subject._id,
-                                name: subject.name
-                            },
-                            idTimeline: timeline._id,
-                            _id: currentAssignment._id,
-                            name: currentAssignment.name,
-                            expireTime: currentAssignment.setting.expireTime,
-                            timeRemain: (new Date(currentAssignment.setting.expireTime - today)).getTime(),
-                            isSubmit: submission ? true : false,
-                            type: 'assignment'
-                        }
-                    }, []);
+                    if (!timeline.isDeleted) {
+                        let exams = timeline.exams.reduce((preExams, currentExam) => {
+                            if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
+                                return preExams;
+                            }
+                            var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
+                            let exam = {
+                                subject: {
+                                    _id: subject._id,
+                                    name: subject.name
+                                },
+                                idTimeline: timeline._id,
+                                _id: currentExam._id,
+                                name: currentExam.name,
+                                expireTime: currentExam.expireTime,
+                                timeRemain: (new Date(currentExam.expireTime - today)).getTime(),
+                                isSubmit: submission ? true : false,
+                                type: 'exam'
+                            }
+                            return (preExams.concat(exam));
+                        }, []);
+                        let assignments = timeline.assignments.reduce((preAssignments, currentAssignment) => {
+                            if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
+                                return preAssignments;
+                            }
+                            let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
+                            return {
+                                subject: {
+                                    _id: subject._id,
+                                    name: subject.name
+                                },
+                                idTimeline: timeline._id,
+                                _id: currentAssignment._id,
+                                name: currentAssignment.name,
+                                expireTime: currentAssignment.setting.expireTime,
+                                timeRemain: (new Date(currentAssignment.setting.expireTime - today)).getTime(),
+                                isSubmit: submission ? true : false,
+                                type: 'assignment'
+                            }
+                        }, []);
 
-                    let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
-                        if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
-                            return preSurveys;
-                        }
-                        let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
-                        return {
-                            subject: {
-                                _id: subject._id,
-                                name: subject.name
-                            },
-                            idTimeline: timeline._id,
-                            _id: currentSurvey._id,
-                            name: currentSurvey.name,
-                            expireTime: currentSurvey.expireTime,
-                            timeRemain: (new Date(currentSurvey.expireTime - today)).getTime(),
-                            isSubmit: reply ? true : false,
-                            type: 'survey'
-                        }
-                    }, []);
+                        let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
+                            if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
+                                return preSurveys;
+                            }
+                            let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
+                            return {
+                                subject: {
+                                    _id: subject._id,
+                                    name: subject.name
+                                },
+                                idTimeline: timeline._id,
+                                _id: currentSurvey._id,
+                                name: currentSurvey.name,
+                                expireTime: currentSurvey.expireTime,
+                                timeRemain: (new Date(currentSurvey.expireTime - today)).getTime(),
+                                isSubmit: reply ? true : false,
+                                type: 'survey'
+                            }
+                        }, []);
 
-                    deadline = deadline.concat(exams, assignments, surveys);
+                        deadline = deadline.concat(exams, assignments, surveys);
+                    }
                 });
             });
 
@@ -1045,55 +1047,57 @@ exports.getDeadlineBySubject = async(req, res) => {
     const today = Date.now();
     let subject = req.subject;
     subject.timelines.forEach((timeline) => {
-        let exams = timeline.exams.reduce((preExams, currentExam) => {
-            if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
-                return preExams;
-            }
-            var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
-            let exam = {
-                idTimeline: timeline._id,
-                _id: currentExam._id,
-                name: currentExam.name,
-                expireTime: currentExam.expireTime,
-                timeRemain: (new Date(currentExam.expireTime - today)).getTime(),
-                isSubmit: submission ? true : false,
-                type: 'exam'
-            }
-            return (preExams.concat(exam));
-        }, []);
-        let assignments = timeline.assignments.reduce((preAssignments, currentAssignment) => {
-            if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
-                return preAssignments;
-            }
-            let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
-            return {
-                idTimeline: timeline._id,
-                _id: currentAssignment._id,
-                name: currentAssignment.name,
-                expireTime: currentAssignment.setting.expireTime,
-                timeRemain: (new Date(currentAssignment.setting.expireTime - today)).getTime(),
-                isSubmit: submission ? true : false,
-                type: 'assignment'
-            }
-        }, []);
+        if (!timeline.isDeleted) {
+            let exams = timeline.exams.reduce((preExams, currentExam) => {
+                if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
+                    return preExams;
+                }
+                var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
+                let exam = {
+                    idTimeline: timeline._id,
+                    _id: currentExam._id,
+                    name: currentExam.name,
+                    expireTime: currentExam.expireTime,
+                    timeRemain: (new Date(currentExam.expireTime - today)).getTime(),
+                    isSubmit: submission ? true : false,
+                    type: 'exam'
+                }
+                return (preExams.concat(exam));
+            }, []);
+            let assignments = timeline.assignments.reduce((preAssignments, currentAssignment) => {
+                if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
+                    return preAssignments;
+                }
+                let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
+                return {
+                    idTimeline: timeline._id,
+                    _id: currentAssignment._id,
+                    name: currentAssignment.name,
+                    expireTime: currentAssignment.setting.expireTime,
+                    timeRemain: (new Date(currentAssignment.setting.expireTime - today)).getTime(),
+                    isSubmit: submission ? true : false,
+                    type: 'assignment'
+                }
+            }, []);
 
-        let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
-            if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
-                return preSurveys;
-            }
-            let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
-            return {
-                idTimeline: timeline._id,
-                _id: currentSurvey._id,
-                name: currentSurvey.name,
-                expireTime: currentSurvey.expireTime,
-                timeRemain: (new Date(currentSurvey.expireTime - today)).getTime(),
-                isSubmit: reply ? true : false,
-                type: 'survey'
-            }
-        }, []);
+            let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
+                if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
+                    return preSurveys;
+                }
+                let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
+                return {
+                    idTimeline: timeline._id,
+                    _id: currentSurvey._id,
+                    name: currentSurvey.name,
+                    expireTime: currentSurvey.expireTime,
+                    timeRemain: (new Date(currentSurvey.expireTime - today)).getTime(),
+                    isSubmit: reply ? true : false,
+                    type: 'survey'
+                }
+            }, []);
 
-        deadline = deadline.concat(exams, assignments, surveys);
+            deadline = deadline.concat(exams, assignments, surveys);
+        }
     });
 
     res.send({
