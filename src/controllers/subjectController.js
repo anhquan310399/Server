@@ -1052,7 +1052,7 @@ exports.getDeadlineBySubject = async(req, res) => {
                 if (currentExam.expireTime.getTime() < today || currentExam.isDeleted) {
                     return preExams;
                 }
-                var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
+                var submission = currentExam.submissions.find(value => value.idStudent == req.idStudent)
                 let exam = {
                     idTimeline: timeline._id,
                     _id: currentExam._id,
@@ -1068,7 +1068,7 @@ exports.getDeadlineBySubject = async(req, res) => {
                 if (currentAssignment.setting.expireTime.getTime() < today || currentAssignment.isDeleted) {
                     return preAssignments;
                 }
-                let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
+                let submission = currentAssignment.submissions.find(value => value.idStudent == req.idStudent);
                 return {
                     idTimeline: timeline._id,
                     _id: currentAssignment._id,
@@ -1084,7 +1084,7 @@ exports.getDeadlineBySubject = async(req, res) => {
                 if (currentSurvey.expireTime.getTime() < today || currentSurvey.isDeleted) {
                     return preSurveys;
                 }
-                let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
+                let reply = currentSurvey.responses.find(value => value.idStudent == req.idStudent);
                 return {
                     idTimeline: timeline._id,
                     _id: currentSurvey._id,
