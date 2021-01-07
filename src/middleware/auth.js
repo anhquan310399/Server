@@ -163,6 +163,7 @@ exports.authInSubject = (req, res, next) => {
 
 exports.authLogin = (req, res, next) => {
     try {
+        console.log(req.header('Authorization'));
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, isDeleted: false })
