@@ -641,7 +641,10 @@ exports.getDeadline = async(req, res) => {
                         }
                         var submission = currentExam.submissions.find(value => value.idStudent == req.idUser)
                         let exam = {
-                            idSubject: subject._id,
+                            subject: {
+                                _id: subject._id,
+                                name: subject.name
+                            },
                             idTimeline: timeline._id,
                             _id: currentExam._id,
                             name: currentExam.name,
@@ -658,7 +661,10 @@ exports.getDeadline = async(req, res) => {
                         }
                         let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
                         return {
-                            idSubject: subject._id,
+                            subject: {
+                                _id: subject._id,
+                                name: subject.name
+                            },
                             idTimeline: timeline._id,
                             _id: currentAssignment._id,
                             name: currentAssignment.name,
@@ -675,7 +681,10 @@ exports.getDeadline = async(req, res) => {
                         }
                         let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
                         return {
-                            idSubject: subject._id,
+                            subject: {
+                                _id: subject._id,
+                                name: subject.name
+                            },
                             idTimeline: timeline._id,
                             _id: currentSurvey._id,
                             name: currentSurvey.name,
