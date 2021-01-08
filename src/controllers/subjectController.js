@@ -2,7 +2,8 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
-exports.create = async(req, res) => {
+const moment = require('moment');
+exports.create = async (req, res) => {
     // Validate request
     const data = new db({
         name: req.body.name,
@@ -14,7 +15,7 @@ exports.create = async(req, res) => {
     });
 
     await data.save()
-        .then(async(data) => {
+        .then(async (data) => {
 
             var teacher = await userDb.findOne({ code: data.idLecture }, 'code firstName surName urlAvatar')
                 .then(value => {
@@ -49,12 +50,12 @@ exports.create = async(req, res) => {
         });
 };
 
-exports.findAll = async(req, res) => {
+exports.findAll = async (req, res) => {
     var idPrivilege = req.idPrivilege;
     if (idPrivilege === 'teacher') {
         db.find({ idLecture: req.code, isDeleted: false })
             .then((data) => {
-                var info = data.map(function(value) {
+                var info = data.map(function (value) {
                     return { _id: value._id, name: value.name };
                 });
                 res.send({
@@ -70,8 +71,8 @@ exports.findAll = async(req, res) => {
             });
     } else if (idPrivilege === 'student') {
         db.find({ 'studentIds': req.code, isDeleted: false })
-            .then(async function(data) {
-                var info = await Promise.all(data.map(async function(value) {
+            .then(async function (data) {
+                var info = await Promise.all(data.map(async function (value) {
                     var teacher = await userDb.findOne({ code: value.idLecture }, 'code firstName surName urlAvatar')
                         .then(value => {
                             return value
@@ -91,8 +92,8 @@ exports.findAll = async(req, res) => {
             });
     } else if (idPrivilege === 'admin') {
         db.find()
-            .then(async(data) => {
-                var info = await Promise.all(data.map(async function(value) {
+            .then(async (data) => {
+                var info = await Promise.all(data.map(async function (value) {
                     var teacher = await userDb.findOne({ code: value.idLecture }, 'code firstName surName urlAvatar')
                         .then(value => {
                             return value
@@ -114,12 +115,13 @@ exports.findAll = async(req, res) => {
 
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let subject = req.subject;
     let timelines = req.subject.timelines;
     console.log(req.user.idPrivilege);
     let teacher = userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
         .then(value => { return value });
+    const today = Date.now();
 
     if (req.user.idPrivilege === 'student') {
         timelines = await timelines.filter((value) => {
@@ -129,7 +131,7 @@ exports.find = async(req, res) => {
                 return false;
             }
         });
-        timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
+        timelines = _.sortBy(await Promise.all(timelines.map(async (value) => {
             let forums = value.forums.reduce((preForums, currentForum) => {
                 if (currentForum.isDeleted) {
                     return preForums;
@@ -171,12 +173,42 @@ exports.find = async(req, res) => {
                     return preAssignments;
                 }
 
+                let submission = currentAssignment.submissions.find(value => value.idStudent == req.user._id);
+                console.log(submission);
+                let isCanSubmit = false;
+                if (today >= currentAssignment.setting.startTime && today < currentAssignment.setting.expireTime) {
+                    isCanSubmit = true;
+
+                } else if (currentAssignment.setting.isOverDue && today >= currentAssignment.setting.startTime) {
+                    if (today <= currentAssignment.setting.overDueDate) {
+                        isCanSubmit = true;
+                    }
+                }
+                let gradeStatus = false;
+                if (submission && submission.feedBack) {
+                    gradeStatus = true;
+                }
+                const timingRemain = moment(currentAssignment.setting.expireTime).from(moment(today));
+
+
                 let assignment = {
                     _id: currentAssignment._id,
                     name: currentAssignment.name,
                     description: currentAssignment.description,
                     time: currentAssignment.createdAt,
-                    isNew: isToday(currentAssignment.createdAt)
+                    isNew: isToday(currentAssignment.createdAt),
+                    data: {
+                        _id: currentAssignment._id,
+                        name: currentAssignment.name,
+                        content: currentAssignment.content,
+                        attachments: currentAssignment.attachments,
+                        submissionStatus: submission ? true : false,
+                        gradeStatus: gradeStatus,
+                        setting: currentAssignment.setting,
+                        isCanSubmit: isCanSubmit,
+                        timingRemain: timingRemain,
+                        submission: submission || null
+                    }
                 }
                 return (preAssignments.concat(assignment));
             }, []);
@@ -209,7 +241,7 @@ exports.find = async(req, res) => {
             };
         })), ['index']);
     } else {
-        timelines = _.sortBy(await Promise.all(timelines.map(async(value) => {
+        timelines = _.sortBy(await Promise.all(timelines.map(async (value) => {
             let forums = value.forums.map((forum) => {
                 return {
                     _id: forum.id,
@@ -288,9 +320,9 @@ exports.find = async(req, res) => {
     });
 };
 
-exports.findByAdmin = async(req, res) => {
+exports.findByAdmin = async (req, res) => {
     db.findById(req.params.idSubject)
-        .then(async(subject) => {
+        .then(async (subject) => {
             if (!subject) {
                 return res.status(404).send({
                     success: false,
@@ -322,7 +354,7 @@ exports.findByAdmin = async(req, res) => {
         });
 }
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     if (!req.body || !(req.body.name && req.body.idLecture)) {
         return res.status(400).send({
             success: false,
@@ -369,10 +401,10 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.delete = async(req, res) => {
+exports.delete = async (req, res) => {
     await db.findByIdAndDelete(
-            req.params.idSubject
-        )
+        req.params.idSubject
+    )
         .then((data) => {
             if (!data) {
                 return res.status(404).send({
@@ -534,7 +566,7 @@ exports.removeStudent = (req, res) => {
         });
 };
 
-exports.adjustOrderOfTimeline = async(req, res) => {
+exports.adjustOrderOfTimeline = async (req, res) => {
     const adjust = req.body;
     const subject = req.subject;
     await adjust.forEach(element => {
@@ -544,8 +576,8 @@ exports.adjustOrderOfTimeline = async(req, res) => {
         timeline.name = element.name;
     });
     await subject.save()
-        .then(async() => {
-            let timelines = _.sortBy(await Promise.all(subject.timelines.map(async(value) => {
+        .then(async () => {
+            let timelines = _.sortBy(await Promise.all(subject.timelines.map(async (value) => {
                 let forums = value.forums.map((forum) => {
                     return {
                         _id: forum.id,
@@ -613,7 +645,7 @@ exports.adjustOrderOfTimeline = async(req, res) => {
         })
 }
 
-exports.getOrderOfTimeLine = async(req, res) => {
+exports.getOrderOfTimeLine = async (req, res) => {
     const data = req.subject;
     let result = {
         _id: data._id,
@@ -628,9 +660,9 @@ exports.getOrderOfTimeLine = async(req, res) => {
     });
 }
 
-exports.getDeadline = async(req, res) => {
+exports.getDeadline = async (req, res) => {
     db.find({ 'studentIds': req.code, isDeleted: false })
-        .then(function(listSubject) {
+        .then(function (listSubject) {
             let deadline = [];
             const today = Date.now();
             listSubject.forEach(subject => {
@@ -714,10 +746,10 @@ exports.getDeadline = async(req, res) => {
         });
 }
 
-exports.getListStudent = async(req, res) => {
+exports.getListStudent = async (req, res) => {
     const subject = req.subject;
 
-    var info = await Promise.all(subject.studentIds.map(async function(value) {
+    var info = await Promise.all(subject.studentIds.map(async function (value) {
         var student = await userDb.findOne({ code: value }, 'code emailAddress firstName surName urlAvatar')
             .then(value => {
                 return value
@@ -730,13 +762,13 @@ exports.getListStudent = async(req, res) => {
     });
 }
 
-exports.getSubjectTranscript = async(req, res) => {
+exports.getSubjectTranscript = async (req, res) => {
     let subject = req.subject;
     let today = Date.now();
     let fields = await getListAssignmentExam(subject, today);
 
     if (req.user.idPrivilege === 'student') {
-        let transcript = await Promise.all(fields.map(async(field) => {
+        let transcript = await Promise.all(fields.map(async (field) => {
             let submission = await field.submissions.find(value => value.idStudent == req.user._id);
             let grade = 0;
             let status;
@@ -776,9 +808,9 @@ exports.getSubjectTranscript = async(req, res) => {
         }))
         return res.send(transcript);
     } else {
-        let transcript = await Promise.all(fields.map(async(field) => {
+        let transcript = await Promise.all(fields.map(async (field) => {
             let submissions = await Promise.all(subject.studentIds.map(
-                async(value) => {
+                async (value) => {
                     let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                         .then(value => { return value });
 
@@ -833,7 +865,7 @@ exports.getSubjectTranscript = async(req, res) => {
     }
 }
 
-exports.getSubjectTranscriptTotal = async(req, res) => {
+exports.getSubjectTranscriptTotal = async (req, res) => {
     let subject = req.subject;
     let today = Date.now();
     let assignmentOrExam = await getListAssignmentExam(subject, today);
@@ -854,7 +886,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
     });
 
     let data = await Promise.all(subject.studentIds.map(
-        async(value) => {
+        async (value) => {
             let student = await userDb.findOne({ code: value }, 'code firstName surName urlAvatar')
                 .then(value => { return value });
             let data = {
@@ -863,7 +895,7 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
                 'c2': student.firstName
             };
             let count = 3;
-            let grade = await Promise.all(assignmentOrExam.map(async(value) => {
+            let grade = await Promise.all(assignmentOrExam.map(async (value) => {
                 let submission = value.submissions.find(value => value.idStudent == student._id);
                 if (submission) {
                     return submission.grade;
@@ -896,10 +928,10 @@ exports.getSubjectTranscriptTotal = async(req, res) => {
 
 }
 
-exports.updateRatioTranscript = async(req, res) => {
+exports.updateRatioTranscript = async (req, res) => {
     let subject = req.subject;
     let adjust = req.body;
-    await adjust.forEach(async(value) => {
+    await adjust.forEach(async (value) => {
         let transcript = await subject.transcript.find(ratio => ratio._id == value._id);
         if (transcript) {
             transcript.ratio = value.ratio;
@@ -922,9 +954,9 @@ exports.updateRatioTranscript = async(req, res) => {
         })
 }
 
-exports.exportSubject = async(req, res) => {
+exports.exportSubject = async (req, res) => {
     await db.findById(req.params.idSubject)
-        .then(async(subject) => {
+        .then(async (subject) => {
             if (!subject) {
                 return res.status(404).send({
                     success: false,
@@ -933,8 +965,8 @@ exports.exportSubject = async(req, res) => {
             }
 
             let timelines = subject.timelines;
-            timelines = await Promise.all(timelines.map(async(timeline) => {
-                let surveys = await Promise.all(timeline.surveys.map(async(survey) => {
+            timelines = await Promise.all(timelines.map(async (timeline) => {
+                let surveys = await Promise.all(timeline.surveys.map(async (survey) => {
                     return {
                         name: survey.name,
                         description: survey.description,
@@ -1022,16 +1054,16 @@ exports.exportSubject = async(req, res) => {
             res.attachment(`${subject.name}.json`)
             res.type('json')
             res.send(subject)
-                // res.send({
-                //     success: true,
-                //     subject: {
-                //         _id: subject._id,
-                //         name: subject.name,
-                //         lecture: teacher,
-                //         studentCount: subject.studentIds.length,
-                //         isDeleted: subject.isDeleted
-                //     }
-                // });
+            // res.send({
+            //     success: true,
+            //     subject: {
+            //         _id: subject._id,
+            //         name: subject.name,
+            //         lecture: teacher,
+            //         studentCount: subject.studentIds.length,
+            //         isDeleted: subject.isDeleted
+            //     }
+            // });
 
         })
         .catch((err) => {
@@ -1042,7 +1074,7 @@ exports.exportSubject = async(req, res) => {
         });
 }
 
-exports.getDeadlineBySubject = async(req, res) => {
+exports.getDeadlineBySubject = async (req, res) => {
     let deadline = [];
     const today = Date.now();
     let subject = req.subject;
@@ -1108,19 +1140,19 @@ exports.getDeadlineBySubject = async(req, res) => {
 
 //Function
 
-const getListAssignmentExam = async(subject, today) => {
+const getListAssignmentExam = async (subject, today) => {
     let assignmentOrExam = await subject.timelines.reduce(
-        async(preField, currentTimeline) => {
+        async (preField, currentTimeline) => {
             if (currentTimeline.isDeleted) {
                 let result = await preField;
                 return result;
             } else {
-                let exams = await Promise.all(currentTimeline.exams.map(async(exam) => {
+                let exams = await Promise.all(currentTimeline.exams.map(async (exam) => {
                     if (exam.isDeleted) {
                         return null;
                     }
                     let exists = [];
-                    let submissions = await exam.submissions.reduce(function(prePromise, submission) {
+                    let submissions = await exam.submissions.reduce(function (prePromise, submission) {
                         let exist = exists.find(value => value.idStudent == submission.idStudent);
                         if (exist) {
                             let existSubmission = prePromise[exist.index];
@@ -1150,12 +1182,12 @@ const getListAssignmentExam = async(subject, today) => {
                         type: 'exam',
                     }
                 }));
-                let assignments = await Promise.all(currentTimeline.assignments.map(async(assignment) => {
+                let assignments = await Promise.all(currentTimeline.assignments.map(async (assignment) => {
                     if (assignment.isDeleted) {
                         return null;
                     }
 
-                    let submissions = await Promise.all(assignment.submissions.map(async(submission) => {
+                    let submissions = await Promise.all(assignment.submissions.map(async (submission) => {
                         return {
                             // _id: submission._id,
                             idStudent: submission.idStudent,
