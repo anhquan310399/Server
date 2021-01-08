@@ -636,7 +636,8 @@ exports.commentFeedback = async(req, res) => {
             .then(() => {
                 res.send({
                     success: true,
-                    message: 'Comment feedback of submission successfully!'
+                    message: 'Comment feedback of submission successfully!',
+                    submission:submitted
                 });
             })
             .catch((err) => {
