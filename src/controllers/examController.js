@@ -122,7 +122,7 @@ exports.find = async (req, res) => {
                     if (!submission.isSubmitted) {
                         let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                         console.log(totalTime);
-                        if (totalTime <= setting.timeToDo) {
+                        if (totalTime <= setting.timeToDo*60) {
                             isContinue = true;
                         }
                     }
