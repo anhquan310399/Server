@@ -3,7 +3,7 @@ const moment = require('moment');
 const User = require('../models/user');
 const isToday = require('../common/isToday');
 
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -81,7 +81,7 @@ exports.create = async(req, res) => {
         });
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -116,7 +116,7 @@ exports.find = async(req, res) => {
         let time = 1;
 
         let key = 0;
-        submissions = await Promise.all(submissions.map(async(submission, index) => {
+        submissions = await Promise.all(submissions.map(async (submission, index) => {
             if (index = submissions.length) {
                 if (today >= exam.startTime && today < exam.expireTime) {
                     if (!submission.isSubmitted) {
@@ -173,7 +173,7 @@ exports.find = async(req, res) => {
     } else {
         //Lấy bài kiểm tra cao nhất của từng sinh viên
         let exists = [];
-        let submissions = await exam.submissions.reduce(async function(prePromise, submission) {
+        let submissions = await exam.submissions.reduce(async function (prePromise, submission) {
             let result = await prePromise;
 
             let exist = await exists.find(value => value.idStudent == submission.idStudent);
@@ -206,7 +206,7 @@ exports.find = async(req, res) => {
 
         let key = 0;
         let data = await Promise.all(subject.studentIds.map(
-            async(value) => {
+            async (value) => {
 
                 let student = await User.findOne({ code: value }, 'code firstName surName urlAvatar')
                     .then(value => { return value });
@@ -258,7 +258,7 @@ exports.find = async(req, res) => {
     }
 };
 
-exports.findAll = async(req, res) => {
+exports.findAll = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -281,7 +281,7 @@ exports.findAll = async(req, res) => {
     })
 };
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -352,7 +352,7 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.delete = async(req, res) => {
+exports.delete = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -388,7 +388,7 @@ exports.delete = async(req, res) => {
         });
 };
 
-exports.hideOrUnhide = async(req, res) => {
+exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -436,7 +436,7 @@ exports.hideOrUnhide = async(req, res) => {
         });
 };
 
-exports.doExam = async(req, res) => {
+exports.doExam = (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -459,15 +459,15 @@ exports.doExam = async(req, res) => {
         const setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
         let attempt = 0;
-        console.log(submissions);
+        //console.log(submissions);
         if (submissions && submissions.length > 0) {
             console.log(submissions);
             attempt = submissions.length;
             let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
                 let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
-                console.log(`Thời gian đã làm quiz: ${totalTime}`);
-                if (totalTime < setting.timeToDo) {
+                console.log(`Thời gian đã làm quiz: ${totalTime}s`);
+                if (totalTime < setting.timeToDo * 60) {
                     let questions = submission.answers.map(value => {
                         let quizBank = subject.quizBank.find(bank => {
                             return bank._id == setting.code;
@@ -561,7 +561,7 @@ exports.doExam = async(req, res) => {
 
 }
 
-exports.submitExam = async(req, res) => {
+exports.submitExam = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {

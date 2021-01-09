@@ -20,7 +20,10 @@ const studentAnswerSheet = new mongoose.Schema({
         type: [studentAnswer],
         required: true
     },
-    grade: Number,
+    grade: {
+        type: Number,
+        default: 0
+    },
     isSubmitted: {
         type: Boolean,
         default: false
@@ -31,7 +34,7 @@ const studentAnswerSheet = new mongoose.Schema({
     }
 });
 
-studentAnswerSheet.pre('save', async function(next) {
+studentAnswerSheet.pre('save', async function (next) {
     let answerSheet = this;
     if (!answerSheet.isNew && answerSheet.isModified('answers')) {
         let exam = answerSheet.parent();
@@ -39,37 +42,37 @@ studentAnswerSheet.pre('save', async function(next) {
             .find(value => {
                 return value._id = exam.setting.code;
             });
-        let amount = await answerSheet.answers.reduce(async function(res, current) {
-                let question = await quizBank.questions.find(function(value) {
-                    return (value._id == current.questionId);
-                });
-                let grade = 0;
+        let amount = await answerSheet.answers.reduce(async function (res, current) {
+            let question = await quizBank.questions.find(function (value) {
+                return (value._id == current.questionId);
+            });
+            let grade = 0;
 
-                if (question.typeQuestion === 'choice') {
-                    let correctAnswer = question.answers.find(answer => {
-                        return answer.isCorrect;
-                    });
-                    if (correctAnswer._id == current.answerId) {
-                        grade++;
-                    }
-                } else if (question.typeQuestion === 'multiple') {
-                    let correctAnswers = question.answers.filter(answer => {
-                        return answer.isCorrect;
-                    });
-                    if (current.answerId.length <= correctAnswers.length) {
-                        correctAnswers.forEach(answer => {
-                            current.answerId.forEach(element => {
-                                if (answer._id == element) {
-                                    grade++;
-                                    return;
-                                }
-                            });
-                        });
-                        grade /= correctAnswers.length;
-                    }
+            if (question.typeQuestion === 'choice') {
+                let correctAnswer = question.answers.find(answer => {
+                    return answer.isCorrect;
+                });
+                if (correctAnswer._id == current.answerId) {
+                    grade++;
                 }
-                return (await res) + grade;
-            },
+            } else if (question.typeQuestion === 'multiple') {
+                let correctAnswers = question.answers.filter(answer => {
+                    return answer.isCorrect;
+                });
+                if (current.answerId.length <= correctAnswers.length) {
+                    correctAnswers.forEach(answer => {
+                        current.answerId.forEach(element => {
+                            if (answer._id == element) {
+                                grade++;
+                                return;
+                            }
+                        });
+                    });
+                    grade /= correctAnswers.length;
+                }
+            }
+            return (await res) + grade;
+        },
             0);
 
         let factor = 10 / exam.setting.questionCount;
