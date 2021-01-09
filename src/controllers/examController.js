@@ -590,7 +590,7 @@ exports.submitExam = async (req, res) => {
             if (!submission.isSubmitted) {
                 let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                 console.log(totalTime);
-                if (totalTime <= setting.timeToDo) {
+                if (totalTime <= setting.timeToDo * 60) {
                     let data = req.body.data;
                     submission.answers = submission.answers.map(value => {
                         let answer = data.find(answer => {
