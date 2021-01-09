@@ -173,42 +173,12 @@ exports.find = async (req, res) => {
                     return preAssignments;
                 }
 
-                let submission = currentAssignment.submissions.find(value => value.idStudent == req.user._id);
-                console.log(submission);
-                let isCanSubmit = false;
-                if (today >= currentAssignment.setting.startTime && today < currentAssignment.setting.expireTime) {
-                    isCanSubmit = true;
-
-                } else if (currentAssignment.setting.isOverDue && today >= currentAssignment.setting.startTime) {
-                    if (today <= currentAssignment.setting.overDueDate) {
-                        isCanSubmit = true;
-                    }
-                }
-                let gradeStatus = false;
-                if (submission && submission.feedBack) {
-                    gradeStatus = true;
-                }
-                const timingRemain = moment(currentAssignment.setting.expireTime).from(moment(today));
-
-
                 let assignment = {
                     _id: currentAssignment._id,
                     name: currentAssignment.name,
                     description: currentAssignment.description,
                     time: currentAssignment.createdAt,
-                    isNew: isToday(currentAssignment.createdAt),
-                    data: {
-                        _id: currentAssignment._id,
-                        name: currentAssignment.name,
-                        content: currentAssignment.content,
-                        attachments: currentAssignment.attachments,
-                        submissionStatus: submission ? true : false,
-                        gradeStatus: gradeStatus,
-                        setting: currentAssignment.setting,
-                        isCanSubmit: isCanSubmit,
-                        timingRemain: timingRemain,
-                        submission: submission || null
-                    }
+                    isNew: isToday(currentAssignment.createdAt)
                 }
                 return (preAssignments.concat(assignment));
             }, []);
