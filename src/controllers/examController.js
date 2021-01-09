@@ -487,7 +487,7 @@ exports.doExam = (req, res) => {
                         quiz: {
                             _id: exam._id,
                             name: exam.name,
-                            timeToDo: totalTime * 1000,
+                            timeToDo: setting.timeToDo * 60 * 1000 - totalTime * 1000,
                             questions: questions
                         }
                     });
