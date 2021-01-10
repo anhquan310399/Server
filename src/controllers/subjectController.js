@@ -383,9 +383,9 @@ exports.importSubject = async (req, res) => {
             });
         }
     }
-    if (req.body.surveyBank) {
+    if (req.body.studentIds) {
         subject.studentIds = subject.studentIds.concat(req.body.studentIds);
-        subject.studentIds = subject.studentIds.filter((a, b) => array.indexOf(a) === b)
+        subject.studentIds = subject.studentIds.filter((a, b) => subject.studentIds .indexOf(a) === b)
     }
     if (req.body.surveyBank) {
         subject.surveyBank = subject.surveyBank.concat(req.body.surveyBank);
