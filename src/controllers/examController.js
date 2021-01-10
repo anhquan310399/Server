@@ -122,7 +122,7 @@ exports.find = async (req, res) => {
                     if (!submission.isSubmitted) {
                         let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
                         console.log(totalTime);
-                        if (totalTime <= setting.timeToDo*60) {
+                        if (totalTime <= setting.timeToDo * 60) {
                             isContinue = true;
                         }
                     }
@@ -139,7 +139,7 @@ exports.find = async (req, res) => {
                     surName: req.user.surName,
                     urlAvatar: req.user.urlAvatar,
                 },
-                grade: submission.isSubmitted ? submission.grade : null,
+                grade: (submission.isSubmitted || !isContinue) ? submission.grade : null,
                 isSubmitted: submission.isSubmitted,
                 isContinue: isContinue,
                 time: time++,
