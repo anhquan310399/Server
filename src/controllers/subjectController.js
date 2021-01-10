@@ -373,7 +373,6 @@ exports.update = async (req, res) => {
 exports.importSubject = async (req, res) => {
     let subject = req.subject;
 
-    subject.studentIds = req.body.studentIds || subject.studentIds;
     if (req.body.timelines) {
         if (subject.timelines.length === 0) {
             subject.timelines = req.body.timelines;
@@ -385,10 +384,14 @@ exports.importSubject = async (req, res) => {
         }
     }
     if (req.body.surveyBank) {
-        subject.surveyBank.push(req.body.surveyBank);
+        subject.studentIds = subject.studentIds.concat(req.body.studentIds);
+        subject.studentIds = subject.studentIds.filter((a, b) => array.indexOf(a) === b)
+    }
+    if (req.body.surveyBank) {
+        subject.surveyBank = subject.surveyBank.concat(req.body.surveyBank);
     }
     if (req.body.quizBank) {
-        subject.quizBank.push(req.body.quizBank);
+        subject.quizBank = subject.quizBank.concat(req.body.quizBank);
     }
 
     subject.save()
