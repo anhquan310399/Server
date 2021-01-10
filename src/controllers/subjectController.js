@@ -121,7 +121,6 @@ exports.find = async (req, res) => {
     console.log(req.user.idPrivilege);
     let teacher = userDb.findOne({ code: subject.idLecture }, 'code firstName surName urlAvatar')
         .then(value => { return value });
-    const today = Date.now();
 
     if (req.user.idPrivilege === 'student') {
         timelines = await timelines.filter((value) => {
@@ -351,6 +350,118 @@ exports.update = async (req, res) => {
             res.send({
                 success: true,
                 message: "Update Subject Successfully"
+            });
+        })
+        .catch((err) => {
+            console.log("Update subject: " + err.message);
+            console.log(err.name);
+            if (err.name === 'ValidationError') {
+                const key = Object.keys(err.errors)[0];
+                res.status(400).send({
+                    success: false,
+                    message: err.errors[key].message,
+                });
+            } else {
+                res.status(500).send({
+                    success: false,
+                    message: err.message,
+                });
+            }
+        });
+};
+
+exports.importSubject = async (req, res) => {
+    let subject = req.subject;
+
+    subject.studentIds = req.body.studentIds || subject.studentIds;
+    if (req.body.timelines && subject.timelines.length === 0) {
+        subject.timelines = req.body.timelines;
+    } else {
+        return res.status(400).send({
+            success: false,
+            message: 'Đã có dữ liệu các tuần không thể import!',
+        });
+    }
+    if (req.body.surveyBank) {
+        subject.surveyBank.push(req.body.surveyBank);
+    }
+    if (req.body.quizBank) {
+        subject.quizBank.push(req.body.quizBank);
+    }
+
+    subject.save()
+        .then(async () => {
+            let timelines = subject.timelines;
+            timelines = _.sortBy(await Promise.all(timelines.map(async (value) => {
+                let forums = value.forums.map((forum) => {
+                    return {
+                        _id: forum.id,
+                        name: forum.name,
+                        description: forum.description,
+                        time: forum.createdAt,
+                        isNew: isToday(forum.updatedAt),
+                        isDeleted: forum.isDeleted
+                    }
+                });
+                let exams = value.exams.map((exam) => {
+                    return {
+                        _id: exam._id,
+                        name: exam.name,
+                        description: exam.description,
+                        time: exam.createdAt,
+                        isNew: isToday(exam.createdAt),
+                        isDeleted: exam.isDeleted
+                    }
+                });
+                let information = value.information.map((info) => {
+                    return {
+                        _id: info._id,
+                        name: info.name,
+                        content: info.content,
+                        time: info.createdAt,
+                        isNew: isToday(info.updatedAt)
+                    }
+                });
+                let assignments = value.assignments.map((assign) => {
+                    return {
+                        _id: assign._id,
+                        name: assign.name,
+                        description: assign.description,
+                        time: assign.createdAt,
+                        isNew: isToday(assign.createdAt),
+                        isDeleted: assign.isDeleted
+                    }
+                });
+                let surveys = value.surveys.map((survey) => {
+                    return {
+                        _id: survey._id,
+                        name: survey.name,
+                        description: survey.description,
+                        time: survey.createdAt,
+                        isNew: isToday(survey.createdAt),
+                        isDeleted: survey.isDeleted
+                    }
+                });
+
+                return {
+                    _id: value._id,
+                    name: value.name,
+                    description: value.description,
+                    surveys: surveys,
+                    forums: forums,
+                    exams: exams,
+                    information: information,
+                    assignments: assignments,
+                    files: value.files,
+                    index: value.index,
+                    isDeleted: value.isDeleted
+                };
+
+            })), ['index']);
+            res.send({
+                success: true,
+                message: `Import data to subject ${subject.name} successfully!`,
+                timelines: timelines
             });
         })
         .catch((err) => {
