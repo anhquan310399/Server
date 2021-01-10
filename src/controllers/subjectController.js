@@ -385,7 +385,7 @@ exports.importSubject = async (req, res) => {
     }
     if (req.body.studentIds) {
         subject.studentIds = subject.studentIds.concat(req.body.studentIds);
-        subject.studentIds = subject.studentIds.filter((a, b) => subject.studentIds .indexOf(a) === b)
+        subject.studentIds = subject.studentIds.filter((a, b) => subject.studentIds.indexOf(a) === b)
     }
     if (req.body.surveyBank) {
         subject.surveyBank = subject.surveyBank.concat(req.body.surveyBank);
@@ -463,10 +463,27 @@ exports.importSubject = async (req, res) => {
                 };
 
             })), ['index']);
+
+            const surveyBank = await Promise.all(subject.surveyBank.map(value => {
+                return {
+                    _id: value._id,
+                    name: value.name,
+                    questions: value.questions.length
+                }
+            }));
+            let quizBank = await Promise.all(subject.quizBank.map(value => {
+                return {
+                    _id: value._id,
+                    name: value.name,
+                    questions: value.questions.length
+                }
+            }));
             res.send({
                 success: true,
                 message: `Import data to subject ${subject.name} successfully!`,
-                timelines: timelines
+                timelines: timelines,
+                surveyBank: surveyBank,
+                quizBank: quizBank
             });
         })
         .catch((err) => {
