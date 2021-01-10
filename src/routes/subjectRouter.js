@@ -11,6 +11,7 @@ router.get('/:idSubject/deadline', authStudent, subjectController.getDeadlineByS
 router.get('/:idSubject', authInSubject, subjectController.find);
 router.get('/:idSubject/detail', authAdmin, subjectController.findByAdmin);
 router.get('/:idSubject/export', authAdmin, subjectController.exportSubject);
+router.get('/:idSubject/export-teacher', authLecture, subjectController.exportSubject);
 router.post('/', authAdmin, subjectController.create);
 router.put('/:idSubject/', authAdmin, subjectController.update);
 router.put('/:idSubject/hide', authAdmin, subjectController.hideOrUnhide);
