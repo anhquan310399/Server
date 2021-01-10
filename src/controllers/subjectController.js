@@ -374,13 +374,15 @@ exports.importSubject = async (req, res) => {
     let subject = req.subject;
 
     subject.studentIds = req.body.studentIds || subject.studentIds;
-    if (req.body.timelines && subject.timelines.length === 0) {
-        subject.timelines = req.body.timelines;
-    } else {
-        return res.status(400).send({
-            success: false,
-            message: 'Đã có dữ liệu các tuần không thể import!',
-        });
+    if (req.body.timelines) {
+        if (subject.timelines.length === 0) {
+            subject.timelines = req.body.timelines;
+        } else {
+            return res.status(400).send({
+                success: false,
+                message: 'Đã có dữ liệu các tuần không thể import!',
+            });
+        }
     }
     if (req.body.surveyBank) {
         subject.surveyBank.push(req.body.surveyBank);
