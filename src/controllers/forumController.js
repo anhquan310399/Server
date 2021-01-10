@@ -20,10 +20,16 @@ exports.create = (req, res) => {
 
     data.save()
         .then(() => {
+            const forum = timeline.forums[length - 1];
             res.send({
                 success: true,
                 message: 'Create new forum successfully!',
-                forum: timeline.forums[length - 1]
+                forum: {
+                    _id: forum._id,
+                    name: forum.name,
+                    description: forum.description,
+                    isDeleted: forum.isDeleted
+                }
             });
         })
         .catch((err) => {
@@ -44,7 +50,7 @@ exports.create = (req, res) => {
 
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -71,7 +77,7 @@ exports.find = async(req, res) => {
             _id: forum._id,
             name: forum.name,
             description: forum.description,
-            topics: await Promise.all(forum.topics.map(async function(value) {
+            topics: await Promise.all(forum.topics.map(async function (value) {
                 let creator = await User.findById(value.idUser, 'code firstName surName urlAvatar')
                     .then(value => { return value });
                 return {
@@ -85,7 +91,7 @@ exports.find = async(req, res) => {
     }
 };
 
-exports.findAll = async(req, res) => {
+exports.findAll = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -119,7 +125,7 @@ exports.findAll = async(req, res) => {
     }
 };
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -164,7 +170,7 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.hideOrUnhide = async(req, res) => {
+exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -215,7 +221,7 @@ exports.hideOrUnhide = async(req, res) => {
 
 };
 
-exports.delete = async(req, res) => {
+exports.delete = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
