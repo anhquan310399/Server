@@ -196,6 +196,22 @@ exports.find = async (req, res) => {
                 return (preSurveys.concat(survey));
             }, []);
 
+            let files = value.files.reduce((preFiles, currentFile) => {
+                if (currentFile.isDeleted) {
+                    return preFiles;
+                }
+
+                let file = {
+                    _id: currentFile._id,
+                    name: currentFile.name,
+                    path: currentFile.path,
+                    type: currentFile.type,
+                    uploadDay: currentFile.uploadDay,
+                    isNew: isToday( currentFile.uploadDay)
+                }
+                return (preFiles.concat(file));
+            }, []);
+
             return {
                 _id: value._id,
                 name: value.name,
@@ -205,7 +221,7 @@ exports.find = async (req, res) => {
                 exams: exams,
                 information: information,
                 assignments: assignments,
-                files: value.files,
+                files: files,
                 index: value.index
             };
         })), ['index']);
