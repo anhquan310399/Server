@@ -638,12 +638,20 @@ exports.addStudent = (req, res) => {
             }
             subject.studentIds.push(req.body.idStudent);
             subject.save()
-                .then((data) => {
+                .then(async (data) => {
+
+                    var info = await Promise.all(subject.studentIds.map(async function (value) {
+                        var student = await userDb.findOne({ code: value }, 'code emailAddress firstName surName urlAvatar')
+                            .then(value => {
+                                return value
+                            });
+                        return student;
+                    }));
                     // res.send(data);
                     res.send({
                         success: true,
                         message: `Add Student with code ${req.body.idStudent} Successfully!`,
-                        students: subject.studentIds
+                        students: info
                     });
                 })
                 .catch((err) => {
@@ -669,12 +677,19 @@ exports.removeStudent = (req, res) => {
     }
     subject.studentIds.splice(index, 1);
     subject.save()
-        .then((data) => {
+        .then(async (data) => {
+            var info = await Promise.all(subject.studentIds.map(async function (value) {
+                var student = await userDb.findOne({ code: value }, 'code emailAddress firstName surName urlAvatar')
+                    .then(value => {
+                        return value
+                    });
+                return student;
+            }));
             // res.send(data);
             res.send({
                 success: true,
                 message: `Remove Student with code ${req.body.idStudent} Successfully!`,
-                students: subject.studentIds
+                students: info
             });
         })
         .catch((err) => {
