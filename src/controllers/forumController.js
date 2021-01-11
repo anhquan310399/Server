@@ -91,6 +91,38 @@ exports.find = async (req, res) => {
     }
 };
 
+exports.findUpdate = async (req, res) => {
+    let data = req.subject;
+    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    if (!forum) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found discussion",
+        });
+    }
+
+    if (req.idPrivilege === 'student' && forum.isDeleted === true) {
+        res.status(404).send({
+            success: false,
+            message: "Not found forum",
+        });
+    } else {
+        res.send({
+            _id: forum._id,
+            name: forum.name,
+            description: forum.description,
+            isDeleted: forum.isDeleted
+        })
+    }
+};
+
 exports.findAll = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);

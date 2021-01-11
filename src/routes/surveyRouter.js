@@ -7,6 +7,7 @@ const surveyController = require('../controllers/surveyController');
 router.post('/', authLecture, surveyController.create);
 router.get('/', authLecture, surveyController.findAll);
 router.get('/:idSurvey', authInSubject, surveyController.find);
+router.get('/:idSurvey/update', authLecture, surveyController.findUpdate);
 router.put('/:idSurvey', authLecture, surveyController.update);
 router.put('/:idSurvey/hide', authLecture, surveyController.hideOrUnhide);
 router.delete('/:idSurvey/', authLecture, surveyController.delete);

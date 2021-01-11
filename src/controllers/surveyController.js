@@ -1,6 +1,6 @@
 const isToday = require('../common/isToday');
 
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
@@ -51,7 +51,7 @@ exports.create = async(req, res) => {
         });
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -108,7 +108,40 @@ exports.find = async(req, res) => {
 
 }
 
-exports.findAll = async(req, res) => {
+exports.findUpdate = async (req, res) => {
+    let subject = req.subject;
+
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+
+    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+
+    if (!survey) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found survey",
+        });
+    }
+
+    res.send({
+        success: true,
+        survey: {
+            _id: survey._id,
+            name: survey.name,
+            description: survey.description,
+            expireTime: survey.expireTime,
+            code: survey.code,
+            isDeleted: survey.isDeleted
+        }
+    })
+}
+
+exports.findAll = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -132,10 +165,10 @@ exports.findAll = async(req, res) => {
 
 }
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -150,25 +183,41 @@ exports.update = async(req, res) => {
             message: "Not found survey",
         });
     }
+    if (req.body.data.isDeleted) { survey.isDeleted = req.body.data.isDeleted; }
     if (req.body.data.name) { survey.name = req.body.data.name; }
     if (req.body.data.description) { survey.description = req.body.data.description; }
     if (req.body.data.expireTime) { survey.expireTime = req.body.data.expireTime; }
     if (req.body.data.code) {
-        var questionnaire = subject.surveyBank.find(value => value._id == req.body.data.code);
-        if (!questionnaire) {
-            return res.status(404).send({
+        if (survey.responses.length > 0) {
+            return res.status(400).send({
                 success: false,
-                message: "Not found questionnaire",
+                message: "Survey has already responses. Can't change questionnaire of survey",
             });
+        } else {
+            var questionnaire = subject.surveyBank.find(value => value._id == req.body.data.code);
+            if (!questionnaire) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found questionnaire",
+                });
+            }
+            survey.code = req.body.data.code;
         }
-        survey.code = req.body.data.code;
     }
 
     subject.save()
         .then(() => {
             res.send({
                 success: true,
-                message: 'Update survey successfully!'
+                message: 'Update survey successfully!',
+                survey: {
+                    _id: survey._id,
+                        name: survey.name,
+                        description: survey.description,
+                        time: survey.createdAt,
+                        isNew: isToday(survey.createdAt),
+                        isDeleted: survey.isDeleted
+                }
             })
 
         }).catch((err) => {
@@ -189,7 +238,7 @@ exports.update = async(req, res) => {
 
 }
 
-exports.hideOrUnhide = async(req, res) => {
+exports.hideOrUnhide = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -240,7 +289,7 @@ exports.hideOrUnhide = async(req, res) => {
         });
 }
 
-exports.delete = async(req, res) => {
+exports.delete = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -277,7 +326,7 @@ exports.delete = async(req, res) => {
         });
 }
 
-exports.attemptSurvey = async(req, res) => {
+exports.attemptSurvey = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -315,7 +364,7 @@ exports.attemptSurvey = async(req, res) => {
     })
 }
 
-exports.replySurvey = async(req, res) => {
+exports.replySurvey = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -373,7 +422,7 @@ exports.replySurvey = async(req, res) => {
         });
 }
 
-exports.viewResponse = async(req, res) => {
+exports.viewResponse = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -412,7 +461,7 @@ exports.viewResponse = async(req, res) => {
     })
 }
 
-exports.viewAllResponse = async(req, res) => {
+exports.viewAllResponse = async (req, res) => {
     let subject = req.subject;
 
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -434,10 +483,10 @@ exports.viewAllResponse = async(req, res) => {
     const questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
 
 
-    let result = await Promise.all(questionnaire.map(async(question) => {
+    let result = await Promise.all(questionnaire.map(async (question) => {
         let answer;
         if (question.typeQuestion === 'choice') {
-            answer = await Promise.all(question.answer.map(async(answer) => {
+            answer = await Promise.all(question.answer.map(async (answer) => {
                 let count = 0;
                 survey.responses.forEach(reply => {
                     reply.answerSheet.forEach(answerSheet => {
@@ -458,7 +507,7 @@ exports.viewAllResponse = async(req, res) => {
                 }
             }))
         } else if (question.typeQuestion === 'multiple') {
-            answer = await Promise.all(question.answer.map(async(answer) => {
+            answer = await Promise.all(question.answer.map(async (answer) => {
                 let count = 0;
                 survey.responses.forEach(reply => {
                     reply.answerSheet.forEach(answerSheet => {
