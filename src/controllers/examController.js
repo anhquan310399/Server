@@ -40,7 +40,8 @@ exports.create = async (req, res) => {
             timeToDo: setting.timeToDo,
             code: setting.code,
             attemptCount: setting.attemptCount
-        }
+        },
+        isDeleted: req.body.data.isDeleted
     };
 
     var length = timeline.exams.push(model);

@@ -13,7 +13,8 @@ exports.create = (req, res) => {
 
     const model = {
         name: req.body.data.name,
-        description: req.body.data.description
+        description: req.body.data.description,
+        isDeleted: req.body.data.isDeleted
     };
 
     const length = timeline.forums.push(model);
@@ -182,7 +183,7 @@ exports.update = async (req, res) => {
     if (subject.description) {
         forum.description = subject.description;
     }
-    
+
     forum.isDeleted = data.isDeleted || false;
 
     subject.save()

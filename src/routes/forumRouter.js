@@ -8,7 +8,7 @@ const forumController = require("../controllers/forumController")
 router.get('/', authInSubject, forumController.findAll);
 router.post('/', authLecture, forumController.create);
 router.get('/:idForum', authInSubject, forumController.find);
-router.get('/:idForum/update', authInSubject, forumController.findUpdate);
+router.get('/:idForum/update', authLecture, forumController.findUpdate);
 router.put('/:idForum', authLecture, forumController.update);
 router.put('/:idForum/hide', authLecture, forumController.hideOrUnhide);
 

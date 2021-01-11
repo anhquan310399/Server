@@ -4,7 +4,7 @@
 const isToday = require('../common/isToday');
 const _ = require('lodash');
 
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     let subject = req.subject;
 
     const model = {
@@ -39,10 +39,10 @@ exports.create = async(req, res) => {
         });
 };
 
-exports.findAll = async(req, res) => {
+exports.findAll = async (req, res) => {
     let subject = req.subject;
 
-    let timelines = _.sortBy(await Promise.all(subject.timelines.map(async(value) => {
+    let timelines = _.sortBy(await Promise.all(subject.timelines.map(async (value) => {
         return {
             _id: value._id,
             name: value.name,
@@ -57,9 +57,9 @@ exports.findAll = async(req, res) => {
     });
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
+    const timeline = subject.timelines.find(function (value) {
         return (value._id == req.params.idTimeline)
     });
     if (!timeline) {
@@ -81,9 +81,9 @@ exports.find = async(req, res) => {
     });
 };
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
+    const timeline = subject.timelines.find(function (value) {
         return (value._id == req.params.idTimeline)
     });
     if (!timeline) {
@@ -127,7 +127,7 @@ exports.update = async(req, res) => {
         });
 };
 
-exports.hideOrUnHide = async(req, res) => {
+exports.hideOrUnHide = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.params.idTimeline);
     if (!timeline) {
@@ -293,9 +293,9 @@ exports.hideOrUnHide = async(req, res) => {
 //     })
 // }
 
-exports.uploadFile = async(req, res) => {
+exports.uploadFile = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
+    const timeline = subject.timelines.find(function (value) {
         return (value._id == req.body.idTimeline)
     });
     if (!timeline) {
@@ -309,7 +309,8 @@ exports.uploadFile = async(req, res) => {
         name: req.body.data.name,
         path: req.body.data.path,
         type: req.body.data.type,
-        uploadDay: Date.now()
+        uploadDay: Date.now(),
+        isDeleted: req.body.data.isDeleted
     }
     let index = timeline.files.push(file);
     console.log(timeline.files[index - 1]);
@@ -354,10 +355,10 @@ exports.uploadFile = async(req, res) => {
 //     res.download(file.path);
 // }
 
-exports.getFile = async(req, res) => {
+exports.getFile = async (req, res) => {
 
     let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
+    const timeline = subject.timelines.find(function (value) {
         return (value._id == req.params.idTimeline)
     });
     if (!timeline) {
@@ -380,9 +381,50 @@ exports.getFile = async(req, res) => {
     });
 }
 
-exports.removeFile = async(req, res) => {
+exports.updateFile = async (req, res) => {
+
     let subject = req.subject;
-    const timeline = subject.timelines.find(function(value) {
+    const timeline = subject.timelines.find(function (value) {
+        return (value._id == req.params.idTimeline)
+    });
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline"
+        })
+    }
+
+    const file = timeline.files.find(value => value._id == req.params.idFile);
+    if (!file) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found file"
+        })
+    }
+    file.name = req.body.data.name;
+    file.path = req.body.data.path;
+    file.type = req.body.data.type;
+    if (file.path !== req.body.data.path) { file.uploadDay = Date.now(); }
+    file.isDeleted = req.body.data.isDeleted || false;
+
+    subject.save()
+        .then(() => {
+            res.send({
+                success: true,
+                file: file
+            });
+        }).catch(error => {
+            res.send({
+                success: false,
+                message: error.message
+            });
+        })
+
+}
+
+exports.removeFile = async (req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(function (value) {
         return (value._id == req.params.idTimeline)
     });
     if (!timeline) {

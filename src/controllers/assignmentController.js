@@ -35,7 +35,8 @@ exports.create = async (req, res) => {
             // fileCount: data.setting.fileCount,
             fileSize: data.setting.fileSize,
         },
-        attachments: file
+        attachments: file,
+        isDeleted: data.isDeleted
     };
 
     let length = timeline.assignments.push(model);
