@@ -28,10 +28,10 @@ exports.create = async (req, res) => {
         name: data.name,
         content: data.content,
         setting: {
-            startTime: data.setting.startTime,
-            expireTime: data.setting.expireTime,
+            startTime: new Date(data.setting.startTime),
+            expireTime: new Date(data.setting.expireTime),
             isOverDue: data.setting.isOverDue,
-            overDueDate: data.setting.isOverDue ? data.setting.overDueDate : null,
+            overDueDate: data.setting.isOverDue ? new Date(data.setting.overDueDate) : null,
             // fileCount: data.setting.fileCount,
             fileSize: data.setting.fileSize,
         },
@@ -245,10 +245,10 @@ exports.update = async (req, res) => {
     }
     if (data.setting) {
         assignment.setting = {
-            startTime: data.setting.startTime,
-            expireTime: data.setting.expireTime,
+            startTime: new Date(data.setting.startTime),
+            expireTime: new Date(data.setting.expireTime),
             isOverDue: data.setting.isOverDue,
-            overDueDate: data.setting.isOverDue ? data.setting.overDueDate : null,
+            overDueDate: data.setting.isOverDue ? new Date(data.setting.overDueDate) : null,
             fileSize: data.setting.fileSize
         }
     }
@@ -256,7 +256,7 @@ exports.update = async (req, res) => {
         assignment.isDeleted = data.isDeleted;
     }
 
-    if (data.file) {
+    if (data.file && data.file.length > 0) {
         let file = data.file.map(value => {
             return {
                 name: value.name,
