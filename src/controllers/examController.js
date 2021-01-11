@@ -347,6 +347,8 @@ exports.update = async (req, res) => {
         }
     };
 
+    exam.isDeleted = req.body.data.isDeleted || false;
+
     data.save()
         .then(() => {
             res.send({

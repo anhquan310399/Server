@@ -252,9 +252,7 @@ exports.update = async (req, res) => {
             fileSize: data.setting.fileSize
         }
     }
-    if (data.isDeleted) {
-        assignment.isDeleted = data.isDeleted;
-    }
+    assignment.isDeleted = data.isDeleted || false;
 
     if (data.file && data.file.length > 0) {
         let file = data.file.map(value => {

@@ -192,7 +192,6 @@ exports.update = async (req, res) => {
             message: "Not found survey",
         });
     }
-    if (req.body.data.isDeleted) { survey.isDeleted = req.body.data.isDeleted; }
     if (req.body.data.name) { survey.name = req.body.data.name; }
     if (req.body.data.description) { survey.description = req.body.data.description; }
     if (req.body.data.expireTime) { survey.expireTime = req.body.data.expireTime; }
@@ -213,6 +212,7 @@ exports.update = async (req, res) => {
             survey.code = req.body.data.code;
         }
     }
+    survey.isDeleted = req.body.data.isDeleted || false;
 
     subject.save()
         .then(() => {

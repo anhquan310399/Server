@@ -182,9 +182,8 @@ exports.update = async (req, res) => {
     if (subject.description) {
         forum.description = subject.description;
     }
-    if (subject.isDeleted) {
-        forum.isDeleted = subject.isDeleted;
-    }
+    
+    forum.isDeleted = data.isDeleted || false;
 
     subject.save()
         .then(() => {
