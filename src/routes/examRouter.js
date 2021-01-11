@@ -8,6 +8,7 @@ const examController = require("../controllers/examController")
 router.get('/', authInSubject, examController.findAll);
 router.post('/', authLecture, examController.create);
 router.get('/:idExam', authInSubject, examController.find);
+router.get('/:idExam/update', authLecture, examController.findUpdate);
 router.put('/:idExam', authLecture, examController.update);
 // router.delete('/:idExam', authLecture, examController.delete);
 router.put('/:idExam/hide', authLecture, examController.hideOrUnhide);
