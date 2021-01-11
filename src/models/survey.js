@@ -23,7 +23,7 @@ const reply = new mongoose.Schema({
     },
     timeResponse: {
         type: Date,
-        default: Date.now()
+        default: new Date(),
     }
 })
 

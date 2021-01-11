@@ -32,7 +32,7 @@ const submission = new mongoose.Schema({
     },
     submitTime: {
         type: Date,
-        default: Date.now()
+        default:new Date()
     },
     feedBack: feedBack
 });

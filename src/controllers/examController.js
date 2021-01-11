@@ -99,7 +99,7 @@ exports.find = async (req, res) => {
         });
     }
 
-    const today = Date.now();
+    const today = new Date();
     const isRemain = (today <= exam.expireTime);
     const isOpen = (today >= exam.startTime && today <= exam.expireTime)
     const timingRemain = moment(exam.expireTime).from(moment(today));
@@ -485,7 +485,7 @@ exports.doExam = (req, res) => {
         });
     }
 
-    const today = Date.now();
+    const today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
@@ -610,7 +610,7 @@ exports.submitExam = async (req, res) => {
         });
     }
 
-    const today = Date.now();
+    const today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);

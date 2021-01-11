@@ -83,7 +83,7 @@ exports.find = async (req, res) => {
             message: "Not found survey",
         });
     }
-    let today = Date.now();
+    let today = new Date();
     let isRemain = today > survey.expireTime ? false : true;
     let timeRemain = today - survey.expireTime.getTime();
     if (req.user.idPrivilege === 'student') {

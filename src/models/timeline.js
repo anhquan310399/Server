@@ -25,7 +25,7 @@ const fileSchema = new mongoose.Schema({
     },
     uploadDay: {
         type: Date,
-        default: Date.now()
+        default: new Date(),
     },
     isDeleted: {
         type: Boolean,

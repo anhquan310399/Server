@@ -97,7 +97,7 @@ exports.find = async (req, res) => {
             message: "Not found assignment",
         });
     }
-    let today = Date.now();
+    let today = new Date();
     const timingRemain = moment(assignment.setting.expireTime).from(moment(today));
 
     if (req.user.idPrivilege === 'student') {
@@ -420,7 +420,7 @@ exports.submit = async (req, res) => {
         });
     }
 
-    let today = Date.now();
+    let today =new Date();
     const setting = assignment.setting;
     if ((today >= setting.startTime && today <= setting.expireTime) ||
         (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
@@ -497,7 +497,7 @@ exports.submit = async (req, res) => {
             name: req.body.file.name,
             path: req.body.file.path,
             type: req.body.file.type,
-            uploadDay: Date.now()
+            uploadDay: new Date()
         }
         console.log(file);
         var index = 0;
@@ -613,7 +613,7 @@ exports.gradeSubmission = async (req, res) => {
     if (submitted) {
         submitted.feedBack = {
             grade: req.body.grade,
-            gradeOn: Date.now(),
+            gradeOn: new Date(),
             gradeBy: req.idTeacher
         }
 

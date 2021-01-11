@@ -207,7 +207,7 @@ exports.find = async (req, res) => {
                     path: currentFile.path,
                     type: currentFile.type,
                     uploadDay: currentFile.uploadDay,
-                    isNew: isToday( currentFile.uploadDay)
+                    isNew: isToday(currentFile.uploadDay)
                 }
                 return (preFiles.concat(file));
             }, []);
@@ -783,7 +783,7 @@ exports.getDeadline = async (req, res) => {
     db.find({ 'studentIds': req.code, isDeleted: false })
         .then(function (listSubject) {
             let deadline = [];
-            const today = Date.now();
+            const today = new Date();
             listSubject.forEach(subject => {
                 subject.timelines.forEach((timeline) => {
                     if (!timeline.isDeleted) {
@@ -883,7 +883,7 @@ exports.getListStudent = async (req, res) => {
 
 exports.getSubjectTranscript = async (req, res) => {
     let subject = req.subject;
-    let today = Date.now();
+    let today = new Date();
     let fields = await getListAssignmentExam(subject, today);
 
     if (req.user.idPrivilege === 'student') {
@@ -986,7 +986,7 @@ exports.getSubjectTranscript = async (req, res) => {
 
 exports.getSubjectTranscriptTotal = async (req, res) => {
     let subject = req.subject;
-    let today = Date.now();
+    let today = new Date();
     let assignmentOrExam = await getListAssignmentExam(subject, today);
 
     let fields = { 'c0': 'MSSV', 'c1': 'Họ', 'c2': 'Tên' }
@@ -1195,7 +1195,7 @@ exports.exportSubject = async (req, res) => {
 
 exports.getDeadlineBySubject = async (req, res) => {
     let deadline = [];
-    const today = Date.now();
+    const today = new Date();
     let subject = req.subject;
     subject.timelines.forEach((timeline) => {
         if (!timeline.isDeleted) {

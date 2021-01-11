@@ -309,7 +309,7 @@ exports.uploadFile = async (req, res) => {
         name: req.body.data.name,
         path: req.body.data.path,
         type: req.body.data.type,
-        uploadDay: Date.now(),
+        uploadDay: new Date(),
         isDeleted: req.body.data.isDeleted
     }
     let index = timeline.files.push(file);
@@ -404,7 +404,7 @@ exports.updateFile = async (req, res) => {
     file.name = req.body.data.name;
     file.path = req.body.data.path;
     file.type = req.body.data.type;
-    if (file.path !== req.body.data.path) { file.uploadDay = Date.now(); }
+    if (file.path !== req.body.data.path) { file.uploadDay = new Date(); }
     file.isDeleted = req.body.data.isDeleted || false;
 
     subject.save()
