@@ -4,7 +4,7 @@ const User = require('../models/user');
 const moment = require('moment');
 const isToday = require('../common/isToday');
 
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -46,11 +46,10 @@ exports.create = async(req, res) => {
             assignment = {
                 _id: assignment._id,
                 name: assignment.name,
-                content: assignment.content,
-                setting: assignment.setting,
-                assignments: assignment.attachments,
-                submissionCount: 0,
-                submission: []
+                description: assignment.description,
+                time: assignment.createdAt,
+                isNew: isToday(assignment.createdAt),
+                isDeleted: assignment.isDeleted
             }
             res.send({
                 success: true,
@@ -75,7 +74,7 @@ exports.create = async(req, res) => {
 
 };
 
-exports.find = async(req, res) => {
+exports.find = async (req, res) => {
     let data = req.subject;
     const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -133,7 +132,7 @@ exports.find = async(req, res) => {
         })
     } else {
         let submissions = await Promise.all(assignment.submissions
-            .map(async function(submit) {
+            .map(async function (submit) {
                 var student = await User.findById(submit.idStudent, 'code firstName surName urlAvatar')
                     .then(value => {
                         return value
@@ -163,7 +162,39 @@ exports.find = async(req, res) => {
     }
 };
 
-exports.findAll = async(req, res) => {
+exports.findUpdate = async (req, res) => {
+    let data = req.subject;
+    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+    const assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
+
+    if (!assignment) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found assignment",
+        });
+    }
+
+    res.send({
+        success: true,
+        assignment: {
+            _id: assignment._id,
+            name: assignment.name,
+            content: assignment.content,
+            isDeleted: assignment.isDeleted,
+            attachments: assignment.attachments || null,
+            setting: assignment.setting,
+        }
+    });
+
+};
+
+exports.findAll = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -188,16 +219,8 @@ exports.findAll = async(req, res) => {
     })
 };
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
     let data = req.body.data;
-
-    if (!(data.name && data.content && data.setting)) {
-        return res.status(400).send({
-            success: false,
-            message: 'Lack of data'
-        });
-    }
-
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -214,30 +237,51 @@ exports.update = async(req, res) => {
             message: 'Not found assignment'
         });
     }
-
-    assignment.name = data.name;
-    assignment.content = data.content;
-    assignment.setting = {
-        startTime: data.setting.startTime,
-        expireTime: data.setting.expireTime,
-        isOverDue: data.setting.isOverDue,
-        overDueDate: data.setting.overDueDate,
-        // fileCount: data.setting.fileCount,
-        fileSize: data.setting.fileSize
+    if (data.name) {
+        assignment.name = data.name;
     }
+    if (data.content) {
+        assignment.content = data.content;
+    }
+    if (data.setting) {
+        assignment.setting = {
+            startTime: data.setting.startTime,
+            expireTime: data.setting.expireTime,
+            isOverDue: data.setting.isOverDue,
+            overDueDate: data.setting.isOverDue ? data.setting.overDueDate : null,
+            fileSize: data.setting.fileSize
+        }
+    }
+    if (data.isDeleted) {
+        assignment.isDeleted = data.isDeleted;
+    }
+
+    if (data.file) {
+        let file = data.file.map(value => {
+            return {
+                name: value.name,
+                path: value.path,
+                type: value.type
+            }
+        });
+        assignment.attachments = file;
+    }
+
 
     await subject.save()
         .then(() => {
             res.send(
-                //     {
-                //     _id: assignment._id,
-                //     name: assignment.name,
-                //     content: assignment.content,
-                //     setting: assignment.setting
-                // }
                 {
                     success: true,
-                    message: 'Update assignment successfully!'
+                    message: 'Update assignment successfully!',
+                    assignment: {
+                        _id: assignment._id,
+                        name: assignment.name,
+                        description: assignment.description,
+                        time: assignment.createdAt,
+                        isNew: isToday(assignment.createdAt),
+                        isDeleted: assignment.isDeleted
+                    }
                 }
             );
         })
@@ -294,7 +338,7 @@ exports.delete = (req, res) => {
         });
 };
 
-exports.hideOrUnhide = async(req, res) => {
+exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
@@ -359,7 +403,7 @@ exports.hideOrUnhide = async(req, res) => {
 //     }
 // });
 
-exports.submit = async(req, res) => {
+exports.submit = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -548,7 +592,7 @@ exports.submit = async(req, res) => {
 
 // }
 
-exports.gradeSubmission = async(req, res) => {
+exports.gradeSubmission = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -575,7 +619,7 @@ exports.gradeSubmission = async(req, res) => {
         }
 
         data.save()
-            .then(async() => {
+            .then(async () => {
                 let student = await User.findById(submitted.idStudent, 'code firstName surName');
                 res.send({
                     success: true,
@@ -604,7 +648,7 @@ exports.gradeSubmission = async(req, res) => {
     }
 }
 
-exports.commentFeedback = async(req, res) => {
+exports.commentFeedback = async (req, res) => {
     let data = req.subject;
     const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
@@ -637,7 +681,7 @@ exports.commentFeedback = async(req, res) => {
                 res.send({
                     success: true,
                     message: 'Comment feedback of submission successfully!',
-                    submission:submitted
+                    submission: submitted
                 });
             })
             .catch((err) => {

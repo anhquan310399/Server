@@ -6,6 +6,7 @@ const { authInSubject, authLecture, authStudent } = require('../middleware/auth'
 
 /** forum */
 router.get('/:idAssignment', authInSubject, assignmentController.find);
+router.get('/:idAssignment/update', authLecture, assignmentController.findUpdate);
 router.get('/', authInSubject, assignmentController.findAll);
 router.post('/', authLecture, assignmentController.create);
 router.post('/:idAssignment/submit', authStudent, assignmentController.submit);

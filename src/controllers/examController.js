@@ -46,21 +46,16 @@ exports.create = async (req, res) => {
     var length = timeline.exams.push(model);
     subject.save()
         .then(() => {
-            let exam = timeline.exams[length - 1];
-            const today = Date.now();
-            const isRemain = (today <= exam.expireTime);
-            const timingRemain = moment(exam.expireTime).from(moment(today));
+            const exam = timeline.exams[length - 1];
             res.send({
                 success: true,
                 exam: {
                     _id: exam._id,
                     name: exam.name,
-                    content: exam.content,
-                    startTime: exam.startTime,
-                    expireTime: exam.expireTime,
-                    setting: exam.setting,
-                    isRemain: isRemain,
-                    timingRemain: timingRemain
+                    description: exam.description,
+                    time: exam.createdAt,
+                    isNew: isToday(exam.createdAt),
+                    isDeleted: exam.isDeleted
                 }
             });
         })
@@ -258,6 +253,39 @@ exports.find = async (req, res) => {
     }
 };
 
+exports.findUpdate = async (req, res) => {
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    if (!timeline) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found timeline",
+        });
+    }
+    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+
+    if (!exam) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found exam",
+        });
+    }
+
+    res.send({
+        success: true,
+        exam: {
+            _id: exam._id,
+            name: exam.name,
+            content: exam.content,
+            isDeleted: exam.isDeleted,
+            startTime: exam.startTime,
+            expireTime: exam.expireTime,
+            setting: exam.setting,
+        }
+    });
+
+};
+
 exports.findAll = async (req, res) => {
     let subject = req.subject;
     const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
@@ -302,36 +330,36 @@ exports.update = async (req, res) => {
     if (req.body.data.content) { exam.content = req.body.data.content };
     if (req.body.data.startTime) { exam.startTime = new Date(req.body.data.startTime) };
     if (req.body.data.expireTime) { exam.expireTime = new Date(req.body.data.expireTime) };
-    if (req.body.data.setting) {
+    if (req.body.data.setting && req.body.data.setting.code !== exam.setting.code) {
         let setting = req.body.data.setting;
-        exam.setting = {
-            questionCount: setting.questionCount,
-            timeToDo: setting.timeToDo,
-            code: setting.code,
-            attemptCount: setting.attemptCount
+        if (exam.submissions.length > 0) {
+            return res.status(400).send({
+                success: false,
+                message: `Exam has already submission. Can't change setting of exam!`,
+            });
+        } else {
+            exam.setting = {
+                questionCount: setting.questionCount,
+                timeToDo: setting.timeToDo,
+                code: setting.code,
+                attemptCount: setting.attemptCount
+            }
         }
     };
 
-
-
     data.save()
         .then(() => {
-            // const today = Date.now();
-            // const isRemain = (today <= exam.expireTime);
-            // const timingRemain = moment(exam.expireTime).from(moment(today));
-            // res.send({
-            //     _id: exam._id,
-            //     name: exam.name,
-            //     content: exam.content,
-            //     startTime: exam.expireTime,
-            //     expireTime: exam.expireTime,
-            //     setting: exam.setting,
-            //     isRemain: isRemain,
-            //     timingRemain: timingRemain
-            // });
             res.send({
                 success: true,
-                message: 'Update exam successfully!'
+                message: 'Update exam successfully!',
+                exam: {
+                    _id: exam._id,
+                    name: exam.name,
+                    description: exam.description,
+                    time: exam.createdAt,
+                    isNew: isToday(exam.createdAt),
+                    isDeleted: exam.isDeleted
+                }
             })
         })
         .catch((err) => {

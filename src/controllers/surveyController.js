@@ -22,16 +22,25 @@ exports.create = async (req, res) => {
         name: req.body.data.name,
         description: req.body.data.description,
         code: code,
-        expireTime: new Date(req.body.data.expireTime)
+        expireTime: new Date(req.body.data.expireTime),
+        isDeleted: req.body.data.isDeleted || false
     };
 
     var length = timeline.surveys.push(model);
     subject.save()
         .then(() => {
+            const survey = timeline.surveys[length - 1];
             res.send({
                 success: true,
                 message: "Create survey successfully!",
-                survey: timeline.surveys[length - 1]
+                survey: {
+                    _id: survey._id,
+                    name: survey.name,
+                    description: survey.description,
+                    time: survey.createdAt,
+                    isNew: isToday(survey.createdAt),
+                    isDeleted: survey.isDeleted
+                }
             });
         })
         .catch((err) => {
