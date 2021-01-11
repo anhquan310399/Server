@@ -25,9 +25,11 @@ exports.create = (req, res) => {
                 success: true,
                 message: 'Create new forum successfully!',
                 forum: {
-                    _id: forum._id,
+                    _id: forum.id,
                     name: forum.name,
                     description: forum.description,
+                    time: forum.createdAt,
+                    isNew: isToday(forum.updatedAt),
                     isDeleted: forum.isDeleted
                 }
             });
@@ -108,19 +110,17 @@ exports.findUpdate = async (req, res) => {
         });
     }
 
-    if (req.idPrivilege === 'student' && forum.isDeleted === true) {
-        res.status(404).send({
-            success: false,
-            message: "Not found forum",
-        });
-    } else {
-        res.send({
-            _id: forum._id,
+    res.send({
+        success: true,
+        forum: {
+            _id: forum.id,
             name: forum.name,
             description: forum.description,
+            time: forum.createdAt,
+            isNew: isToday(forum.updatedAt),
             isDeleted: forum.isDeleted
-        })
-    }
+        }
+    })
 };
 
 exports.findAll = async (req, res) => {
@@ -158,8 +158,8 @@ exports.findAll = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-    let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    let subject = req.subject;
+    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -169,20 +169,36 @@ exports.update = async (req, res) => {
 
     const forum = timeline.forums.find(value => value._id == req.params.idForum);
 
-    forum.name = req.body.data.name;
-    if (req.body.data.description) {
-        forum.description = req.body.data.description;
+    if (!forum) {
+        return res.status(404).send({
+            success: false,
+            message: "Not found discussion",
+        });
+    }
+    let data = req.body.data;
+    if (subject.name) {
+        forum.name = subject.name;
+    }
+    if (subject.description) {
+        forum.description = subject.description;
+    }
+    if (subject.isDeleted) {
+        forum.isDeleted = subject.isDeleted;
     }
 
-    data.save()
+    subject.save()
         .then(() => {
             res.send({
-                // _id: forum._id,
-                // name: forum.name,
-                // description: forum.description,
-                // isDeleted: forum.isDeleted
                 success: true,
-                message: 'Update forum successfully!'
+                message: 'Update forum successfully!',
+                forum: {
+                    _id: forum.id,
+                    name: forum.name,
+                    description: forum.description,
+                    time: forum.createdAt,
+                    isNew: isToday(forum.updatedAt),
+                    isDeleted: forum.isDeleted
+                }
             });
         })
         .catch((err) => {
