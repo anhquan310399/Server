@@ -187,7 +187,7 @@ exports.update = async (req, res) => {
     if (req.body.data.name) { survey.name = req.body.data.name; }
     if (req.body.data.description) { survey.description = req.body.data.description; }
     if (req.body.data.expireTime) { survey.expireTime = req.body.data.expireTime; }
-    if (req.body.data.code) {
+    if (req.body.data.code && req.body.data.code !== survey.code) {
         if (survey.responses.length > 0) {
             return res.status(400).send({
                 success: false,
@@ -212,11 +212,11 @@ exports.update = async (req, res) => {
                 message: 'Update survey successfully!',
                 survey: {
                     _id: survey._id,
-                        name: survey.name,
-                        description: survey.description,
-                        time: survey.createdAt,
-                        isNew: isToday(survey.createdAt),
-                        isDeleted: survey.isDeleted
+                    name: survey.name,
+                    description: survey.description,
+                    time: survey.createdAt,
+                    isNew: isToday(survey.createdAt),
+                    isDeleted: survey.isDeleted
                 }
             })
 
