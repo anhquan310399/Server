@@ -642,8 +642,8 @@ exports.addStudent = (req, res) => {
                     // res.send(data);
                     res.send({
                         success: true,
-                        message: "Add Student Successfully!",
-                        student: user
+                        message: `Add Student with code ${req.body.idStudent} Successfully!`,
+                        students: subject.studentIds
                     });
                 })
                 .catch((err) => {
@@ -673,7 +673,8 @@ exports.removeStudent = (req, res) => {
             // res.send(data);
             res.send({
                 success: true,
-                message: "Remove Student Successfully!"
+                message: `Remove Student with code ${req.body.idStudent} Successfully!`,
+                students: subject.studentIds
             });
         })
         .catch((err) => {
