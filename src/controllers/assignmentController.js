@@ -622,7 +622,8 @@ exports.gradeSubmission = async (req, res) => {
                 let student = await User.findById(submitted.idStudent, 'code firstName surName');
                 res.send({
                     success: true,
-                    message: `Grade submission of student with code: ${student.code} successfully!`
+                    message: `Grade submission of student with code: ${student.code} successfully!`,
+                    feedBack: submitted.feedBack
                 });
             })
             .catch((err) => {
