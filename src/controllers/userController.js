@@ -402,14 +402,14 @@ exports.linkFacebookAccount = async(req, res) => {
     console.log(req.user);
     console.log(req.user.facebookId);
     if (req.user.facebookId) {
-        res.status(409).send({
+        return res.status(409).send({
             success: false,
             message: 'Your account has already linked facebook account!'
         })
     }
     verifyFacebook(userToken).then(async function(result) {
         if (!result) {
-            res.status(500).send({
+           return res.status(500).send({
                 success: false,
                 message: 'Error while verify facebook access token'
             })
@@ -418,7 +418,7 @@ exports.linkFacebookAccount = async(req, res) => {
         let fbUser = await dbUser.findOne({ facebookId: facebookId })
             .then(user => { return user });
         if (fbUser) {
-            res.status(409).send({
+           return res.status(409).send({
                 success: false,
                 message: 'This facebook account is linked with another account!'
             })
