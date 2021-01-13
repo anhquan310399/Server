@@ -58,7 +58,7 @@ reply.pre('save', async function(next) {
     let survey = currentRely.parent();
     let answerSheet = currentRely.answerSheet;
     let questionnaire = survey.parent().parent().surveyBank.find(value => {
-        return value._id = survey.code;
+        return value._id == survey.code;
     }).questions;
     console.log(questionnaire);
     if (answerSheet.length !== questionnaire.length) {
