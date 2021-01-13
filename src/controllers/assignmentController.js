@@ -104,19 +104,19 @@ exports.find = async (req, res) => {
         let submission = assignment.submissions.find(value => value.idStudent == req.user._id);
         console.log(submission);
         let isCanSubmit = false;
-        if (!submission.feedBack) {
-            if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
-                isCanSubmit = true;
+        if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
+            isCanSubmit = true;
 
-            } else if (assignment.setting.isOverDue && today >= assignment.setting.startTime) {
-                if (today <= assignment.setting.overDueDate) {
-                    isCanSubmit = true;
-                }
+        } else if (assignment.setting.isOverDue && today >= assignment.setting.startTime) {
+            if (today <= assignment.setting.overDueDate) {
+                isCanSubmit = true;
             }
         }
+
         let gradeStatus = false;
         if (submission && submission.feedBack) {
             gradeStatus = true;
+            isCanSubmit = false;
         }
         res.send({
             success: true,
