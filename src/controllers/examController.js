@@ -331,9 +331,9 @@ exports.update = async (req, res) => {
     if (req.body.data.content) { exam.content = req.body.data.content };
     if (req.body.data.startTime) { exam.startTime = new Date(req.body.data.startTime) };
     if (req.body.data.expireTime) { exam.expireTime = new Date(req.body.data.expireTime) };
-    if (req.body.data.setting && req.body.data.setting.code !== exam.setting.code) {
+    if (req.body.data.setting) {
         let setting = req.body.data.setting;
-        if (exam.submissions.length > 0) {
+        if (req.body.data.setting.code !== exam.setting.code && exam.submissions.length > 0) {
             return res.status(400).send({
                 success: false,
                 message: `Exam has already submission. Can't change setting of exam!`,
