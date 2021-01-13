@@ -104,12 +104,14 @@ exports.find = async (req, res) => {
         let submission = assignment.submissions.find(value => value.idStudent == req.user._id);
         console.log(submission);
         let isCanSubmit = false;
-        if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
-            isCanSubmit = true;
-
-        } else if (assignment.setting.isOverDue && today >= assignment.setting.startTime) {
-            if (today <= assignment.setting.overDueDate) {
+        if (!submission.feedBack) {
+            if (today >= assignment.setting.startTime && today < assignment.setting.expireTime) {
                 isCanSubmit = true;
+
+            } else if (assignment.setting.isOverDue && today >= assignment.setting.startTime) {
+                if (today <= assignment.setting.overDueDate) {
+                    isCanSubmit = true;
+                }
             }
         }
         let gradeStatus = false;
@@ -420,7 +422,7 @@ exports.submit = async (req, res) => {
         });
     }
 
-    let today =new Date();
+    let today = new Date();
     const setting = assignment.setting;
     if ((today >= setting.startTime && today <= setting.expireTime) ||
         (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
@@ -503,9 +505,17 @@ exports.submit = async (req, res) => {
         var index = 0;
         var submitted = assignment.submissions.find(value => value.idStudent == req.idStudent);
         if (submitted) {
-            index = assignment.submissions.indexOf(submitted);
-            submitted.submitTime = today;
-            submitted.file = file;
+            if (!submitted.feedBack) {
+                index = assignment.submissions.indexOf(submitted);
+                submitted.submitTime = today;
+                submitted.file = file;
+            } else {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Đã chấm điểm không thể nộp lại bài',
+                });
+
+            }
         } else {
             var submission = {
                 idStudent: req.idStudent,
