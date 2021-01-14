@@ -486,7 +486,7 @@ exports.importSubject = async (req, res) => {
                     questions: value.questions.length
                 }
             }));
-            let quizBank = await Promise.all(subject.quizBank.map(value => {
+            const quizBank = await Promise.all(subject.quizBank.map(value => {
                 return {
                     _id: value._id,
                     name: value.name,
@@ -1098,111 +1098,14 @@ exports.exportSubject = async (req, res) => {
                 });
             }
 
-            let timelines = subject.timelines;
-            timelines = await Promise.all(timelines.map(async (timeline) => {
-                let surveys = await Promise.all(timeline.surveys.map(async (survey) => {
-                    return {
-                        name: survey.name,
-                        description: survey.description,
-                        code: survey.code,
-                        expireTime: survey.expireTime
-                    }
-                }));
-                let forums = timeline.forums.map(forum => {
-                    return {
-                        name: forum.name,
-                        description: forum.description
-                    }
-                });
-                let exams = timeline.exams.map(exam => {
-                    return {
-                        name: exam.name,
-                        content: exam.content,
-                        startTime: exam.startTime,
-                        expireTime: exam.expireTime,
-                        setting: exam.setting
-                    }
-                });
-                let information = timeline.information.map(info => {
-                    return {
-                        name: info.name,
-                        content: info.content
-                    }
-                });
-                let assignments = timeline.assignments.map(assignment => {
-                    return {
-                        name: assignment.name,
-                        content: assignment.content,
-                        attachments: assignment.attachments,
-                        setting: assignment.setting
-                    }
-                });
-                return {
-                    name: timeline.name,
-                    description: timeline.description,
-                    surveys: surveys,
-                    forums: forums,
-                    exams: exams,
-                    information: information,
-                    assignments: assignments,
-                    files: timeline.files,
-                    index: timeline.index
-                }
-            }));
+            let timelines = await getTimelineExport(subject.timelines);
 
-            const quizBank = subject.quizBank.map((questionnaire) => {
-                const questions = questionnaire.questions.map((question) => {
-                    const answers = question.answers.map(option => {
-                        return {
-                            answer: option.answer,
-                            isCorrect: option.isCorrect
-                        }
-                    });
-                    return {
-                        question: question.question,
-                        answers: answers,
-                        typeQuestion: question.typeQuestion,
-                        explain: question.explain
-                    }
-                });
-                return {
-                    _id: questionnaire._id,
-                    name: questionnaire.name,
-                    questions: questions
-                }
-            })
+            const quizBank = await getQuizBankExport(subject.quizBank);
 
-
-
-            const surveyBank = subject.surveyBank.map((questionnaire) => {
-                const questions = questionnaire.questions.map(question => {
-                    if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
-                        const answers = question.answer.map(answer => {
-                            return answer.content;
-                        });
-                        return {
-                            question: question.question,
-                            answer: answers,
-                            typeQuestion: question.typeQuestion
-                        }
-                    } else {
-                        return {
-                            question: question.question,
-                            typeQuestion: question.typeQuestion
-                        }
-                    }
-                });
-                return {
-                    _id: questionnaire._id,
-                    name: questionnaire.name,
-                    questions: questions
-                }
-            })
+            const surveyBank = await getSurveyBankExport(subject.surveyBank);
 
             subject = {
-                name: subject.name,
-                idLecture: subject.idLecture,
-                timelines: _.sortBy(timelines, ['index']),
+                timelines: timelines,
                 quizBank: quizBank,
                 surveyBank: surveyBank
             }
@@ -1230,7 +1133,7 @@ exports.exportSubject = async (req, res) => {
         });
 }
 
-exports.exportQuizBank = async (req, res) => {
+exports.exportSubjectWithCondition = async (req, res) => {
     await db.findById(req.params.idSubject)
         .then(async (subject) => {
             if (!subject) {
@@ -1239,99 +1142,35 @@ exports.exportQuizBank = async (req, res) => {
                     message: "Not found subject",
                 });
             }
+            let data = {};
 
-            const quizBank = subject.quizBank.map((questionnaire) => {
-                const questions = questionnaire.questions.map((question) => {
-                    const answers = question.answers.map(option => {
-                        return {
-                            answer: option.answer,
-                            isCorrect: option.isCorrect
-                        }
-                    });
-                    return {
-                        question: question.question,
-                        answers: answers,
-                        typeQuestion: question.typeQuestion,
-                        explain: question.explain
-                    }
-                });
-                return {
-                    name: questionnaire.name,
-                    questions: questions
+            if (req.body.isTimelines) {
+                let timelines = await getTimelineExport(subject.timelines)
+                let surveyBank = await getSurveyBankExport(subject.surveyBank)
+                let quizBank = await getQuizBankExport(subject.quizBank)
+                data = {
+                    timelines: timelines,
+                    surveyBank: surveyBank,
+                    quizBank: quizBank
                 }
-            })
+            } else {
+                if (req.body.isQuizBank) {
+                    let quizBank = await getQuizBankExport(subject.quizBank);
+                    quizBank = quizBank.map(value => { return { name: value.name, questions: value.questions } });
+                    data['quizBank'] = quizBank
 
-            res.attachment(`${subject.name}-quiz-bank.json`)
-            res.type('json')
-            res.send(quizBank)
-            // res.send({
-            //     success: true,
-            //     subject: {
-            //         _id: subject._id,
-            //         name: subject.name,
-            //         lecture: teacher,
-            //         studentCount: subject.studentIds.length,
-            //         isDeleted: subject.isDeleted
-            //     }
-            // });
-
-        })
-        .catch((err) => {
-            res.status(500).send({
-                success: false,
-                message: err.message,
-            });
-        });
-}
-
-exports.exportSurveyBank = async (req, res) => {
-    await db.findById(req.params.idSubject)
-        .then(async (subject) => {
-            if (!subject) {
-                return res.status(404).send({
-                    success: false,
-                    message: "Not found subject",
-                });
+                }
+                if (req.body.isSurveyBank) {
+                    let surveyBank = await getSurveyBankExport(subject.surveyBank);
+                    surveyBank = surveyBank.map(value => { return { name: value.name, questions: value.questions } });
+                    data['surveyBank'] = surveyBank;
+                }
             }
 
-            const surveyBank = subject.surveyBank.map((questionnaire) => {
-                const questions = questionnaire.questions.map(question => {
-                    if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
-                        const answers = question.answer.map(answer => {
-                            return answer.content;
-                        });
-                        return {
-                            question: question.question,
-                            answer: answers,
-                            typeQuestion: question.typeQuestion
-                        }
-                    } else {
-                        return {
-                            question: question.question,
-                            typeQuestion: question.typeQuestion
-                        }
-                    }
-                });
-                return {
-                    name: questionnaire.name,
-                    questions: questions
-                }
-            })
 
-            res.attachment(`${subject.name}-survey-bank.json`)
+            res.attachment(`${subject.name}.json`)
             res.type('json')
-            res.send(surveyBank)
-            // res.send({
-            //     success: true,
-            //     subject: {
-            //         _id: subject._id,
-            //         name: subject.name,
-            //         lecture: teacher,
-            //         studentCount: subject.studentIds.length,
-            //         isDeleted: subject.isDeleted
-            //     }
-            // });
-
+            res.send(data)
         })
         .catch((err) => {
             res.status(500).send({
@@ -1485,4 +1324,109 @@ const getListAssignmentExam = async (subject, today) => {
     }));
 
     return assignmentOrExam;
+}
+
+const getTimelineExport = async (timelines) => {
+    const result = await Promise.all(timelines.map(async (timeline) => {
+        let surveys = await Promise.all(timeline.surveys.map(async (survey) => {
+            return {
+                name: survey.name,
+                description: survey.description,
+                code: survey.code,
+                expireTime: survey.expireTime
+            }
+        }));
+        let forums = timeline.forums.map(forum => {
+            return {
+                name: forum.name,
+                description: forum.description
+            }
+        });
+        let exams = timeline.exams.map(exam => {
+            return {
+                name: exam.name,
+                content: exam.content,
+                startTime: exam.startTime,
+                expireTime: exam.expireTime,
+                setting: exam.setting
+            }
+        });
+        let information = timeline.information.map(info => {
+            return {
+                name: info.name,
+                content: info.content
+            }
+        });
+        let assignments = timeline.assignments.map(assignment => {
+            return {
+                name: assignment.name,
+                content: assignment.content,
+                attachments: assignment.attachments,
+                setting: assignment.setting
+            }
+        });
+        return {
+            name: timeline.name,
+            description: timeline.description,
+            surveys: surveys,
+            forums: forums,
+            exams: exams,
+            information: information,
+            assignments: assignments,
+            files: timeline.files,
+            index: timeline.index
+        }
+    }));
+    return _.sortBy(result, ['index']);
+}
+
+const getSurveyBankExport = async (surveyBank) => {
+    return await Promise.all(surveyBank.map(async (questionnaire) => {
+        const questions = questionnaire.questions.map(question => {
+            if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
+                const answers = question.answer.map(answer => {
+                    return answer.content;
+                });
+                return {
+                    question: question.question,
+                    answer: answers,
+                    typeQuestion: question.typeQuestion
+                }
+            } else {
+                return {
+                    question: question.question,
+                    typeQuestion: question.typeQuestion
+                }
+            }
+        });
+        return {
+            _id: questionnaire._id,
+            name: questionnaire.name,
+            questions: questions
+        }
+    }))
+}
+
+const getQuizBankExport = async (quizBank) => {
+    return await Promise.all(quizBank.map(async (questionnaire) => {
+        const questions = questionnaire.questions.map((question) => {
+            const answers = question.answers.map(option => {
+                return {
+                    answer: option.answer,
+                    isCorrect: option.isCorrect
+                }
+            });
+            return {
+                question: question.question,
+                answers: answers,
+                typeQuestion: question.typeQuestion,
+                explain: question.explain
+            }
+        });
+        return {
+            _id: questionnaire._id,
+            name: questionnaire.name,
+            questions: questions
+        }
+    }))
 }
