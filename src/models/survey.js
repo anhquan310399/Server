@@ -100,6 +100,22 @@ reply.pre('save', async function(next) {
     next();
 });
 
+survey.pre('save', async function (next) {
+    let currentSurvey = this;
+    let timeline = currentSurvey.parent();
+    let subject = timeline.parent();
+
+    let questionnaire = subject.surveyBank.find(value => value._id == currentSurvey.code);
+    console.log(questionnaire);
+
+    if (!questionnaire) {
+        const err = new ValidatorError({ message: `Can't not found questionnaire for ${currentSurvey.name} in database!. Please import surveyBank has questionnaire with _id: ${currentSurvey.code} before` });
+        return next(err);
+    }
+
+    next();
+})
+
 
 
 module.exports = survey;

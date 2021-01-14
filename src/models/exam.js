@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-const studentAnswerSheetSchema = require("./studentAnswerSheet")
+const studentAnswerSheetSchema = require("./studentAnswerSheet");
+var ValidatorError = mongoose.Error.ValidatorError;
 
 const setting = new mongoose.Schema({
     code: {
@@ -41,7 +42,7 @@ const exam = new mongoose.Schema({
     expireTime: {
         type: Date,
         required: [true, "Expire time of exam is required"],
-        validate: [function(value) {
+        validate: [function (value) {
             return value >= this.startTime
         }, "Expire time must be more than start time"]
     },
@@ -56,17 +57,26 @@ const exam = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-exam.pre('save', async function(next) {
+exam.pre('save', async function (next) {
     let currentExam = this;
+    let timeline = currentExam.parent();
+    let subject = timeline.parent();
+
+    let questionnaire = subject.quizBank.find(value => value._id == currentExam.setting.code);
+    console.log(questionnaire);
+
+    if (!questionnaire) {
+        const err = new ValidatorError({ message: `Can't not found questionnaire for ${currentExam.name} in database!. Please import quizBank has questionnaire with _id: ${currentExam.setting.code} before` });
+        return next(err);
+    }
     if (currentExam.isNew) {
         console.log("Create new exam!");
-        let timeline = currentExam.parent();
-        let subject = timeline.parent();
         if (!subject.transcript) {
             subject.transcript = [];
         }
         subject.transcript = subject.transcript.concat({ idField: currentExam._id });
     }
+    next();
 })
 
 

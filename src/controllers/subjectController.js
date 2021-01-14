@@ -2,7 +2,6 @@ const db = require("../models/subject");
 const userDb = require('../models/user');
 const _ = require('lodash');
 const isToday = require('../common/isToday');
-const moment = require('moment');
 exports.create = async (req, res) => {
     // Validate request
     const data = new db({
@@ -1151,12 +1150,34 @@ exports.exportSubject = async (req, res) => {
                 }
             }));
 
+            const quizBank = subject.quizBank.map((questionnaire) => {
+                const questions = questionnaire.questions.map((question) => {
+                    const answers = question.answers.map(option => {
+                        return {
+                            answer: option.answer,
+                            isCorrect: option.isCorrect
+                        }
+                    });
+                    return {
+                        question: question.question,
+                        answers: answers,
+                        typeQuestion: question.typeQuestion,
+                        explain: question.explain
+                    }
+                });
+                return {
+                    _id: questionnaire._id,
+                    name: questionnaire.name,
+                    questions: questions
+                }
+            })
 
 
-            let surveyBank = subject.surveyBank.map((questionnaire) => {
-                let questions = questionnaire.questions.map(question => {
+
+            const surveyBank = subject.surveyBank.map((questionnaire) => {
+                const questions = questionnaire.questions.map(question => {
                     if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
-                        let answers = question.answer.map(answer => {
+                        const answers = question.answer.map(answer => {
                             return answer.content;
                         });
                         return {
@@ -1181,14 +1202,125 @@ exports.exportSubject = async (req, res) => {
             subject = {
                 name: subject.name,
                 idLecture: subject.idLecture,
-                timelines: timelines,
-                quizBank: subject.quizBank,
+                timelines: _.sortBy(timelines, ['index']),
+                quizBank: quizBank,
                 surveyBank: surveyBank
             }
 
             res.attachment(`${subject.name}.json`)
             res.type('json')
             res.send(subject)
+            // res.send({
+            //     success: true,
+            //     subject: {
+            //         _id: subject._id,
+            //         name: subject.name,
+            //         lecture: teacher,
+            //         studentCount: subject.studentIds.length,
+            //         isDeleted: subject.isDeleted
+            //     }
+            // });
+
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message,
+            });
+        });
+}
+
+exports.exportQuizBank = async (req, res) => {
+    await db.findById(req.params.idSubject)
+        .then(async (subject) => {
+            if (!subject) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found subject",
+                });
+            }
+
+            const quizBank = subject.quizBank.map((questionnaire) => {
+                const questions = questionnaire.questions.map((question) => {
+                    const answers = question.answers.map(option => {
+                        return {
+                            answer: option.answer,
+                            isCorrect: option.isCorrect
+                        }
+                    });
+                    return {
+                        question: question.question,
+                        answers: answers,
+                        typeQuestion: question.typeQuestion,
+                        explain: question.explain
+                    }
+                });
+                return {
+                    name: questionnaire.name,
+                    questions: questions
+                }
+            })
+
+            res.attachment(`${subject.name}-quiz-bank.json`)
+            res.type('json')
+            res.send(quizBank)
+            // res.send({
+            //     success: true,
+            //     subject: {
+            //         _id: subject._id,
+            //         name: subject.name,
+            //         lecture: teacher,
+            //         studentCount: subject.studentIds.length,
+            //         isDeleted: subject.isDeleted
+            //     }
+            // });
+
+        })
+        .catch((err) => {
+            res.status(500).send({
+                success: false,
+                message: err.message,
+            });
+        });
+}
+
+exports.exportSurveyBank = async (req, res) => {
+    await db.findById(req.params.idSubject)
+        .then(async (subject) => {
+            if (!subject) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Not found subject",
+                });
+            }
+
+            const surveyBank = subject.surveyBank.map((questionnaire) => {
+                const questions = questionnaire.questions.map(question => {
+                    if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
+                        const answers = question.answer.map(answer => {
+                            return answer.content;
+                        });
+                        return {
+                            question: question.question,
+                            answer: answers,
+                            typeQuestion: question.typeQuestion
+                        }
+                    } else {
+                        return {
+                            question: question.question,
+                            typeQuestion: question.typeQuestion
+                        }
+                    }
+                });
+                return {
+                    name: questionnaire.name,
+                    questions: questions
+                }
+            })
+
+            res.attachment(`${subject.name}-survey-bank.json`)
+            res.type('json')
+            res.send(surveyBank)
             // res.send({
             //     success: true,
             //     subject: {
