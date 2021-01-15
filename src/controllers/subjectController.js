@@ -707,7 +707,7 @@ exports.adjustOrderOfTimeline = async (req, res) => {
         var timeline = subject.timelines.find(x => x._id == element._id);
         console.log(timeline);
         timeline.index = element.index;
-        timeline.name = element.name;
+        //timeline.name = element.name;
     });
     await subject.save()
         .then(async () => {
