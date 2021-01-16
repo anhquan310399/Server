@@ -11,7 +11,7 @@ exports.authStudent = (req, res, next) => {
                 if (!user) {
                     return res.status(401).send({
                         success: false,
-                        message: "Please login"
+                        message: "Your account can't access this resource"
                     });
                 }
 
@@ -60,7 +60,7 @@ exports.authLecture = (req, res, next) => {
                 if (!user) {
                     return res.status(401).send({
                         success: false,
-                        message: "Please login"
+                        message: "Your account can't access this resource"
                     });
                 }
 
@@ -106,7 +106,7 @@ exports.authInSubject = (req, res, next) => {
                 if (!user) {
                     return res.status(401).send({
                         success: false,
-                        message: "Please login"
+                        message: "Your account can't access this resource"
                     });
                 }
                 var idSubject = req.params.idSubject || req.query.idSubject || req.body.idSubject;
@@ -171,7 +171,7 @@ exports.authLogin = (req, res, next) => {
                 if (!user) {
                     return res.status(401).send({
                         success: false,
-                        message: "Please login"
+                        message: "Your account can't access this resource"
                     });
                 }
                 req.idUser = user._id;
