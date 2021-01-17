@@ -827,7 +827,7 @@ exports.getDeadline = async (req, res) => {
                                 return preAssignments;
                             }
                             let submission = currentAssignment.submissions.find(value => value.idStudent == req.idUser);
-                            return {
+                            let assignment= {
                                 subject: {
                                     _id: subject._id,
                                     name: subject.name
@@ -840,6 +840,7 @@ exports.getDeadline = async (req, res) => {
                                 isSubmit: submission ? true : false,
                                 type: 'assignment'
                             }
+                            return (preAssignments.concat(assignment));
                         }, []);
 
                         let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
@@ -847,7 +848,7 @@ exports.getDeadline = async (req, res) => {
                                 return preSurveys;
                             }
                             let reply = currentSurvey.responses.find(value => value.idStudent == req.idUser);
-                            return {
+                            let survey = {
                                 subject: {
                                     _id: subject._id,
                                     name: subject.name
@@ -860,6 +861,7 @@ exports.getDeadline = async (req, res) => {
                                 isSubmit: reply ? true : false,
                                 type: 'survey'
                             }
+                            return (preSurveys.concat(survey));
                         }, []);
 
                         deadline = deadline.concat(exams, assignments, surveys);
@@ -1207,7 +1209,7 @@ exports.getDeadlineBySubject = async (req, res) => {
                     return preAssignments;
                 }
                 let submission = currentAssignment.submissions.find(value => value.idStudent == req.idStudent);
-                return {
+                let assignment =  {
                     idTimeline: timeline._id,
                     _id: currentAssignment._id,
                     name: currentAssignment.name,
@@ -1216,6 +1218,7 @@ exports.getDeadlineBySubject = async (req, res) => {
                     isSubmit: submission ? true : false,
                     type: 'assignment'
                 }
+                return (preAssignments.concat(assignment));
             }, []);
 
             let surveys = timeline.surveys.reduce((preSurveys, currentSurvey) => {
@@ -1223,7 +1226,7 @@ exports.getDeadlineBySubject = async (req, res) => {
                     return preSurveys;
                 }
                 let reply = currentSurvey.responses.find(value => value.idStudent == req.idStudent);
-                return {
+                let survey= {
                     idTimeline: timeline._id,
                     _id: currentSurvey._id,
                     name: currentSurvey.name,
@@ -1232,6 +1235,7 @@ exports.getDeadlineBySubject = async (req, res) => {
                     isSubmit: reply ? true : false,
                     type: 'survey'
                 }
+                return (preSurveys.concat(survey));
             }, []);
 
             deadline = deadline.concat(exams, assignments, surveys);
