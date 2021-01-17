@@ -339,15 +339,16 @@ exports.update = async (req, res) => {
                 message: `Exam has already submission. Can't change setting of exam!`,
             });
         }
-    }
-    else {
-        exam.setting = {
-            questionCount: setting.questionCount,
-            timeToDo: setting.timeToDo,
-            code: setting.code,
-            attemptCount: setting.attemptCount
+
+        else {
+            exam.setting = {
+                questionCount: setting.questionCount,
+                timeToDo: setting.timeToDo,
+                code: setting.code,
+                attemptCount: setting.attemptCount
+            }
         }
-    }
+    };
 
     exam.isDeleted = req.body.data.isDeleted || false;
 
