@@ -172,7 +172,7 @@ exports.find = async (req, res) => {
         let submissions = await exam.submissions.reduce(async function (prePromise, submission) {
             let result = await prePromise;
 
-            let exist = await exists.find(value => value.idStudent == submission.idStudent);
+            let exist = exists.find(value => value.idStudent == submission.idStudent);
             if (exist) {
                 let existSubmission = result[exist.index];
                 result[exist.index].grade = existSubmission.grade >= submission.grade ? existSubmission.grade : submission.grade;
@@ -206,7 +206,7 @@ exports.find = async (req, res) => {
 
                 let student = await User.findOne({ code: value }, 'code firstName surName urlAvatar')
                     .then(value => { return value });
-                let submission = await submissions.find(value => value.idStudent == student._id);
+                let submission = submissions.find(value => value.idStudent == student._id);
                 if (submission) {
                     return {
                         key: key++,
