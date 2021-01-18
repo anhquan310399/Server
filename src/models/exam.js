@@ -63,7 +63,7 @@ exam.pre('save', async function (next) {
     let subject = timeline.parent();
 
     let questionnaire = subject.quizBank.find(value => value._id == currentExam.setting.code);
-    console.log(questionnaire);
+   // console.log(questionnaire);
 
     if (!questionnaire) {
         const err = new ValidatorError({ message: `Can't not found questionnaire for ${currentExam.name} in database!. Please import quizBank has questionnaire with _id: ${currentExam.setting.code} before` });
