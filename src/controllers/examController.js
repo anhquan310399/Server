@@ -487,7 +487,7 @@ exports.doExam = (req, res) => {
         });
     }
 
-    const today = new Date();
+    var today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
@@ -498,7 +498,7 @@ exports.doExam = (req, res) => {
             attempt = submissions.length;
             let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
-                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                let totalTime = (((new Date()) - submission.startTime) / (1000)).toFixed(0);
                 console.log(`Thời gian đã làm quiz: ${totalTime}s`);
                 if (totalTime < setting.timeToDo * 60) {
                     let questions = submission.answers.map(value => {
@@ -612,7 +612,7 @@ exports.submitExam = async (req, res) => {
         });
     }
 
-    const today = new Date();
+    var today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
         const setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
@@ -621,7 +621,7 @@ exports.submitExam = async (req, res) => {
             attempt = submissions.length
             let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
-                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                let totalTime = (((new Date()) - submission.startTime) / (1000)).toFixed(0);
                 console.log(totalTime);
                 if (totalTime <= setting.timeToDo * 60) {
                     let data = req.body.data;
