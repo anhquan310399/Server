@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
 
-const file = new mongoose.Schema({
+var file = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'name of file is required!']

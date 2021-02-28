@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const studentAnswer = new mongoose.Schema({
+var studentAnswer = new mongoose.Schema({
     questionId: {
         type: String,
         required: true
@@ -11,7 +11,7 @@ const studentAnswer = new mongoose.Schema({
     },
 }, { _id: false })
 
-const studentAnswerSheet = new mongoose.Schema({
+var studentAnswerSheet = new mongoose.Schema({
     idStudent: {
         type: String,
         required: true

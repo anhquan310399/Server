@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const { authInSubject, authLecture } = require("../middleware/auth")
+var { authInSubject, authLecture } = require("../middleware/auth")
 
-const forumController = require("../controllers/forumController")
+var forumController = require("../controllers/forumController")
 
 /** forum */
 router.get('/', authInSubject, forumController.findAll);

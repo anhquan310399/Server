@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const { authInSubject, authLecture, authStudent } = require("../middleware/auth")
+var { authInSubject, authLecture, authStudent } = require("../middleware/auth")
 
-const surveyController = require('../controllers/surveyController');
+var surveyController = require('../controllers/surveyController');
 
 router.post('/', authLecture, surveyController.create);
 router.get('/', authLecture, surveyController.findAll);

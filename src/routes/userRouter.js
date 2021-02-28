@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var { authLogin, authAdmin } = require('../middleware/auth');
 /* ROUTER FOR USER */
-const userController = require("../controllers/userController.js")
+var userController = require("../controllers/userController.js")
 
 router.get('/info', authLogin, userController.getInfo);
 router.get('/teacher', authAdmin, userController.findAllTeachers);

@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const timelineSchema = require("./timeline");
-const questionSchema = require('./question');
-const surveyQuestionnaire = require('./surveyQuestionnaire');
-const UserDb = require('./user');
+var mongoose = require("mongoose");
+var timelineSchema = require("./timeline");
+var questionSchema = require('./question');
+var surveyQuestionnaire = require('./surveyQuestionnaire');
+var UserDb = require('./user');
 var ValidatorError = mongoose.Error.ValidatorError;
 
-const chapterSchema = new mongoose.Schema({
+var chapterSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of chapter is required']
@@ -13,7 +13,7 @@ const chapterSchema = new mongoose.Schema({
     questions: [questionSchema]
 });
 
-const ratioSchema = new mongoose.Schema({
+var ratioSchema = new mongoose.Schema({
     idField: {
         type: String,
         required: true
@@ -24,7 +24,7 @@ const ratioSchema = new mongoose.Schema({
     }
 })
 
-const Schema = mongoose.Schema({
+var Schema = mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of subject is required']

@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const { authInSubject } = require("../middleware/auth")
+var { authInSubject } = require("../middleware/auth")
 
-const topicController = require("../controllers/topicController")
+var topicController = require("../controllers/topicController")
 
 /** discussion */
 router.get('/', authInSubject, topicController.findAll);

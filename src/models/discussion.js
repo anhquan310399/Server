@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const discussionSchema = new mongoose.Schema({
+var discussionSchema = new mongoose.Schema({
     content: {
         type: String,
         required: [true, 'Content of discussion is required!']

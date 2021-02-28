@@ -1,11 +1,11 @@
-const jwt = require('jsonwebtoken')
-const User = require('../models/user')
-const Subject = require('../models/subject')
+var jwt = require('jsonwebtoken')
+var User = require('../models/user')
+var Subject = require('../models/subject')
 
 exports.authStudent = (req, res, next) => {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '')
-        const data = jwt.verify(token, process.env.JWT_KEY)
+        var token = req.header('Authorization').replace('Bearer ', '')
+        var data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, idPrivilege: 'student', isDeleted: false })
             .then((user) => {
                 if (!user) {
@@ -53,8 +53,8 @@ exports.authStudent = (req, res, next) => {
 
 exports.authLecture = (req, res, next) => {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '')
-        const data = jwt.verify(token, process.env.JWT_KEY)
+        var token = req.header('Authorization').replace('Bearer ', '')
+        var data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, idPrivilege: 'teacher', isDeleted: false })
             .then((user) => {
                 if (!user) {
@@ -99,8 +99,8 @@ exports.authLecture = (req, res, next) => {
 
 exports.authInSubject = (req, res, next) => {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '')
-        const data = jwt.verify(token, process.env.JWT_KEY)
+        var token = req.header('Authorization').replace('Bearer ', '')
+        var data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, isDeleted: false })
             .then((user) => {
                 if (!user) {
@@ -164,8 +164,8 @@ exports.authInSubject = (req, res, next) => {
 exports.authLogin = (req, res, next) => {
     try {
         //console.log(req.header('Authorization'));
-        const token = req.header('Authorization').replace('Bearer ', '')
-        const data = jwt.verify(token, process.env.JWT_KEY)
+        var token = req.header('Authorization').replace('Bearer ', '')
+        var data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, isDeleted: false })
             .then((user) => {
                 if (!user) {
@@ -196,9 +196,9 @@ exports.authLogin = (req, res, next) => {
 
 exports.authAdmin = (req, res, next) => {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '')
+        var token = req.header('Authorization').replace('Bearer ', '')
         //console.log(token);
-        const data = jwt.verify(token, process.env.JWT_KEY)
+        var data = jwt.verify(token, process.env.JWT_KEY)
         User.findOne({ _id: data._id, code: data.code, idPrivilege: 'admin' })
             .then((user) => {
                 if (!user) {

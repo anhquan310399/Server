@@ -1,7 +1,7 @@
-const dbUser = require("../models/user");
+var dbUser = require("../models/user");
 
 exports.create = (req, res) => {
-    const user = new dbUser({
+    var user = new dbUser({
         code: req.body.code,
         idPrivilege: req.body.idPrivilege,
         emailAddress: req.body.emailAddress,
@@ -25,7 +25,7 @@ exports.create = (req, res) => {
             }
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -148,7 +148,7 @@ exports.update = (req, res) => {
             });
         }).catch((err) => {
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -313,13 +313,13 @@ exports.getInfo = (req, res) => {
     res.send(info);
 }
 
-const { verifyGoogle } = require('../authenticate/authGoogle');
+var { verifyGoogle } = require('../authenticate/authGoogle');
 
 exports.authenticateGoogleToken = async(req, res) => {
-    const userToken = req.body.token
+    var userToken = req.body.token
     verifyGoogle(userToken).then(async function(result) {
         var userEmail = result.email
-        const user = await dbUser.findOne({ emailAddress: userEmail, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
+        var user = await dbUser.findOne({ emailAddress: userEmail, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -327,7 +327,7 @@ exports.authenticateGoogleToken = async(req, res) => {
                 message: `Not found user ${userEmail}`
             })
         }
-        const token = user.generateAuthToken();
+        var token = user.generateAuthToken();
         res.send({
             success: true,
             message: 'Login successfully!',
@@ -352,10 +352,10 @@ exports.authenticateGoogleToken = async(req, res) => {
     })
 }
 
-const { verifyFacebook } = require('../authenticate/authFacebook');
+var { verifyFacebook } = require('../authenticate/authFacebook');
 
 exports.authenticateFacebookToken = async(req, res) => {
-    const userToken = req.body.token
+    var userToken = req.body.token
     verifyFacebook(userToken).then(async function(result) {
         if (!result) {
             res.status(500).send({
@@ -364,7 +364,7 @@ exports.authenticateFacebookToken = async(req, res) => {
             })
         }
         let facebookId = result.id;
-        const user = await dbUser.findOne({ facebookId: facebookId, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
+        var user = await dbUser.findOne({ facebookId: facebookId, isDeleted: false }, 'code idPrivilege emailAddress firstName surName urlAvatar facebookId')
             .then(user => { return user });
         if (!user) {
             return res.status(404).send({
@@ -372,7 +372,7 @@ exports.authenticateFacebookToken = async(req, res) => {
                 message: `Not found user with this facebook`
             })
         }
-        const token = user.generateAuthToken();
+        var token = user.generateAuthToken();
         res.send({
             success: true,
             message: 'Login successfully!',
@@ -398,7 +398,7 @@ exports.authenticateFacebookToken = async(req, res) => {
 }
 
 exports.linkFacebookAccount = async(req, res) => {
-    const userToken = req.body.token
+    var userToken = req.body.token
     console.log(req.user);
     console.log(req.user.facebookId);
     if (req.user.facebookId) {

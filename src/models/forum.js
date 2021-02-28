@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const topicSchema = require("./topic")
+var topicSchema = require("./topic")
 
-const forum = new mongoose.Schema({
+var forum = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of forum is required']

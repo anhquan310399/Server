@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const studentAnswerSheetSchema = require("./studentAnswerSheet");
+var studentAnswerSheetSchema = require("./studentAnswerSheet");
 var ValidatorError = mongoose.Error.ValidatorError;
 
-const setting = new mongoose.Schema({
+var setting = new mongoose.Schema({
     code: {
         type: String,
         required: [true, "Code of chapter is required"]
@@ -26,7 +26,7 @@ const setting = new mongoose.Schema({
     }
 }, { _id: false });
 
-const exam = new mongoose.Schema({
+var exam = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "Name of exam is required"]
@@ -66,7 +66,7 @@ exam.pre('save', async function (next) {
    // console.log(questionnaire);
 
     if (!questionnaire) {
-        const err = new ValidatorError({ message: `Can't not found questionnaire for ${currentExam.name} in database!. Please import quizBank has questionnaire with _id: ${currentExam.setting.code} before` });
+        var err = new ValidatorError({ message: `Can't not found questionnaire for ${currentExam.name} in database!. Please import quizBank has questionnaire with _id: ${currentExam.setting.code} before` });
         return next(err);
     }
     if (currentExam.isNew) {

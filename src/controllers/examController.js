@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const moment = require('moment');
-const User = require('../models/user');
-const isToday = require('../common/isToday');
+var _ = require('lodash');
+var moment = require('moment');
+var User = require('../models/user');
+var isToday = require('../common/isToday');
 
 exports.create = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -30,7 +30,7 @@ exports.create = async (req, res) => {
         }
     }
 
-    const model = {
+    var model = {
         name: req.body.data.name,
         content: req.body.data.content,
         startTime: new Date(req.body.data.startTime),
@@ -47,7 +47,7 @@ exports.create = async (req, res) => {
     var length = timeline.exams.push(model);
     subject.save()
         .then(() => {
-            const exam = timeline.exams[length - 1];
+            var exam = timeline.exams[length - 1];
             res.send({
                 success: true,
                 exam: {
@@ -63,7 +63,7 @@ exports.create = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -79,7 +79,7 @@ exports.create = async (req, res) => {
 
 exports.find = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -99,11 +99,11 @@ exports.find = async (req, res) => {
         });
     }
 
-    const today = new Date();
-    const isRemain = (today <= exam.expireTime);
-    const isOpen = (today >= exam.startTime && today <= exam.expireTime)
-    const timingRemain = moment(exam.expireTime).from(moment(today));
-    const setting = exam.setting;
+    var today = new Date();
+    var isRemain = (today <= exam.expireTime);
+    var isOpen = (today >= exam.startTime && today <= exam.expireTime)
+    var timingRemain = moment(exam.expireTime).from(moment(today));
+    var setting = exam.setting;
 
     if (req.user.idPrivilege === 'student') {
         let submissions = exam.submissions.filter(value => value.idStudent == req.user._id);
@@ -256,14 +256,14 @@ exports.find = async (req, res) => {
 
 exports.findUpdate = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam);
 
     if (!exam) {
         return res.status(404).send({
@@ -289,7 +289,7 @@ exports.findUpdate = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -312,14 +312,14 @@ exports.findAll = async (req, res) => {
 
 exports.update = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam);
 
     if (!exam) {
         return res.status(404).send({
@@ -371,7 +371,7 @@ exports.update = async (req, res) => {
 
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -387,14 +387,14 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam);
     if (!exam) {
         return res.status(404).send({
             success: false,
@@ -402,7 +402,7 @@ exports.delete = async (req, res) => {
         });
     }
 
-    const indexExam = timeline.exams.indexOf(exam);
+    var indexExam = timeline.exams.indexOf(exam);
 
 
     timeline.exams.splice(indexExam, 1);
@@ -423,14 +423,14 @@ exports.delete = async (req, res) => {
 
 exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam);
     if (!exam) {
         return res.status(404).send({
             success: false,
@@ -471,14 +471,14 @@ exports.hideOrUnhide = async (req, res) => {
 
 exports.doExam = (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline"
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam && value.isDeleted === false);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam && value.isDeleted === false);
 
     if (!exam) {
         res.status(404).send({
@@ -487,9 +487,9 @@ exports.doExam = (req, res) => {
         });
     }
 
-    const today = new Date();
+    var today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
-        const setting = exam.setting;
+        var setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
         let attempt = 0;
         //console.log(submissions);
@@ -498,7 +498,7 @@ exports.doExam = (req, res) => {
             attempt = submissions.length;
             let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
-                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                let totalTime = (((new Date()) - submission.startTime) / (1000)).toFixed(0);
                 console.log(`Thời gian đã làm quiz: ${totalTime}s`);
                 if (totalTime < setting.timeToDo * 60) {
                     let questions = submission.answers.map(value => {
@@ -535,7 +535,7 @@ exports.doExam = (req, res) => {
                     message: "Not found question",
                 });
             }
-            const questions = _.sampleSize(chapter.questions, setting.questionCount)
+            var questions = _.sampleSize(chapter.questions, setting.questionCount)
                 .map(value => {
                     return {
                         _id: value._id,
@@ -596,14 +596,14 @@ exports.doExam = (req, res) => {
 
 exports.submitExam = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline"
         });
     }
-    const exam = timeline.exams.find(value => value._id == req.params.idExam && value.isDeleted === false);
+    var exam = timeline.exams.find(value => value._id == req.params.idExam && value.isDeleted === false);
 
     if (!exam) {
         res.status(404).send({
@@ -612,16 +612,16 @@ exports.submitExam = async (req, res) => {
         });
     }
 
-    const today = new Date();
+    var today = new Date();
     if (today >= exam.startTime && today < exam.expireTime) {
-        const setting = exam.setting;
+        var setting = exam.setting;
         let submissions = exam.submissions.filter(value => value.idStudent == req.idStudent);
         let attempt = 0;
         if (submissions && submissions.length > 0) {
             attempt = submissions.length
             let submission = submissions[attempt - 1];
             if (!submission.isSubmitted) {
-                let totalTime = ((today - submission.startTime) / (1000)).toFixed(0);
+                let totalTime = (((new Date()) - submission.startTime) / (1000)).toFixed(0);
                 console.log(totalTime);
                 if (totalTime <= setting.timeToDo * 60) {
                     let data = req.body.data;

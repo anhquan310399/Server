@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 var ValidatorError = mongoose.Error.ValidatorError;
 
-const answerSheet = new mongoose.Schema({
+var answerSheet = new mongoose.Schema({
     idQuestion: {
         type: String,
         required: true,
@@ -12,7 +12,7 @@ const answerSheet = new mongoose.Schema({
     }
 })
 
-const reply = new mongoose.Schema({
+var reply = new mongoose.Schema({
     idStudent: {
         type: String,
         required: true
@@ -27,7 +27,7 @@ const reply = new mongoose.Schema({
     }
 })
 
-const survey = new mongoose.Schema({
+var survey = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of survey is required!']
@@ -109,7 +109,7 @@ survey.pre('save', async function (next) {
     console.log(questionnaire);
 
     if (!questionnaire) {
-        const err = new ValidatorError({ message: `Can't not found questionnaire for ${currentSurvey.name} in database!. Please import surveyBank has questionnaire with _id: ${currentSurvey.code} before` });
+        var err = new ValidatorError({ message: `Can't not found questionnaire for ${currentSurvey.name} in database!. Please import surveyBank has questionnaire with _id: ${currentSurvey.code} before` });
         return next(err);
     }
 

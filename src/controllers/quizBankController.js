@@ -1,6 +1,6 @@
 exports.createChapter = async(req, res) => {
     let data = req.subject;
-    const model = {
+    var model = {
         name: req.body.data.name,
     };
     let length = data.quizBank.push(model);
@@ -14,7 +14,7 @@ exports.createChapter = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -45,7 +45,7 @@ exports.findAllChapter = async(req, res) => {
 
 exports.findChapter = async(req, res) => {
     let data = req.subject;
-    const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     res.send({
         success: true,
         chapter
@@ -78,7 +78,7 @@ exports.updateChapter = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -94,7 +94,7 @@ exports.updateChapter = async(req, res) => {
 
 exports.deleteChapter = async(req, res) => {
     let data = req.subject;
-    const chapter = data.quizBank.find(value => value._id == req.params.idChapter);
+    var chapter = data.quizBank.find(value => value._id == req.params.idChapter);
     if (!chapter) {
         return res.status(404).send({
             success: false,
@@ -102,7 +102,7 @@ exports.deleteChapter = async(req, res) => {
         });
     }
 
-    const index = data.quizBank.indexOf(chapter);
+    var index = data.quizBank.indexOf(chapter);
     data.quizBank.splice(index, 1);
     await data.save()
         .then(() => {

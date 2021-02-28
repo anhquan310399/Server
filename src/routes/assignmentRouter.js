@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-const assignmentController = require("../controllers/assignmentController");
-const { authInSubject, authLecture, authStudent } = require('../middleware/auth');
+var assignmentController = require("../controllers/assignmentController");
+var { authInSubject, authLecture, authStudent } = require('../middleware/auth');
 
 /** forum */
 router.get('/:idAssignment', authInSubject, assignmentController.find);

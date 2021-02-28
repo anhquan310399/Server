@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const { authLecture } = require("../middleware/auth")
+var { authLecture } = require("../middleware/auth")
     /* ROUTER FOR QUIZ BANK */
-const surveyBankController = require("../controllers/surveyBankController")
+var surveyBankController = require("../controllers/surveyBankController")
 
 router.get('/', authLecture, surveyBankController.findAllQuestionnaire);
 router.get('/:idQuestionnaire', authLecture, surveyBankController.findQuestionnaire);

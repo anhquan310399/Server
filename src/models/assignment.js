@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
-const file = require('./file');
+var mongoose = require("mongoose");
+var file = require('./file');
 
 //Thêm trường comment để khiếu nại điểm
 
-const feedBack = new mongoose.Schema({
+var feedBack = new mongoose.Schema({
     grade: {
         type: Number,
         required: [true, "Grade is required!"],
@@ -21,7 +21,7 @@ const feedBack = new mongoose.Schema({
     comment: String
 }, { _id: false });
 
-const submission = new mongoose.Schema({
+var submission = new mongoose.Schema({
     idStudent: {
         type: String,
         required: true
@@ -37,7 +37,7 @@ const submission = new mongoose.Schema({
     feedBack: feedBack
 });
 
-const setting = new mongoose.Schema({
+var setting = new mongoose.Schema({
     startTime: {
         type: Date,
         required: [true, "Start time of assignment is required"]
@@ -75,7 +75,7 @@ const setting = new mongoose.Schema({
 
 }, { _id: false });
 
-const assignmentSchema = new mongoose.Schema({
+var assignmentSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "Title of assignment is required"]

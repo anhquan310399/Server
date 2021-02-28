@@ -4,9 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
-// var passport = require('passport');
-// var cookieSession = require('cookie-session');
-global.appRoot = path.resolve(__dirname);
 
 /** Import router */
 var indexRouter = require('./src/routes/index');
@@ -24,8 +21,8 @@ var quizBankRouter = require('./src/routes/quizBankRouter');
 var surveyRouter = require('./src/routes/surveyRouter');
 var surveyBankRouter = require('./src/routes/surveyBankRouter');
 /** Config database */
-const dbConfig = process.env.MONGODB_URL;
-const mongoose = require("mongoose");
+var dbConfig = process.env.MONGODB_URL;
+var mongoose = require("mongoose");
 
 var app = express();
 mongoose.Promise = global.Promise;
@@ -33,15 +30,6 @@ mongoose.Promise = global.Promise;
 // view engine setup
 app.set('views', path.join(__dirname, 'src/views'));
 app.set('view engine', 'jade');
-
-//Config passport
-// app.use(cookieSession({
-//     // milliseconds of a day
-//     maxAge: 24 * 60 * 60 * 1000,
-//     keys: [process.env.HCMUTEUnversityHCMC]
-// }));
-// app.use(passport.initialize());
-// app.use(passport.session());
 
 //Config server
 app.use(cors());

@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const jwt = require('jsonwebtoken');
-const privilegeDB = require('./privilege');
-const bcrypt = require('bcrypt');
+var mongoose = require("mongoose");
+var validator = require("validator");
+var jwt = require('jsonwebtoken');
+var privilegeDB = require('./privilege');
+var bcrypt = require('bcrypt');
 var ValidatorError = mongoose.Error.ValidatorError;
 
-const UserSchema = mongoose.Schema({
+var UserSchema = mongoose.Schema({
     code: {
         type: String,
         unique: [true, 'Code is existed!'],
@@ -70,7 +70,7 @@ const UserSchema = mongoose.Schema({
 });
 
 
-const saltRounds = 10;
+var saltRounds = 10;
 // hash the password before the user is saved
 UserSchema.pre('save', function(next) {
     var user = this;
@@ -98,9 +98,9 @@ UserSchema.methods.comparePassword = function(password) {
 
 UserSchema.methods.generateAuthToken = function() {
     // Generate an auth token for the user
-    const user = this
+    var user = this
     var superSecret = process.env.JWT_KEY;
-    const token = jwt.sign({
+    var token = jwt.sign({
         _id: user._id,
         code: user.code,
         idPrivilege: user.privilege,

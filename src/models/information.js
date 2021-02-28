@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const information = new mongoose.Schema({
+var information = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name of information is required!']

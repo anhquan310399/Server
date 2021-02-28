@@ -1,9 +1,9 @@
-const isToday = require('../common/isToday');
+var isToday = require('../common/isToday');
 
 exports.create = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -18,7 +18,7 @@ exports.create = async (req, res) => {
             message: "Not found questionnaire",
         });
     }
-    const model = {
+    var model = {
         name: req.body.data.name,
         description: req.body.data.description,
         code: code,
@@ -29,7 +29,7 @@ exports.create = async (req, res) => {
     var length = timeline.surveys.push(model);
     subject.save()
         .then(() => {
-            const survey = timeline.surveys[length - 1];
+            var survey = timeline.surveys[length - 1];
             res.send({
                 success: true,
                 message: "Create survey successfully!",
@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -63,7 +63,7 @@ exports.create = async (req, res) => {
 exports.find = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -120,7 +120,7 @@ exports.find = async (req, res) => {
 exports.findUpdate = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -128,7 +128,7 @@ exports.findUpdate = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
 
     if (!survey) {
         return res.status(404).send({
@@ -153,14 +153,14 @@ exports.findUpdate = async (req, res) => {
 exports.findAll = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const surveys = timeline.surveys.map(survey => {
+    var surveys = timeline.surveys.map(survey => {
         return {
             _id: survey._id,
             name: survey.name,
@@ -177,7 +177,7 @@ exports.findAll = async (req, res) => {
 exports.update = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -185,7 +185,7 @@ exports.update = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -232,7 +232,7 @@ exports.update = async (req, res) => {
         }).catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -250,7 +250,7 @@ exports.update = async (req, res) => {
 exports.hideOrUnhide = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -258,7 +258,7 @@ exports.hideOrUnhide = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -301,7 +301,7 @@ exports.hideOrUnhide = async (req, res) => {
 exports.delete = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -309,7 +309,7 @@ exports.delete = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -338,7 +338,7 @@ exports.delete = async (req, res) => {
 exports.attemptSurvey = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -346,7 +346,7 @@ exports.attemptSurvey = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -361,7 +361,7 @@ exports.attemptSurvey = async (req, res) => {
             message: `You have already reply survey ${survey.name}`
         });
     }
-    const questionnaire = subject.surveyBank.find(value => value._id == survey.code);
+    var questionnaire = subject.surveyBank.find(value => value._id == survey.code);
 
     res.send({
         success: true,
@@ -376,7 +376,7 @@ exports.attemptSurvey = async (req, res) => {
 exports.replySurvey = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -384,7 +384,7 @@ exports.replySurvey = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -417,7 +417,7 @@ exports.replySurvey = async (req, res) => {
         }).catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -434,7 +434,7 @@ exports.replySurvey = async (req, res) => {
 exports.viewResponse = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -442,7 +442,7 @@ exports.viewResponse = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -450,14 +450,14 @@ exports.viewResponse = async (req, res) => {
         });
     }
 
-    const reply = survey.responses.find(value => value.idStudent == req.idStudent);
+    var reply = survey.responses.find(value => value.idStudent == req.idStudent);
     if (!reply) {
         return res.status(404).send({
             success: false,
             message: `You have not already reply survey ${survey.name}`
         });
     }
-    const questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
+    var questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
 
     res.send({
         success: true,
@@ -473,7 +473,7 @@ exports.viewResponse = async (req, res) => {
 exports.viewAllResponse = async (req, res) => {
     let subject = req.subject;
 
-    const timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -481,7 +481,7 @@ exports.viewAllResponse = async (req, res) => {
         });
     }
 
-    const survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
+    var survey = timeline.surveys.find(value => value._id == req.params.idSurvey)
     if (!survey) {
         return res.status(404).send({
             success: false,
@@ -489,7 +489,7 @@ exports.viewAllResponse = async (req, res) => {
         });
     }
 
-    const questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
+    var questionnaire = subject.surveyBank.find(value => value._id == survey.code).questions;
 
 
     let result = await Promise.all(questionnaire.map(async (question) => {

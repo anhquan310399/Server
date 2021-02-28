@@ -1,6 +1,6 @@
 exports.createQuestionnaire = async(req, res) => {
     let data = req.subject;
-    const model = {
+    var model = {
         name: req.body.data.name,
     };
     let length = data.surveyBank.push(model);
@@ -14,7 +14,7 @@ exports.createQuestionnaire = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -45,7 +45,7 @@ exports.findAllQuestionnaire = async(req, res) => {
 
 exports.findQuestionnaire = async(req, res) => {
     let data = req.subject;
-    const questionnaire = data.surveyBank.find(value => value._id == req.params.idQuestionnaire);
+    var questionnaire = data.surveyBank.find(value => value._id == req.params.idQuestionnaire);
     res.send({
         success: true,
         questionnaire
@@ -78,7 +78,7 @@ exports.updateQuestionnaire = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -94,7 +94,7 @@ exports.updateQuestionnaire = async(req, res) => {
 
 exports.deleteQuestionnaire = async(req, res) => {
     let data = req.subject;
-    const Questionnaire = data.surveyBank.find(value => value._id == req.params.idQuestionnaire);
+    var Questionnaire = data.surveyBank.find(value => value._id == req.params.idQuestionnaire);
     if (!Questionnaire) {
         return res.status(404).send({
             success: false,
@@ -102,7 +102,7 @@ exports.deleteQuestionnaire = async(req, res) => {
         });
     }
 
-    const index = data.surveyBank.indexOf(Questionnaire);
+    var index = data.surveyBank.indexOf(Questionnaire);
     data.surveyBank.splice(index, 1);
     await data.save()
         .then(() => {

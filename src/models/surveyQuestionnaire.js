@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const question = new mongoose.Schema({
+var question = new mongoose.Schema({
     question: {
         type: String,
         required: [true, 'Content of question is required']
@@ -20,7 +20,7 @@ const question = new mongoose.Schema({
     }
 });
 
-const questionnaire = new mongoose.Schema({
+var questionnaire = new mongoose.Schema({
     name: {
         type: String,
         require: [true, 'Name of questionnaire is required']

@@ -1,16 +1,16 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const informationSchema = require("./information");
+var informationSchema = require("./information");
 
-const forumSchema = require("./forum");
+var forumSchema = require("./forum");
 
-const assignmentSchema = require("./assignment");
+var assignmentSchema = require("./assignment");
 
-const examSchema = require("./exam");
+var examSchema = require("./exam");
 
-const surveySchema = require("./survey");
+var surveySchema = require("./survey");
 
-const fileSchema = new mongoose.Schema({
+var fileSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'name of file is required!']
@@ -33,7 +33,7 @@ const fileSchema = new mongoose.Schema({
     }
 });
 
-const timeline = new mongoose.Schema({
+var timeline = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Title of timeline is required']

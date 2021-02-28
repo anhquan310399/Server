@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const questionOption = new mongoose.Schema({
+var questionOption = new mongoose.Schema({
     answer: {
         type: String,
         required: [true, 'Content of answer is required']
@@ -11,7 +11,7 @@ const questionOption = new mongoose.Schema({
     }
 })
 
-const questionSchema = new mongoose.Schema({
+var questionSchema = new mongoose.Schema({
     question: {
         type: String,
         required: [true, 'Content of question is required']

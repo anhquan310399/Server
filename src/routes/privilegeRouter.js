@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var { authAdmin } = require('../middleware/auth');
 /* ROUTER FOR PRIVILEGE */
-const privilegeController = require("../controllers/privilegeController")
+var privilegeController = require("../controllers/privilegeController")
 
 router.get('/:id', authAdmin, privilegeController.findPrivilege);
 

@@ -1,10 +1,10 @@
-const db = require("../models/subject");
-const userDb = require('../models/user');
-const _ = require('lodash');
-const isToday = require('../common/isToday');
+var db = require("../models/subject");
+var userDb = require('../models/user');
+var _ = require('lodash');
+var isToday = require('../common/isToday');
 exports.create = async (req, res) => {
     // Validate request
-    const data = new db({
+    var data = new db({
         name: req.body.name,
         idLecture: req.body.idLecture,
         studentIds: req.body.studentIds,
@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -371,7 +371,7 @@ exports.update = async (req, res) => {
             console.log("Update subject: " + err.message);
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -479,14 +479,14 @@ exports.importSubject = async (req, res) => {
 
             })), ['index']);
 
-            const surveyBank = await Promise.all(subject.surveyBank.map(value => {
+            var surveyBank = await Promise.all(subject.surveyBank.map(value => {
                 return {
                     _id: value._id,
                     name: value.name,
                     questions: value.questions.length
                 }
             }));
-            const quizBank = await Promise.all(subject.quizBank.map(value => {
+            var quizBank = await Promise.all(subject.quizBank.map(value => {
                 return {
                     _id: value._id,
                     name: value.name,
@@ -505,7 +505,7 @@ exports.importSubject = async (req, res) => {
             console.log("Update subject: " + err.message);
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -701,8 +701,8 @@ exports.removeStudent = (req, res) => {
 };
 
 exports.adjustOrderOfTimeline = async (req, res) => {
-    const adjust = req.body;
-    const subject = req.subject;
+    var adjust = req.body;
+    var subject = req.subject;
     await adjust.forEach(element => {
         var timeline = subject.timelines.find(x => x._id == element._id);
         console.log(timeline);
@@ -780,7 +780,7 @@ exports.adjustOrderOfTimeline = async (req, res) => {
 }
 
 exports.getOrderOfTimeLine = async (req, res) => {
-    const data = req.subject;
+    var data = req.subject;
     let result = {
         _id: data._id,
         name: data.name,
@@ -798,7 +798,7 @@ exports.getDeadline = async (req, res) => {
     db.find({ 'studentIds': req.code, isDeleted: false })
         .then(function (listSubject) {
             let deadline = [];
-            const today = new Date();
+            var today = new Date();
             listSubject.forEach(subject => {
                 subject.timelines.forEach((timeline) => {
                     if (!timeline.isDeleted) {
@@ -883,7 +883,7 @@ exports.getDeadline = async (req, res) => {
 }
 
 exports.getListStudent = async (req, res) => {
-    const subject = req.subject;
+    var subject = req.subject;
 
     var info = await Promise.all(subject.studentIds.map(async function (value) {
         var student = await userDb.findOne({ code: value }, 'code emailAddress firstName surName urlAvatar')
@@ -1102,9 +1102,9 @@ exports.exportSubject = async (req, res) => {
 
             let timelines = await getTimelineExport(subject.timelines);
 
-            const quizBank = await getQuizBankExport(subject.quizBank);
+            var quizBank = await getQuizBankExport(subject.quizBank);
 
-            const surveyBank = await getSurveyBankExport(subject.surveyBank);
+            var surveyBank = await getSurveyBankExport(subject.surveyBank);
 
             subject = {
                 timelines: timelines,
@@ -1184,7 +1184,7 @@ exports.exportSubjectWithCondition = async (req, res) => {
 
 exports.getDeadlineBySubject = async (req, res) => {
     let deadline = [];
-    const today = new Date();
+    var today = new Date();
     let subject = req.subject;
     subject.timelines.forEach((timeline) => {
         if (!timeline.isDeleted) {
@@ -1250,7 +1250,7 @@ exports.getDeadlineBySubject = async (req, res) => {
 
 //Function
 
-const getListAssignmentExam = async (subject, today) => {
+var getListAssignmentExam = async (subject, today) => {
     let assignmentOrExam = await subject.timelines.reduce(
         async (preField, currentTimeline) => {
             if (currentTimeline.isDeleted) {
@@ -1330,8 +1330,8 @@ const getListAssignmentExam = async (subject, today) => {
     return assignmentOrExam;
 }
 
-const getTimelineExport = async (timelines) => {
-    const result = await Promise.all(timelines.map(async (timeline) => {
+var getTimelineExport = async (timelines) => {
+    var result = await Promise.all(timelines.map(async (timeline) => {
         let surveys = await Promise.all(timeline.surveys.map(async (survey) => {
             return {
                 name: survey.name,
@@ -1384,11 +1384,11 @@ const getTimelineExport = async (timelines) => {
     return _.sortBy(result, ['index']);
 }
 
-const getSurveyBankExport = async (surveyBank) => {
+var getSurveyBankExport = async (surveyBank) => {
     return await Promise.all(surveyBank.map(async (questionnaire) => {
-        const questions = questionnaire.questions.map(question => {
+        var questions = questionnaire.questions.map(question => {
             if (question.typeQuestion === 'choice' || question.typeQuestion === 'multiple') {
-                const answers = question.answer.map(answer => {
+                var answers = question.answer.map(answer => {
                     return answer.content;
                 });
                 return {
@@ -1411,10 +1411,10 @@ const getSurveyBankExport = async (surveyBank) => {
     }))
 }
 
-const getQuizBankExport = async (quizBank) => {
+var getQuizBankExport = async (quizBank) => {
     return await Promise.all(quizBank.map(async (questionnaire) => {
-        const questions = questionnaire.questions.map((question) => {
-            const answers = question.answers.map(option => {
+        var questions = questionnaire.questions.map((question) => {
+            var answers = question.answers.map(option => {
                 return {
                     answer: option.answer,
                     isCorrect: option.isCorrect

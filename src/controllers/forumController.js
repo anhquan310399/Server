@@ -1,9 +1,9 @@
-const User = require('../models/user');
-const isToday = require('../common/isToday');
+var User = require('../models/user');
+var isToday = require('../common/isToday');
 
 exports.create = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -11,17 +11,17 @@ exports.create = (req, res) => {
         });
     }
 
-    const model = {
+    var model = {
         name: req.body.data.name,
         description: req.body.data.description,
         isDeleted: req.body.data.isDeleted
     };
 
-    const length = timeline.forums.push(model);
+    var length = timeline.forums.push(model);
 
     data.save()
         .then(() => {
-            const forum = timeline.forums[length - 1];
+            var forum = timeline.forums[length - 1];
             res.send({
                 success: true,
                 message: 'Create new forum successfully!',
@@ -38,7 +38,7 @@ exports.create = (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -55,14 +55,14 @@ exports.create = (req, res) => {
 
 exports.find = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    var forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
             success: false,
@@ -96,14 +96,14 @@ exports.find = async (req, res) => {
 
 exports.findUpdate = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    var forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
             success: false,
@@ -126,7 +126,7 @@ exports.findUpdate = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -160,7 +160,7 @@ exports.findAll = async (req, res) => {
 
 exports.update = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -168,7 +168,7 @@ exports.update = async (req, res) => {
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    var forum = timeline.forums.find(value => value._id == req.params.idForum);
 
     if (!forum) {
         return res.status(404).send({
@@ -204,7 +204,7 @@ exports.update = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -220,7 +220,7 @@ exports.update = async (req, res) => {
 
 exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -228,7 +228,7 @@ exports.hideOrUnhide = async (req, res) => {
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    var forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
             success: false,
@@ -271,7 +271,7 @@ exports.hideOrUnhide = async (req, res) => {
 
 exports.delete = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -279,7 +279,7 @@ exports.delete = async (req, res) => {
         });
     }
 
-    const forum = timeline.forums.find(value => value._id == req.params.idForum);
+    var forum = timeline.forums.find(value => value._id == req.params.idForum);
     if (!forum) {
         return res.status(404).send({
             success: false,

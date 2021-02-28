@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 
-const privilegeSchema = mongoose.Schema({
+var privilegeSchema = mongoose.Schema({
     role: {
         type: String,
         unique: true,

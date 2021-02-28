@@ -1,12 +1,12 @@
-const User = require('../models/user');
-// const multer = require('multer');
-// const fs = require('fs');
-const moment = require('moment');
-const isToday = require('../common/isToday');
+var User = require('../models/user');
+// var multer = require('multer');
+// var fs = require('fs');
+var moment = require('moment');
+var isToday = require('../common/isToday');
 
 exports.create = async (req, res) => {
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -24,7 +24,7 @@ exports.create = async (req, res) => {
             }
         });
     }
-    const model = {
+    var model = {
         name: data.name,
         content: data.content,
         setting: {
@@ -60,7 +60,7 @@ exports.create = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -77,7 +77,7 @@ exports.create = async (req, res) => {
 
 exports.find = async (req, res) => {
     let data = req.subject;
-    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -98,7 +98,7 @@ exports.find = async (req, res) => {
         });
     }
     let today = new Date();
-    const timingRemain = moment(assignment.setting.expireTime).from(moment(today));
+    var timingRemain = moment(assignment.setting.expireTime).from(moment(today));
 
     if (req.user.idPrivilege === 'student') {
         let submission = assignment.submissions.find(value => value.idStudent == req.user._id);
@@ -167,14 +167,14 @@ exports.find = async (req, res) => {
 
 exports.findUpdate = async (req, res) => {
     let data = req.subject;
-    const timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = await data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
+    var assignment = await timeline.assignments.find(value => value._id == req.params.idAssignment);
 
     if (!assignment) {
         return res.status(404).send({
@@ -199,7 +199,7 @@ exports.findUpdate = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -225,7 +225,7 @@ exports.findAll = async (req, res) => {
 exports.update = async (req, res) => {
     let data = req.body.data;
     let subject = req.subject;
-    const timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = subject.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -233,7 +233,7 @@ exports.update = async (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -289,7 +289,7 @@ exports.update = async (req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -305,7 +305,7 @@ exports.update = async (req, res) => {
 
 exports.delete = (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -313,7 +313,7 @@ exports.delete = (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
 
     if (!assignment) {
         return res.status(404).send({
@@ -321,7 +321,7 @@ exports.delete = (req, res) => {
             message: "Not found assignment",
         });
     }
-    const indexAssignment = timeline.assignments.indexOf(assignment);
+    var indexAssignment = timeline.assignments.indexOf(assignment);
     timeline.assignments.splice(indexAssignment, 1);
 
     data.save()
@@ -341,7 +341,7 @@ exports.delete = (req, res) => {
 
 exports.hideOrUnhide = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -349,7 +349,7 @@ exports.hideOrUnhide = async (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -406,7 +406,7 @@ exports.hideOrUnhide = async (req, res) => {
 
 exports.submit = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -414,7 +414,7 @@ exports.submit = async (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -423,7 +423,7 @@ exports.submit = async (req, res) => {
     }
 
     let today = new Date();
-    const setting = assignment.setting;
+    var setting = assignment.setting;
     if ((today >= setting.startTime && today <= setting.expireTime) ||
         (setting.isOverDue && today <= setting.overDueDate && today >= setting.startTime)) {
         // var upload = multer({
@@ -481,7 +481,7 @@ exports.submit = async (req, res) => {
         //         })
         //         .catch((err) => {
         //             if (err.name === 'ValidationError') {
-        //                 const key = Object.keys(err.errors)[0];
+        //                 var key = Object.keys(err.errors)[0];
         //                 res.status(400).send({
         //                     success: false,
         //                     message: err.errors[key].message,
@@ -533,7 +533,7 @@ exports.submit = async (req, res) => {
             })
             .catch((err) => {
                 if (err.name === 'ValidationError') {
-                    const key = Object.keys(err.errors)[0];
+                    var key = Object.keys(err.errors)[0];
                     res.status(400).send({
                         success: false,
                         message: err.errors[key].message,
@@ -562,7 +562,7 @@ exports.submit = async (req, res) => {
 
 // exports.download = async (req, res) => {
 //     let data = req.subject;
-//     const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+//     var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
 //     if (!timeline) {
 //         return res.status(404).send({
 //             success: false,
@@ -570,7 +570,7 @@ exports.submit = async (req, res) => {
 //         });
 //     }
 
-//     const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+//     var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
 //     if (!assignment) {
 //         return res.status(404).send({
 //             success: false,
@@ -603,7 +603,7 @@ exports.submit = async (req, res) => {
 
 exports.gradeSubmission = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -611,7 +611,7 @@ exports.gradeSubmission = async (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment);
     if (!assignment) {
         return res.status(404).send({
             success: false,
@@ -638,7 +638,7 @@ exports.gradeSubmission = async (req, res) => {
             })
             .catch((err) => {
                 if (err.name === 'ValidationError') {
-                    const key = Object.keys(err.errors)[0];
+                    var key = Object.keys(err.errors)[0];
                     res.status(400).send({
                         success: false,
                         message: err.errors[key].message,
@@ -660,7 +660,7 @@ exports.gradeSubmission = async (req, res) => {
 
 exports.commentFeedback = async (req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -668,7 +668,7 @@ exports.commentFeedback = async (req, res) => {
         });
     }
 
-    const assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
+    var assignment = timeline.assignments.find(value => value._id == req.params.idAssignment && value.isDeleted === false);
     if (!assignment) {
         return res.status(404).send({
             success: false,

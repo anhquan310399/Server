@@ -1,8 +1,8 @@
-const isToday = require('../common/isToday');
+var isToday = require('../common/isToday');
 
 exports.create = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -10,7 +10,7 @@ exports.create = async(req, res) => {
         });
     }
 
-    const model = {
+    var model = {
         name: req.body.data.name,
         content: req.body.data.content
     };
@@ -35,7 +35,7 @@ exports.create = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -51,7 +51,7 @@ exports.create = async(req, res) => {
 
 exports.find = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -59,7 +59,7 @@ exports.find = async(req, res) => {
         });
     }
 
-    const information = timeline.information.find(value => value._id == req.params.idInformation);
+    var information = timeline.information.find(value => value._id == req.params.idInformation);
 
     if (information) {
         return res.send({
@@ -84,7 +84,7 @@ exports.find = async(req, res) => {
 
 exports.findAll = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
@@ -108,14 +108,14 @@ exports.findAll = async(req, res) => {
 
 exports.update = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.body.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.body.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const information = timeline.information.find(function(value, index, arr) {
+    var information = timeline.information.find(function(value, index, arr) {
         return (value._id == req.params.idInformation)
     });
     if (!information) {
@@ -142,7 +142,7 @@ exports.update = async(req, res) => {
         .catch((err) => {
             console.log(err.name);
             if (err.name === 'ValidationError') {
-                const key = Object.keys(err.errors)[0];
+                var key = Object.keys(err.errors)[0];
                 res.status(400).send({
                     success: false,
                     message: err.errors[key].message,
@@ -159,15 +159,15 @@ exports.update = async(req, res) => {
 
 exports.delete = async(req, res) => {
     let data = req.subject;
-    const timeline = data.timelines.find(value => value._id == req.query.idTimeline);
+    var timeline = data.timelines.find(value => value._id == req.query.idTimeline);
     if (!timeline) {
         return res.status(404).send({
             success: false,
             message: "Not found timeline",
         });
     }
-    const information = timeline.information.find(value => value._id == req.params.idInformation);
-    const indexInfo = timeline.information.indexOf(information);
+    var information = timeline.information.find(value => value._id == req.params.idInformation);
+    var indexInfo = timeline.information.indexOf(information);
     if (indexInfo === -1) {
         return res.status(404).send({
             success: false,
