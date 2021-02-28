@@ -550,6 +550,7 @@ exports.doExam = (req, res) => {
                 answers: questions.map(value => {
                     return { questionId: value._id }
                 }),
+                startTime: new Date()
 
             }
             exam.submissions.push(submit);

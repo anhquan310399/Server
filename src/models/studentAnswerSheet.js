@@ -30,7 +30,7 @@ var studentAnswerSheet = new mongoose.Schema({
     },
     startTime: {
         type: Date,
-        default: new Date(),
+        required: true
     }
 });
 
